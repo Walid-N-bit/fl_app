@@ -2,3 +2,4 @@ data/
 quickstart-pytorch/
 process.txt
 venv_fl/
+__pycache__ 
