@@ -13,7 +13,19 @@ DEVICE = (
     if torch.accelerator.is_available()
     else "cpu"
 )
-CLASSES = []
+
+CLASSES = [
+    "airplane",
+    "automobile",
+    "bird",
+    "cat",
+    "deer",
+    "dog",
+    "frog",
+    "horse",
+    "ship",
+    "truck",
+]
 
 MODEL = CNN(in_channels=1, out_channels=3, kernel_size=5, out_features=len(CLASSES)).to(
     DEVICE

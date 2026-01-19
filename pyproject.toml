@@ -21,8 +21,8 @@ packages = ["."]
 publisher = "flwrlabs"
 
 [tool.flwr.app.components]
-serverapp = "pytorchexample.server_app:app"
-clientapp = "pytorchexample.client_app:app"
+serverapp = "server_app:server"
+clientapp = "client_app:client"
 
 [tool.flwr.app.config]
 num-server-rounds = 3
@@ -45,3 +45,7 @@ options.backend.client-resources.num-gpus = 0.2 # at most 5 ClientApp will run i
 [tool.flwr.federations.supergrid-deployment]
 address = "supergrid.flower.ai"
 enable-account-auth = true
+
+[tool.flwr.federations.local-deployment]
+address = "127.0.0.1:9093"
+insecure = true

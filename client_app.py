@@ -31,7 +31,7 @@ IMAGE, _ = TRAIN_DATA[0]
 
 
 DATASET_ID = "uoft-cs/cifar10"
-CLASSES = []
+CLASSES = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
 
 DEVICE = (
     torch.accelerator.current_accelerator().type

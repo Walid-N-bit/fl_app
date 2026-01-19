@@ -30,7 +30,7 @@ class ImageDataset(Dataset):
         return image, label
 
 
-class CNN(nn.Module):
+class ConvolutionalNeuralNetwork(nn.Module):
     """
     Class for a Convolutional Neural Network
     """
