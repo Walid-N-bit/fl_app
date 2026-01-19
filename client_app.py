@@ -15,33 +15,26 @@ client = ClientApp()
 CNN = ConvolutionalNeuralNetwork
 
 
-# -----------------------------------------------------------#
-# -------------------for custom datasets---------------------#
-TRAIN_PATH = "data/train/"
-TEST_PATH = "data/test/"
+# # -----------------------------------------------------------#
+# # -------------------for custom datasets---------------------#
+# TRAIN_PATH = "data/train/"
+# TEST_PATH = "data/test/"
 
-TRAIN_DATA = ImageDataset(annotations_dir="data/Training_set.csv", img_dir=TRAIN_PATH)
-TEST_DATA = ImageDataset(annotations_dir="data/Testing_set.csv", img_dir=TEST_PATH)
-
-
-IMAGE, _ = TRAIN_DATA[0]
+# TRAIN_DATA = ImageDataset(annotations_dir="data/Training_set.csv", img_dir=TRAIN_PATH)
+# TEST_DATA = ImageDataset(annotations_dir="data/Testing_set.csv", img_dir=TEST_PATH)
 
 
-# -----------------------------------------------------------#
+# IMAGE, _ = TRAIN_DATA[0]
+
+
+# # -----------------------------------------------------------#
 
 
 DATASET_ID = "uoft-cs/cifar10"
 CLASSES = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
 
-DEVICE = (
-    torch.accelerator.current_accelerator().type
-    if torch.accelerator.is_available()
-    else "cpu"
-)
+DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-MODEL = CNN(in_channels=1, out_channels=3, kernel_size=5, out_features=len(CLASSES)).to(
-    DEVICE
-)
 
 MODEL_PATH = "models/local_model.pth"
 
@@ -53,7 +46,9 @@ def train(msg: Message, context: Context):
     """Train the model on local data."""
 
     # Load the model and initialize it with the received weights
-    model = MODEL
+    model = CNN(
+        in_channels=1, out_channels=3, kernel_size=5, out_features=len(CLASSES)
+    ).to(DEVICE)
     model.load_state_dict(msg.content["arrays"].to_torch_state_dict())
 
     # Load the data
@@ -92,7 +87,9 @@ def evaluate(msg: Message, context: Context):
     """Evaluate the model on local data."""
 
     # Load the model and initialize it with the received weights
-    model = MODEL
+    model = CNN(
+        in_channels=1, out_channels=3, kernel_size=5, out_features=len(CLASSES)
+    ).to(DEVICE)
     model.load_state_dict(msg.content["arrays"].to_torch_state_dict())
 
     # Load the data

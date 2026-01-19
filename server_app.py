@@ -8,11 +8,7 @@ from utils import load_centralized_dataset, test
 
 server = ServerApp()
 
-DEVICE = (
-    torch.accelerator.current_accelerator().type
-    if torch.accelerator.is_available()
-    else "cpu"
-)
+DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 CLASSES = [
     "airplane",
@@ -27,10 +23,6 @@ CLASSES = [
     "truck",
 ]
 
-MODEL = CNN(in_channels=1, out_channels=3, kernel_size=5, out_features=len(CLASSES)).to(
-    DEVICE
-)
-
 
 @server.main()
 def main(grid: Grid, context: Context) -> None:
@@ -42,7 +34,9 @@ def main(grid: Grid, context: Context) -> None:
     lr: float = context.run_config["learning-rate"]
 
     # Load global model
-    global_model = MODEL
+    global_model = CNN(
+        in_channels=1, out_channels=3, kernel_size=5, out_features=len(CLASSES)
+    ).to(DEVICE)
     arrays = ArrayRecord(global_model.state_dict())
 
     # Initialize FedAvg strategy
