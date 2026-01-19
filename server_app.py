@@ -61,7 +61,9 @@ def global_evaluate(server_round: int, arrays: ArrayRecord) -> MetricRecord:
     """Evaluate model on central data."""
 
     # Load the model and initialize it with the received weights
-    model = MODEL
+    model = CNN(
+        in_channels=1, out_channels=3, kernel_size=5, out_features=len(CLASSES)
+    ).to(DEVICE)
     model.load_state_dict(arrays.to_torch_state_dict())
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.to(device)
