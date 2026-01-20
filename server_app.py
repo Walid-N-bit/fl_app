@@ -77,7 +77,7 @@ def main(grid: Grid, context: Context) -> None:
         # evaluate_fn=global_evaluate,
     )
 
-    final_metrics = (num_rounds, result.arrays)
+    final_metrics = global_evaluate(num_rounds, result.arrays)
     print(f"Final accuracy: {final_metrics['accuracy']}")
 
     # Save final model to disk
