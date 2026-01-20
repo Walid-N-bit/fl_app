@@ -31,7 +31,20 @@ CNN = ConvolutionalNeuralNetwork
 
 
 DATASET_ID = "uoft-cs/cifar10"
-CLASSES = ['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']
+C, H, W = 3, 32, 32
+
+CLASSES = [
+    "airplane",
+    "automobile",
+    "bird",
+    "cat",
+    "deer",
+    "dog",
+    "frog",
+    "horse",
+    "ship",
+    "truck",
+]
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -47,7 +60,7 @@ def train(msg: Message, context: Context):
 
     # Load the model and initialize it with the received weights
     model = CNN(
-        in_channels=1, out_channels=3, kernel_size=5, out_features=len(CLASSES)
+        in_channels=C, out_channels=3, kernel_size=5, out_features=len(CLASSES)
     ).to(DEVICE)
     model.load_state_dict(msg.content["arrays"].to_torch_state_dict())
 
@@ -77,18 +90,13 @@ def train(msg: Message, context: Context):
     return Message(content=content, reply_to=msg)
 
 
-@client.test()
-def test():
-    pass
-
-
 @client.evaluate()
 def evaluate(msg: Message, context: Context):
     """Evaluate the model on local data."""
 
     # Load the model and initialize it with the received weights
     model = CNN(
-        in_channels=1, out_channels=3, kernel_size=5, out_features=len(CLASSES)
+        in_channels=C, out_channels=3, kernel_size=5, out_features=len(CLASSES)
     ).to(DEVICE)
     model.load_state_dict(msg.content["arrays"].to_torch_state_dict())
 

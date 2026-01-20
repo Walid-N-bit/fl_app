@@ -2,10 +2,8 @@ import os
 import torch
 import pandas as pd
 from torch.utils.data import Dataset
-from datasets import load_dataset
 
-from flwr_datasets import FederatedDataset
-from flwr_datasets.partitioner import IidPartitioner
+
 from torch.utils.data import DataLoader
 from torchvision.transforms import Compose, Normalize, ToTensor
 
@@ -21,6 +19,9 @@ def apply_transforms(batch):
 
 
 def load_data(partition_id: int, num_partitions: int, batch_size: int, dataset: str):
+
+    from flwr_datasets import FederatedDataset
+    from flwr_datasets.partitioner import IidPartitioner
 
     # Only initialize `FederatedDataset` once
     global fds
@@ -98,9 +99,11 @@ def test(model, testloader, device):
     return loss, accuracy
 
 
-def load_centralized_dataset():
+def load_centralized_dataset(dataset:str):
     """Load test set and return dataloader."""
+    from datasets import load_dataset
+
     # Load entire test set
-    test_dataset = load_dataset("uoft-cs/cifar10", split="test")
+    test_dataset = load_dataset(dataset, split="test")
     dataset = test_dataset.with_format("torch").with_transform(apply_transforms)
     return DataLoader(dataset, batch_size=128)

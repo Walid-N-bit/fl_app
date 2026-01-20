@@ -3,3 +3,4 @@ quickstart-pytorch/
 process.txt
 venv_fl/
 __pycache__ 
+test*.py
