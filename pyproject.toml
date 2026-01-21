@@ -25,10 +25,10 @@ serverapp = "server_app:server"
 clientapp = "client_app:client"
 
 [tool.flwr.app.config]
-num-server-rounds = 3
+num-server-rounds = 20
 fraction-evaluate = 0.5
 local-epochs = 1
-learning-rate = 0.1
+learning-rate = 0.01
 batch-size = 32
 
 [tool.flwr.federations]

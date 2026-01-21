@@ -4,7 +4,8 @@ import torch
 from flwr.serverapp.strategy import FedAvg
 from CustomClasses import ConvolutionalNeuralNetwork as CNN
 from flwr.app import ArrayRecord, ConfigRecord
-from utils import load_centralized_dataset, test
+from utils import load_centralized_dataset, test, file_exists, save_txt
+from datetime import datetime
 
 server = ServerApp()
 
@@ -30,6 +31,7 @@ def global_evaluate(server_round: int, arrays: ArrayRecord) -> MetricRecord:
 
     DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     # Load the model and initialize it with the received weights
+
     model = CNN(
         in_channels=C, out_channels=3, kernel_size=5, out_features=len(CLASSES)
     ).to(DEVICE)
@@ -59,9 +61,15 @@ def main(grid: Grid, context: Context) -> None:
 
     DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     # Load global model
+    output_path = "/home/wnouicer24/thesis/fl_app/models/final_model.pt"
+
     global_model = CNN(
         in_channels=C, out_channels=3, kernel_size=5, out_features=len(CLASSES)
     ).to(DEVICE)
+
+    # model_exists = file_exists(output_path)
+    # if model_exists:
+    #     global_model.load_state_dict(torch.load(output_path, weights_only=True))
 
     arrays = ArrayRecord(global_model.state_dict())
 
@@ -83,4 +91,11 @@ def main(grid: Grid, context: Context) -> None:
     # Save final model to disk
     print("\nSaving final model to disk...")
     state_dict = result.arrays.to_torch_state_dict()
-    torch.save(state_dict, "final_model.pt")
+    output_path = f"/home/wnouicer24/thesis/fl_app/models/final_model_{datetime.now()}.pt"
+
+    torch.save(state_dict, output_path)
+
+    print("_______________________________________________")
+    print(result)
+    print("_______________________________________________")
+    

@@ -1,6 +1,9 @@
-data/
+*data/
+*dataset/
 quickstart-pytorch/
 process.txt
 venv_fl/
 __pycache__ 
 test*.py
+models/
+launch_nodes.sh

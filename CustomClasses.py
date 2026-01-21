@@ -42,19 +42,27 @@ class ConvolutionalNeuralNetwork(nn.Module):
         filters_nbr = 16
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size)
         self.conv2 = nn.Conv2d(out_channels, filters_nbr, kernel_size)
-        self.pool = nn.MaxPool2d(2, 2)
-        self.adp_pool = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc1 = nn.Linear(filters_nbr * 1 * 1, 120)
+        self.mx_pool = nn.MaxPool2d(2, 2)
+        # self.adp_pool = nn.AdaptiveAvgPool2d((1, 1))
+        # self.fc1 = nn.Linear(filters_nbr * 1 * 1, 120)
+        out_1 = out_len(input_len=32, fltr_len=5) / 2
+        out_2 = out_len(out_1, fltr_len=5) / 2
+        self.fc1 = nn.Linear(filters_nbr * out_2 * out_2, 120)
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, out_features)
 
     def forward(self, x):
         x = F.relu(self.conv1(x))
-        x = self.pool(x)
+        x = self.mx_pool(x)
         x = F.relu(self.conv2(x))
-        x = self.adp_pool(x)
+        # x = self.adp_pool(x)
+        x = self.mx_pool(x)
         x = torch.flatten(x, 1)  # flatten all dimensions except batch
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = self.fc3(x)
         return x
+
+
+def out_len(input_len: int, fltr_len: int, padding: int = 0, stride: int = 1):
+    return 1 + ((input_len - fltr_len + 2 * padding) / stride)

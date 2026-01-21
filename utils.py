@@ -43,25 +43,6 @@ def load_data(partition_id: int, num_partitions: int, batch_size: int, dataset: 
     return trainloader, testloader
 
 
-def file_exists(path: str):
-    """
-    create path directory if it doesn't exist.
-    check if path file exists or not. return true if exists, false otherwise.
-
-    :param path: path to file
-    :type path: str
-    """
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    file_exists = os.path.exists(path)
-    return file_exists
-
-
-def image_shape(image: torch.Tensor):
-
-    channels, height, width = tuple(image.shape)
-    return channels, height, width
-
-
 def train(model, trainloader, epochs, lr, device):
     """Train the model on the training set."""
     model.to(device)  # move model to GPU if available
@@ -99,7 +80,7 @@ def test(model, testloader, device):
     return loss, accuracy
 
 
-def load_centralized_dataset(dataset:str):
+def load_centralized_dataset(dataset: str):
     """Load test set and return dataloader."""
     from datasets import load_dataset
 
@@ -107,3 +88,37 @@ def load_centralized_dataset(dataset:str):
     test_dataset = load_dataset(dataset, split="test")
     dataset = test_dataset.with_format("torch").with_transform(apply_transforms)
     return DataLoader(dataset, batch_size=128)
+
+
+def file_exists(path: str):
+    """
+    create path directory if it doesn't exist.
+    check if path file exists or not. return true if exists, false otherwise.
+
+    :param path: path to file
+    :type path: str
+    """
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    file_exists = os.path.exists(path)
+    return file_exists
+
+
+def image_shape(image: torch.Tensor):
+
+    channels, height, width = tuple(image.shape)
+    return channels, height, width
+
+
+def save_csv(fields: list, data: list, path: str):
+    import csv
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        writer = csv.writer(f)
+        writer.writerow(fields)
+        writer.writerows(data)
+
+
+def save_txt(data):
+    with open("logs.txt", "a") as f:
+        f.write(data)
