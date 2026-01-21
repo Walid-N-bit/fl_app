@@ -45,8 +45,8 @@ class ConvolutionalNeuralNetwork(nn.Module):
         self.mx_pool = nn.MaxPool2d(2, 2)
         # self.adp_pool = nn.AdaptiveAvgPool2d((1, 1))
         # self.fc1 = nn.Linear(filters_nbr * 1 * 1, 120)
-        out_1 = out_len(input_len=32, fltr_len=5) / 2
-        out_2 = out_len(out_1, fltr_len=5) / 2
+        out_1 = int(out_len(input_len=32, fltr_len=5) / 2)
+        out_2 = int(out_len(out_1, fltr_len=5) / 2)
         self.fc1 = nn.Linear(filters_nbr * out_2 * out_2, 120)
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, out_features)
