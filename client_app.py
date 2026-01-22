@@ -10,6 +10,8 @@ from torchvision.transforms import ToTensor, Lambda
 from flwr.app import ArrayRecord, Context, Message, MetricRecord, RecordDict
 from flwr.clientapp import ClientApp
 
+from model_params import *
+
 client = ClientApp()
 
 CNN = ConvolutionalNeuralNetwork
@@ -29,29 +31,9 @@ CNN = ConvolutionalNeuralNetwork
 
 # # -----------------------------------------------------------#
 
-
-DATASET_ID = "uoft-cs/cifar10"
-C, H, W = 3, 32, 32
-
-CLASSES = [
-    "airplane",
-    "automobile",
-    "bird",
-    "cat",
-    "deer",
-    "dog",
-    "frog",
-    "horse",
-    "ship",
-    "truck",
-]
-
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-
 MODEL_PATH = "models/local_model.pth"
-
-EPOCHS = 20
 
 
 @client.train()
@@ -60,7 +42,10 @@ def train(msg: Message, context: Context):
 
     # Load the model and initialize it with the received weights
     model = CNN(
-        in_channels=C, out_channels=3, kernel_size=5, out_features=len(CLASSES)
+        in_channels=IMG_C,
+        out_channels=OUTPUT_CHANNELS,
+        kernel_size=KERNEL_SIZE,
+        out_features=len(CLASSES),
     ).to(DEVICE)
     model.load_state_dict(msg.content["arrays"].to_torch_state_dict())
 
@@ -96,7 +81,10 @@ def evaluate(msg: Message, context: Context):
 
     # Load the model and initialize it with the received weights
     model = CNN(
-        in_channels=C, out_channels=3, kernel_size=5, out_features=len(CLASSES)
+        in_channels=IMG_C,
+        out_channels=OUTPUT_CHANNELS,
+        kernel_size=KERNEL_SIZE,
+        out_features=len(CLASSES),
     ).to(DEVICE)
     model.load_state_dict(msg.content["arrays"].to_torch_state_dict())
 

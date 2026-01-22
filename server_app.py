@@ -6,24 +6,9 @@ from CustomClasses import ConvolutionalNeuralNetwork as CNN
 from flwr.app import ArrayRecord, ConfigRecord
 from utils import load_centralized_dataset, test, file_exists, save_txt
 from datetime import datetime
+from model_params import *
 
 server = ServerApp()
-
-DATASET_ID = "uoft-cs/cifar10"  # shape: 3, 32, 32
-C, H, W = 3, 32, 32
-
-CLASSES = [
-    "airplane",
-    "automobile",
-    "bird",
-    "cat",
-    "deer",
-    "dog",
-    "frog",
-    "horse",
-    "ship",
-    "truck",
-]
 
 
 def global_evaluate(server_round: int, arrays: ArrayRecord) -> MetricRecord:
@@ -33,7 +18,10 @@ def global_evaluate(server_round: int, arrays: ArrayRecord) -> MetricRecord:
     # Load the model and initialize it with the received weights
 
     model = CNN(
-        in_channels=C, out_channels=3, kernel_size=5, out_features=len(CLASSES)
+        in_channels=IMG_C,
+        out_channels=OUTPUT_CHANNELS,
+        kernel_size=KERNEL_SIZE,
+        out_features=len(CLASSES),
     ).to(DEVICE)
 
     model.load_state_dict(arrays.to_torch_state_dict())
@@ -64,7 +52,10 @@ def main(grid: Grid, context: Context) -> None:
     output_path = "/home/wnouicer24/thesis/fl_app/models/final_model.pt"
 
     global_model = CNN(
-        in_channels=C, out_channels=3, kernel_size=5, out_features=len(CLASSES)
+        in_channels=IMG_C,
+        out_channels=OUTPUT_CHANNELS,
+        kernel_size=KERNEL_SIZE,
+        out_features=len(CLASSES),
     ).to(DEVICE)
 
     # model_exists = file_exists(output_path)
@@ -91,11 +82,12 @@ def main(grid: Grid, context: Context) -> None:
     # Save final model to disk
     print("\nSaving final model to disk...")
     state_dict = result.arrays.to_torch_state_dict()
-    output_path = f"/home/wnouicer24/thesis/fl_app/models/final_model_{datetime.now()}.pt"
+    output_path = (
+        f"/home/wnouicer24/thesis/fl_app/models/final_model_{datetime.now()}.pt"
+    )
 
     torch.save(state_dict, output_path)
 
     print("_______________________________________________")
     print(result)
     print("_______________________________________________")
-    
