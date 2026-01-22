@@ -1,8 +1,9 @@
+import torch
 from flwr.app import ArrayRecord, Context, MetricRecord
 from flwr.serverapp import Grid, ServerApp
-import torch
 from flwr.serverapp.strategy import FedAvg
 from CustomClasses import ConvolutionalNeuralNetwork as CNN
+from CustomClasses import CustomStrat
 from flwr.app import ConfigRecord
 from utils import load_centralized_dataset, test, file_exists, save_txt
 from datetime import datetime
@@ -65,7 +66,8 @@ def main(grid: Grid, context: Context) -> None:
     arrays = ArrayRecord(global_model.state_dict())
 
     # Initialize FedAvg strategy
-    strategy = FedAvg(fraction_evaluate=fraction_evaluate)
+    # strategy = FedAvg(fraction_evaluate=fraction_evaluate)
+    strategy = CustomStrat(fraction_evaluate=fraction_evaluate)
 
     # Start strategy, run FedAvg for `num_rounds`
     result = strategy.start(
@@ -75,6 +77,7 @@ def main(grid: Grid, context: Context) -> None:
         num_rounds=num_rounds,
         # evaluate_fn=global_evaluate,
     )
+    strategy.aggregate_evaluate()
 
     final_metrics = global_evaluate(num_rounds, result.arrays)
     print(f"Final accuracy: {final_metrics['accuracy']}")

@@ -5,6 +5,9 @@ import pandas as pd
 from torch.utils.data import Dataset
 from torchvision.io import decode_image
 import torch.nn.functional as F
+from flwr.serverapp.strategy import FedAvg
+from collections.abc import Iterable
+from flwr.app import Message, MetricRecord
 
 
 class ImageDataset(Dataset):
@@ -30,6 +33,16 @@ class ImageDataset(Dataset):
         return image, label
 
 
+class CustomStrat(FedAvg):
+    def aggregate_evaluate(self, server_round: int, replies: Iterable[Message]):
+        metrics = super().aggregate_evaluate(self, server_round, replies)
+
+        print("--------------------------------")
+        print(metrics)
+        print("--------------------------------")
+        return metrics
+
+
 class ConvolutionalNeuralNetwork(nn.Module):
     """
     Class for a Convolutional Neural Network
@@ -39,7 +52,7 @@ class ConvolutionalNeuralNetwork(nn.Module):
         self, in_channels: int, out_channels: int, kernel_size: int, out_features: int
     ):
         super().__init__()
-        filters_nbr = 64
+        filters_nbr = 32
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size)
         self.conv2 = nn.Conv2d(out_channels, filters_nbr, kernel_size)
         self.mx_pool = nn.MaxPool2d(2, 2)
