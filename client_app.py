@@ -10,6 +10,8 @@ from torchvision.transforms import ToTensor, Lambda
 from flwr.app import ArrayRecord, Context, Message, MetricRecord, RecordDict
 from flwr.clientapp import ClientApp
 
+from ast import literal_eval
+
 # from model_params import *
 
 client = ClientApp()
@@ -41,9 +43,11 @@ def train(msg: Message, context: Context):
     """Train the model on local data."""
     # model params
     IMG_C = context.run_config["img_c"]
-    OUTPUT_CHANNELS = context.run_config["out_channels"]
+    OUTPUT_CHANNELS = literal_eval(context.run_config["out_channels"])
     KERNEL_SIZE = context.run_config["kernel_size"]
-    CLASSES = context.run_config["classes"]
+    CLASSES = literal_eval(context.run_config["classes"])
+    # CLASSES = context.run_config["classes"].split(" ")
+    global DATASET_ID
     DATASET_ID = context.run_config["dataset_id"]
 
     print(IMG_C)
@@ -91,9 +95,11 @@ def train(msg: Message, context: Context):
 def evaluate(msg: Message, context: Context):
     """Evaluate the model on local data."""
     IMG_C = context.run_config["img_c"]
-    OUTPUT_CHANNELS = context.run_config["out_channels"]
+    OUTPUT_CHANNELS = literal_eval(context.run_config["out_channels"])
     KERNEL_SIZE = context.run_config["kernel_size"]
-    CLASSES = context.run_config["classes"]
+    CLASSES = literal_eval(context.run_config["classes"])
+    # CLASSES = context.run_config["classes"].split(" ")
+    global DATASET_ID
     DATASET_ID = context.run_config["dataset_id"]
 
     print(IMG_C)

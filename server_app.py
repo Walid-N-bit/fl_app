@@ -8,14 +8,16 @@ from flwr.app import ConfigRecord
 from utils import load_centralized_dataset, test, parse_raw_metrics, metrics_to_csv
 
 from datetime import datetime
+from ast import literal_eval
+
 # from model_params import *
 
 server = ServerApp()
 DATASET_ID = ""
 
+
 def global_evaluate(model: CNN, server_round: int, arrays: ArrayRecord) -> MetricRecord:
     """Evaluate model on central data."""
-    
 
     # DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     # # Load the model and initialize it with the received weights
@@ -45,18 +47,19 @@ def global_evaluate(model: CNN, server_round: int, arrays: ArrayRecord) -> Metri
 def main(grid: Grid, context: Context) -> None:
     """Main entry point for the ServerApp."""
     IMG_C = context.run_config["img_c"]
-    OUTPUT_CHANNELS = context.run_config["out_channels"]
+    OUTPUT_CHANNELS = literal_eval(context.run_config["out_channels"])
     KERNEL_SIZE = context.run_config["kernel_size"]
-    CLASSES = context.run_config["classes"]
-    global DATASET_ID 
-    DATASET_ID = context.run_config["classes"]
+    CLASSES = literal_eval(context.run_config["classes"])
+    # CLASSES = context.run_config["classes"].split(" ")
+    global DATASET_ID
+    DATASET_ID = context.run_config["dataset_id"]
 
     print(IMG_C)
     print(OUTPUT_CHANNELS)
     print(KERNEL_SIZE)
     print(CLASSES)
     print(DATASET_ID)
-
+    return
     start_time = datetime.now()
 
     # Read run config
