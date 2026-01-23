@@ -8,6 +8,7 @@ import torch.nn.functional as F
 from flwr.serverapp.strategy import FedAvg
 from collections.abc import Iterable
 from flwr.app import Message, MetricRecord
+from model_params import FLTRS_NBR, IMG_H, IMG_W
 
 
 class ImageDataset(Dataset):
@@ -215,14 +216,14 @@ class ConvolutionalNeuralNetwork(nn.Module):
         self, in_channels: int, out_channels: int, kernel_size: int, out_features: int
     ):
         super().__init__()
-        filters_nbr = 64
+        filters_nbr = FLTRS_NBR
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size)
         self.conv2 = nn.Conv2d(out_channels, filters_nbr, kernel_size)
         self.mx_pool = nn.MaxPool2d(2, 2)
         # self.adp_pool = nn.AdaptiveAvgPool2d((1, 1))
         # self.fc1 = nn.Linear(filters_nbr * 1 * 1, 120)
-        out_1 = int(out_len(input_len=32, fltr_len=5) / 2)
-        out_2 = int(out_len(out_1, fltr_len=5) / 2)
+        out_1 = int(out_len(input_len=IMG_H, fltr_len=kernel_size) / 2)
+        out_2 = int(out_len(out_1, fltr_len=kernel_size) / 2)
         self.fc1 = nn.Linear(filters_nbr * out_2 * out_2, 120)
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, out_features)

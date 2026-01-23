@@ -98,4 +98,6 @@ def main(grid: Grid, context: Context) -> None:
     metrics_to_csv(metrics, path=f"clients_data/{time}.csv")
 
     elapsed_time = datetime.now() - start_time
-    print(f"\nTotal Elapsed time: {elapsed_time}")
+    ET_message = f"\nTotal Elapsed time: {elapsed_time}"
+
+    print(f"\n")
