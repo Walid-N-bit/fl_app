@@ -19,6 +19,7 @@ from flwr.server import Grid
 from flwr.serverapp.strategy.result import Result
 from flwr.serverapp.strategy.strategy_utils import log_strategy_start_info
 
+
 class ImageDataset(Dataset):
     def __init__(
         self, annotations_file, img_dir, transform=None, target_transform=None
@@ -210,18 +211,21 @@ class ConvolutionalNeuralNetwork(nn.Module):
     """
 
     def __init__(
-        self, in_channels: int, out_channels: int, kernel_size: int, out_features: int
+        self,
+        in_channels: int,
+        out_channels: list[int],
+        kernel_size: int,
+        out_features: int,
     ):
         super().__init__()
-        filters_nbr = FLTRS_NBR
-        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size)
-        self.conv2 = nn.Conv2d(out_channels, filters_nbr, kernel_size)
+        self.conv1 = nn.Conv2d(in_channels, out_channels[0], kernel_size)
+        self.conv2 = nn.Conv2d(out_channels, out_channels[1], kernel_size)
         self.mx_pool = nn.MaxPool2d(2, 2)
         # self.adp_pool = nn.AdaptiveAvgPool2d((1, 1))
         # self.fc1 = nn.Linear(filters_nbr * 1 * 1, 120)
         out_1 = int(out_len(input_len=IMG_H, fltr_len=kernel_size) / 2)
         out_2 = int(out_len(out_1, fltr_len=kernel_size) / 2)
-        self.fc1 = nn.Linear(filters_nbr * out_2 * out_2, 120)
+        self.fc1 = nn.Linear(out_channels[1] * out_2 * out_2, 120)
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, out_features)
 

@@ -10,7 +10,7 @@ from torchvision.transforms import ToTensor, Lambda
 from flwr.app import ArrayRecord, Context, Message, MetricRecord, RecordDict
 from flwr.clientapp import ClientApp
 
-from model_params import *
+# from model_params import *
 
 client = ClientApp()
 
@@ -39,6 +39,18 @@ MODEL_PATH = "models/local_model.pth"
 @client.train()
 def train(msg: Message, context: Context):
     """Train the model on local data."""
+    # model params
+    IMG_C = context.run_config["img_c"]
+    OUTPUT_CHANNELS = context.run_config["out_channels"]
+    KERNEL_SIZE = context.run_config["kernel_size"]
+    CLASSES = context.run_config["classes"]
+    DATASET_ID = context.run_config["dataset_id"]
+
+    print(IMG_C)
+    print(OUTPUT_CHANNELS)
+    print(KERNEL_SIZE)
+    print(CLASSES)
+    print(DATASET_ID)
 
     # Load the model and initialize it with the received weights
     model = CNN(
@@ -78,6 +90,17 @@ def train(msg: Message, context: Context):
 @client.evaluate()
 def evaluate(msg: Message, context: Context):
     """Evaluate the model on local data."""
+    IMG_C = context.run_config["img_c"]
+    OUTPUT_CHANNELS = context.run_config["out_channels"]
+    KERNEL_SIZE = context.run_config["kernel_size"]
+    CLASSES = context.run_config["classes"]
+    DATASET_ID = context.run_config["dataset_id"]
+
+    print(IMG_C)
+    print(OUTPUT_CHANNELS)
+    print(KERNEL_SIZE)
+    print(CLASSES)
+    print(DATASET_ID)
 
     # Load the model and initialize it with the received weights
     model = CNN(

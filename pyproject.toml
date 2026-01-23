@@ -25,13 +25,35 @@ serverapp = "server_app:server"
 clientapp = "client_app:client"
 
 [tool.flwr.app.config]
-num-server-rounds = 2
+num-server-rounds = 1
 fraction-evaluate = 0.5
 local-epochs = 1
 learning-rate = 0.01
 batch-size = 32
 momentum = 0.9
 
+# model configs
+dataset_id = "uoft-cs/cifar10"
+classes = [
+    "airplane",
+    "automobile",
+    "bird",
+    "cat",
+    "deer",
+    "dog",
+    "frog",
+    "horse",
+    "ship",
+    "truck",
+]
+img_c = 3
+img_h = 32
+img_w = 32
+
+out_channels = [8, 16]
+kernel_size = 5
+
+out_features = 10
 
 [tool.flwr.federations]
 default = "local-simulation"

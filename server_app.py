@@ -8,23 +8,24 @@ from flwr.app import ConfigRecord
 from utils import load_centralized_dataset, test, parse_raw_metrics, metrics_to_csv
 
 from datetime import datetime
-from model_params import *
+# from model_params import *
 
 server = ServerApp()
+DATASET_ID = ""
 
-
-def global_evaluate(server_round: int, arrays: ArrayRecord) -> MetricRecord:
+def global_evaluate(model: CNN, server_round: int, arrays: ArrayRecord) -> MetricRecord:
     """Evaluate model on central data."""
+    
 
-    DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    # Load the model and initialize it with the received weights
+    # DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    # # Load the model and initialize it with the received weights
 
-    model = CNN(
-        in_channels=IMG_C,
-        out_channels=OUTPUT_CHANNELS,
-        kernel_size=KERNEL_SIZE,
-        out_features=len(CLASSES),
-    ).to(DEVICE)
+    # model = CNN(
+    #     in_channels=IMG_C,
+    #     out_channels=OUTPUT_CHANNELS,
+    #     kernel_size=KERNEL_SIZE,
+    #     out_features=len(CLASSES),
+    # ).to(DEVICE)
 
     model.load_state_dict(arrays.to_torch_state_dict())
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -43,6 +44,18 @@ def global_evaluate(server_round: int, arrays: ArrayRecord) -> MetricRecord:
 @server.main()
 def main(grid: Grid, context: Context) -> None:
     """Main entry point for the ServerApp."""
+    IMG_C = context.run_config["img_c"]
+    OUTPUT_CHANNELS = context.run_config["out_channels"]
+    KERNEL_SIZE = context.run_config["kernel_size"]
+    CLASSES = context.run_config["classes"]
+    global DATASET_ID 
+    DATASET_ID = context.run_config["classes"]
+
+    print(IMG_C)
+    print(OUTPUT_CHANNELS)
+    print(KERNEL_SIZE)
+    print(CLASSES)
+    print(DATASET_ID)
 
     start_time = datetime.now()
 
@@ -85,7 +98,7 @@ def main(grid: Grid, context: Context) -> None:
         # evaluate_fn=global_evaluate,
     )
 
-    final_metrics = global_evaluate(num_rounds, result.arrays)
+    final_metrics = global_evaluate(global_model, num_rounds, result.arrays)
     print(f"Final accuracy: {final_metrics['accuracy']}")
 
     # Save final model to disk
@@ -105,6 +118,9 @@ def main(grid: Grid, context: Context) -> None:
     metrics_to_csv(metrics, path=client_data_path)
 
     elapsed_time = datetime.now() - start_time
-    ET_message = f"\nTotal Elapsed time: {elapsed_time}"
+    ET_message = f"# Total Elapsed time: {elapsed_time} #"
+    msg_len = len(ET_message)
 
-    print(f"\n")
+    print(f"\n##################################")
+    print(f"\nTotal Elapsed time: {elapsed_time}")
+    print(f"\n##################################")
