@@ -1,8 +1,11 @@
 import os
+import csv
+
 import torch
 import pandas as pd
 from torch.utils.data import Dataset
 
+from flwr.common import Message
 
 from torch.utils.data import DataLoader
 from torchvision.transforms import Compose, Normalize, ToTensor
@@ -109,8 +112,47 @@ def image_shape(image: torch.Tensor):
     return channels, height, width
 
 
+def node_metrics(message: Message) -> dict:
+    node_id = message.metadata.src_node_id
+    metrics = message.content.metric_records["metrics"]
+    metrics.update({"node_id": node_id})
+    return metrics
+
+
+def round_metrics(replies: list[Message]) -> list[dict]:
+    data = []
+    for reply in replies:
+        reply = node_metrics(reply)
+        data.append(reply)
+    return data
+
+
+def parse_raw_metrics(raw_metrics: list[list[Message]]) -> list[dict]:
+    data: list[list[dict]] = []
+    final_data = []
+    for item in raw_metrics:
+        dict_item = round_metrics(item)
+        data.append(dict_item)
+    for i, round in enumerate(data, 1):
+        for item in round:
+            item.update({"round": i})
+            final_data.append(item)
+
+    return final_data
+
+
+def metrics_to_csv(data: list[dict], path: str):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    fields = []
+    if len(data) > 0:
+        fields = list(data[0].keys())
+    with open(path, "w", newline="") as f:
+        writer = csv.DictWriter(f, fields)
+        writer.writeheader()
+        writer.writerows(data)
+
+
 def save_csv(fields: list, data: list, path: str):
-    import csv
 
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:
@@ -128,6 +170,7 @@ def save_txt(data, path="logs.txt"):
 from CustomClasses import ConvolutionalNeuralNetwork as CNN
 from model_params import *
 
+
 def test_img(image):
     DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model = CNN(
@@ -136,10 +179,7 @@ def test_img(image):
         kernel_size=KERNEL_SIZE,
         out_features=len(CLASSES),
     ).to(DEVICE)
-    
-    model.eval()
-    
 
-    
+    model.eval()
 
     pass

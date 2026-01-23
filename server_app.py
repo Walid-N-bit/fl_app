@@ -5,7 +5,8 @@ from flwr.serverapp.strategy import FedAvg
 from CustomClasses import ConvolutionalNeuralNetwork as CNN
 from CustomClasses import CustomStrat
 from flwr.app import ConfigRecord
-from utils import load_centralized_dataset, test, file_exists, save_txt
+from utils import load_centralized_dataset, test, parse_raw_metrics, metrics_to_csv
+
 from datetime import datetime
 from model_params import *
 
@@ -43,6 +44,8 @@ def global_evaluate(server_round: int, arrays: ArrayRecord) -> MetricRecord:
 def main(grid: Grid, context: Context) -> None:
     """Main entry point for the ServerApp."""
 
+    start_time = datetime.now()
+
     # Read run config
     fraction_evaluate: float = context.run_config["fraction-evaluate"]
     num_rounds: int = context.run_config["num-server-rounds"]
@@ -69,8 +72,6 @@ def main(grid: Grid, context: Context) -> None:
     # strategy = FedAvg(fraction_evaluate=fraction_evaluate)
     strategy = CustomStrat(fraction_evaluate=fraction_evaluate)
 
-    from flwr.common import MetricRecord
-
     # Start strategy, run FedAvg for `num_rounds`
     evaluate_replies, result = strategy.start(
         grid=grid,
@@ -86,17 +87,15 @@ def main(grid: Grid, context: Context) -> None:
     # Save final model to disk
     print("\nSaving final model to disk...")
     state_dict = result.arrays.to_torch_state_dict()
-    print("getting time")
+
     time = datetime.now().strftime("%H:%M--%d-%m-%Y")
     output_path = f"/home/wnouicer24/thesis/fl_app/models/global_model_{time}.pt"
-    print("saving")
+
     torch.save(state_dict, output_path)
 
-    print("_______________________________________________")
-    for item in evaluate_replies:
-        print(item.metadata.src_node_id)
-        print("")
-        print(item.content.metric_records["metrics"])
-        print(item.content.metric_records.keys())
-        print("##########################")
-    print("_______________________________________________")
+    print("\nSaving Clients Metrics Data...")
+    metrics = parse_raw_metrics(evaluate_replies)
+    metrics_to_csv(metrics, path=f"clients_data/{time}.csv")
+
+    elapsed_time = datetime.now() - start_time
+    print(f"\nTotal Elapsed time: {elapsed_time}")

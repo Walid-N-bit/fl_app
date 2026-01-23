@@ -55,7 +55,7 @@ class CustomStrat(FedAvg):
         train_config: ConfigRecord | None = None,
         evaluate_config: ConfigRecord | None = None,
         evaluate_fn: Callable[[int, ArrayRecord], MetricRecord | None] | None = None,
-    ) -> tuple[Iterable[Message], Result]:
+    ) -> tuple[list[Iterable[Message]], Result]:
         """
         Override start() method to return both replies and the result
         """
@@ -118,6 +118,7 @@ class CustomStrat(FedAvg):
                 result.evaluate_metrics_serverapp[0] = res
 
         arrays = initial_arrays
+        replies = []
 
         for current_round in range(1, num_rounds + 1):
             log(INFO, "")
@@ -168,6 +169,7 @@ class CustomStrat(FedAvg):
                 ),
                 timeout=timeout,
             )
+            replies.append(evaluate_replies)
 
             # Aggregate evaluate
             agg_evaluate_metrics = self.aggregate_evaluate(
@@ -201,7 +203,7 @@ class CustomStrat(FedAvg):
             log(INFO, "\t%s", line.strip("\n"))
         log(INFO, "")
 
-        return evaluate_replies, result
+        return replies, result
 
 
 class ConvolutionalNeuralNetwork(nn.Module):
@@ -213,7 +215,7 @@ class ConvolutionalNeuralNetwork(nn.Module):
         self, in_channels: int, out_channels: int, kernel_size: int, out_features: int
     ):
         super().__init__()
-        filters_nbr = 32
+        filters_nbr = 64
         self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size)
         self.conv2 = nn.Conv2d(out_channels, filters_nbr, kernel_size)
         self.mx_pool = nn.MaxPool2d(2, 2)
