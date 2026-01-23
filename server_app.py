@@ -69,15 +69,16 @@ def main(grid: Grid, context: Context) -> None:
     # strategy = FedAvg(fraction_evaluate=fraction_evaluate)
     strategy = CustomStrat(fraction_evaluate=fraction_evaluate)
 
+    from flwr.common import MetricRecord
+
     # Start strategy, run FedAvg for `num_rounds`
-    result = strategy.start(
+    evaluate_replies, result = strategy.start(
         grid=grid,
         initial_arrays=arrays,
         train_config=ConfigRecord({"lr": lr}),
         num_rounds=num_rounds,
         # evaluate_fn=global_evaluate,
     )
-    strategy.aggregate_evaluate()
 
     final_metrics = global_evaluate(num_rounds, result.arrays)
     print(f"Final accuracy: {final_metrics['accuracy']}")
@@ -85,12 +86,17 @@ def main(grid: Grid, context: Context) -> None:
     # Save final model to disk
     print("\nSaving final model to disk...")
     state_dict = result.arrays.to_torch_state_dict()
-    output_path = (
-        f"/home/wnouicer24/thesis/fl_app/models/final_model_{datetime.now()}.pt"
-    )
-
+    print("getting time")
+    time = datetime.now().strftime("%H:%M--%d-%m-%Y")
+    output_path = f"/home/wnouicer24/thesis/fl_app/models/global_model_{time}.pt"
+    print("saving")
     torch.save(state_dict, output_path)
 
     print("_______________________________________________")
-    print(result)
+    for item in evaluate_replies:
+        print(item.metadata.src_node_id)
+        print("")
+        print(item.content.metric_records["metrics"])
+        print(item.content.metric_records.keys())
+        print("##########################")
     print("_______________________________________________")

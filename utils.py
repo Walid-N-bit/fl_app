@@ -119,9 +119,11 @@ def save_csv(fields: list, data: list, path: str):
         writer.writerows(data)
 
 
-def save_txt(data):
-    with open("logs.txt", "a") as f:
+def save_txt(data, path="logs.txt"):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
         f.write(data)
+
 
 from CustomClasses import ConvolutionalNeuralNetwork as CNN
 from model_params import *
