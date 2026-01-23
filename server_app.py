@@ -72,10 +72,10 @@ def main(grid: Grid, context: Context) -> None:
 
     # Initialize FedAvg strategy
     # strategy = FedAvg(fraction_evaluate=fraction_evaluate)
-    strategy = CustomStrat(
-        fraction_evaluate=fraction_evaluate, server_momentum=momentum
-    )
-
+    # strategy = CustomStrat(
+    #     fraction_evaluate=fraction_evaluate, server_momentum=momentum
+    # )
+    strategy = CustomStrat(fraction_evaluate=fraction_evaluate)
     # Start strategy, run FedAvg for `num_rounds`
     evaluate_replies, result = strategy.start(
         grid=grid,

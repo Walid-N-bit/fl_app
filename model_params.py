@@ -15,6 +15,6 @@ IMG_C = 3  # in_channels
 IMG_H = 32
 IMG_W = 32
 
-OUTPUT_CHANNELS = 3  # was 3
+OUTPUT_CHANNELS = 3
 FLTRS_NBR = 32  # for the second conv layer
 KERNEL_SIZE = 3

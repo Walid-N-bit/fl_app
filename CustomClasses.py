@@ -42,7 +42,7 @@ class ImageDataset(Dataset):
         return image, label
 
 
-class CustomStrat(FedAvgM):
+class CustomStrat(FedAvg):
     # pylint: disable=too-many-arguments, too-many-positional-arguments, too-many-locals
     def start(
         self,
