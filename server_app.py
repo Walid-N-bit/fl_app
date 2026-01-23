@@ -1,7 +1,7 @@
 import torch
 from flwr.app import ArrayRecord, Context, MetricRecord
 from flwr.serverapp import Grid, ServerApp
-from flwr.serverapp.strategy import FedAvg
+from flwr.serverapp.strategy import FedAvg, FedAvgM
 from CustomClasses import ConvolutionalNeuralNetwork as CNN
 from CustomClasses import CustomStrat
 from flwr.app import ConfigRecord
@@ -50,6 +50,8 @@ def main(grid: Grid, context: Context) -> None:
     fraction_evaluate: float = context.run_config["fraction-evaluate"]
     num_rounds: int = context.run_config["num-server-rounds"]
     lr: float = context.run_config["learning-rate"]
+    local_epochs = context.run_config["local-epochs"]
+    momentum = context.run_config["momentum"]
 
     DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     # Load global model
@@ -70,7 +72,9 @@ def main(grid: Grid, context: Context) -> None:
 
     # Initialize FedAvg strategy
     # strategy = FedAvg(fraction_evaluate=fraction_evaluate)
-    strategy = CustomStrat(fraction_evaluate=fraction_evaluate)
+    strategy = CustomStrat(
+        fraction_evaluate=fraction_evaluate, server_momentum=momentum
+    )
 
     # Start strategy, run FedAvg for `num_rounds`
     evaluate_replies, result = strategy.start(
@@ -95,7 +99,10 @@ def main(grid: Grid, context: Context) -> None:
 
     print("\nSaving Clients Metrics Data...")
     metrics = parse_raw_metrics(evaluate_replies)
-    metrics_to_csv(metrics, path=f"clients_data/{time}.csv")
+    client_data_path = (
+        f"clients_data/lr:{lr}-epochs:{local_epochs}-momentum:{momentum}/{time}.csv"
+    )
+    metrics_to_csv(metrics, path=client_data_path)
 
     elapsed_time = datetime.now() - start_time
     ET_message = f"\nTotal Elapsed time: {elapsed_time}"

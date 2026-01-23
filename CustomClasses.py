@@ -5,11 +5,19 @@ import pandas as pd
 from torch.utils.data import Dataset
 from torchvision.io import decode_image
 import torch.nn.functional as F
-from flwr.serverapp.strategy import FedAvg
+from flwr.serverapp.strategy import FedAvg, FedAvgM
 from collections.abc import Iterable
 from flwr.app import Message, MetricRecord
 from model_params import FLTRS_NBR, IMG_H, IMG_W
+import time, io
+from collections.abc import Callable
+from logging import INFO
 
+from flwr.common import ArrayRecord, ConfigRecord, MetricRecord, log
+from flwr.server import Grid
+
+from flwr.serverapp.strategy.result import Result
+from flwr.serverapp.strategy.strategy_utils import log_strategy_start_info
 
 class ImageDataset(Dataset):
     def __init__(
@@ -34,18 +42,7 @@ class ImageDataset(Dataset):
         return image, label
 
 
-import time, io
-from collections.abc import Callable
-from logging import INFO
-
-from flwr.common import ArrayRecord, ConfigRecord, MetricRecord, log
-from flwr.server import Grid
-
-from flwr.serverapp.strategy.result import Result
-from flwr.serverapp.strategy.strategy_utils import log_strategy_start_info
-
-
-class CustomStrat(FedAvg):
+class CustomStrat(FedAvgM):
     # pylint: disable=too-many-arguments, too-many-positional-arguments, too-many-locals
     def start(
         self,
