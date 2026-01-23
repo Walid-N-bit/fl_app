@@ -43,18 +43,12 @@ def train(msg: Message, context: Context):
     """Train the model on local data."""
     # model params
     IMG_C = context.run_config["img_c"]
+    IMG_H = context.run_config["img_h"]
     OUTPUT_CHANNELS = literal_eval(context.run_config["out_channels"])
     KERNEL_SIZE = context.run_config["kernel_size"]
     CLASSES = literal_eval(context.run_config["classes"])
     # CLASSES = context.run_config["classes"].split(" ")
-    global DATASET_ID
     DATASET_ID = context.run_config["dataset_id"]
-
-    print(IMG_C)
-    print(OUTPUT_CHANNELS)
-    print(KERNEL_SIZE)
-    print(CLASSES)
-    print(DATASET_ID)
 
     # Load the model and initialize it with the received weights
     model = CNN(
@@ -62,6 +56,7 @@ def train(msg: Message, context: Context):
         out_channels=OUTPUT_CHANNELS,
         kernel_size=KERNEL_SIZE,
         out_features=len(CLASSES),
+        img_h=IMG_H,
     ).to(DEVICE)
     model.load_state_dict(msg.content["arrays"].to_torch_state_dict())
 
@@ -95,18 +90,11 @@ def train(msg: Message, context: Context):
 def evaluate(msg: Message, context: Context):
     """Evaluate the model on local data."""
     IMG_C = context.run_config["img_c"]
+    IMG_H = context.run_config["img_h"]
     OUTPUT_CHANNELS = literal_eval(context.run_config["out_channels"])
     KERNEL_SIZE = context.run_config["kernel_size"]
     CLASSES = literal_eval(context.run_config["classes"])
-    # CLASSES = context.run_config["classes"].split(" ")
-    global DATASET_ID
     DATASET_ID = context.run_config["dataset_id"]
-
-    print(IMG_C)
-    print(OUTPUT_CHANNELS)
-    print(KERNEL_SIZE)
-    print(CLASSES)
-    print(DATASET_ID)
 
     # Load the model and initialize it with the received weights
     model = CNN(
@@ -114,6 +102,7 @@ def evaluate(msg: Message, context: Context):
         out_channels=OUTPUT_CHANNELS,
         kernel_size=KERNEL_SIZE,
         out_features=len(CLASSES),
+        img_h=IMG_H,
     ).to(DEVICE)
     model.load_state_dict(msg.content["arrays"].to_torch_state_dict())
 

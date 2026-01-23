@@ -13,7 +13,6 @@ from ast import literal_eval
 # from model_params import *
 
 server = ServerApp()
-DATASET_ID = ""
 
 
 def global_evaluate(model: CNN, server_round: int, arrays: ArrayRecord) -> MetricRecord:
@@ -47,19 +46,13 @@ def global_evaluate(model: CNN, server_round: int, arrays: ArrayRecord) -> Metri
 def main(grid: Grid, context: Context) -> None:
     """Main entry point for the ServerApp."""
     IMG_C = context.run_config["img_c"]
+    IMG_H = context.run_config["img_h"]
     OUTPUT_CHANNELS = literal_eval(context.run_config["out_channels"])
     KERNEL_SIZE = context.run_config["kernel_size"]
     CLASSES = literal_eval(context.run_config["classes"])
-    # CLASSES = context.run_config["classes"].split(" ")
     global DATASET_ID
     DATASET_ID = context.run_config["dataset_id"]
 
-    print(IMG_C)
-    print(OUTPUT_CHANNELS)
-    print(KERNEL_SIZE)
-    print(CLASSES)
-    print(DATASET_ID)
-    return
     start_time = datetime.now()
 
     # Read run config
@@ -78,6 +71,7 @@ def main(grid: Grid, context: Context) -> None:
         out_channels=OUTPUT_CHANNELS,
         kernel_size=KERNEL_SIZE,
         out_features=len(CLASSES),
+        img_h=IMG_H,
     ).to(DEVICE)
 
     # model_exists = file_exists(output_path)
@@ -121,9 +115,6 @@ def main(grid: Grid, context: Context) -> None:
     metrics_to_csv(metrics, path=client_data_path)
 
     elapsed_time = datetime.now() - start_time
-    ET_message = f"# Total Elapsed time: {elapsed_time} #"
-    msg_len = len(ET_message)
-
     print(f"\n##################################")
     print(f"\nTotal Elapsed time: {elapsed_time}")
     print(f"\n##################################")

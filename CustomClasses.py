@@ -8,7 +8,7 @@ import torch.nn.functional as F
 from flwr.serverapp.strategy import FedAvg, FedAvgM
 from collections.abc import Iterable
 from flwr.app import Message, MetricRecord
-from model_params import FLTRS_NBR, IMG_H, IMG_W
+# from model_params import FLTRS_NBR, IMG_H, IMG_W
 import time, io
 from collections.abc import Callable
 from logging import INFO
@@ -216,16 +216,19 @@ class ConvolutionalNeuralNetwork(nn.Module):
         out_channels: list[int],
         kernel_size: int,
         out_features: int,
+        img_h:int
     ):
         super().__init__()
-        self.conv1 = nn.Conv2d(in_channels, out_channels[0], kernel_size)
-        self.conv2 = nn.Conv2d(out_channels, out_channels[1], kernel_size)
+        out_ch_1 = out_channels[0]
+        out_ch_2 = out_channels[1]
+        self.conv1 = nn.Conv2d(in_channels, out_ch_1, kernel_size)
+        self.conv2 = nn.Conv2d(out_channels, out_ch_2, kernel_size)
         self.mx_pool = nn.MaxPool2d(2, 2)
         # self.adp_pool = nn.AdaptiveAvgPool2d((1, 1))
         # self.fc1 = nn.Linear(filters_nbr * 1 * 1, 120)
-        out_1 = int(out_len(input_len=IMG_H, fltr_len=kernel_size) / 2)
+        out_1 = int(out_len(input_len=img_h, fltr_len=kernel_size) / 2)
         out_2 = int(out_len(out_1, fltr_len=kernel_size) / 2)
-        self.fc1 = nn.Linear(out_channels[1] * out_2 * out_2, 120)
+        self.fc1 = nn.Linear(out_ch_2 * out_2 * out_2, 120)
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, out_features)
 
