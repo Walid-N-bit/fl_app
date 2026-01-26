@@ -12,7 +12,7 @@ cryptography==44.0.3
 cycler==0.12.1
 datasets==3.1.0
 dill==0.3.8
--e git+https://github.com/Walid-N-bit/fl_app.git@60780a6824c45921a6ee16a7ff5ad363ea49c8eb#egg=federated_learning_app
+-e git+https://github.com/Walid-N-bit/fl_app.git@ac3b3874eacf55091dbb0dd2316b794e9721a6c9#egg=federated_learning_app
 filelock==3.20.3
 flwr==1.25.0
 flwr-datasets==0.5.0
