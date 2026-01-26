@@ -1,3 +1,6 @@
+"""
+this module no longer needed
+"""
 
 CLASSES = [
     "airplane",

@@ -2,8 +2,7 @@ import torch
 from flwr.app import ArrayRecord, Context, MetricRecord
 from flwr.serverapp import Grid, ServerApp
 from flwr.serverapp.strategy import FedAvg, FedAvgM
-from CustomClasses import ConvolutionalNeuralNetwork as CNN
-from CustomClasses import CustomStrat
+from CustomClasses import ConvolutionalNeuralNetwork as CNN, CustomStrat
 from flwr.app import ConfigRecord
 from utils import load_centralized_dataset, test, parse_raw_metrics, metrics_to_csv
 
@@ -52,6 +51,7 @@ def main(grid: Grid, context: Context) -> None:
     CLASSES = literal_eval(context.run_config["classes"])
     global DATASET_ID
     DATASET_ID = context.run_config["dataset_id"]
+    ABS_PATH = context.node_config["abs_path"]
 
     start_time = datetime.now()
 
@@ -64,7 +64,6 @@ def main(grid: Grid, context: Context) -> None:
 
     DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     # Load global model
-    output_path = "/home/wnouicer24/thesis/fl_app/models/final_model.pt"
 
     global_model = CNN(
         in_channels=IMG_C,
@@ -74,13 +73,13 @@ def main(grid: Grid, context: Context) -> None:
         img_h=IMG_H,
     ).to(DEVICE)
 
-    # model_exists = file_exists(output_path)
+    ## model_exists = file_exists(output_path)
     # if model_exists:
     #     global_model.load_state_dict(torch.load(output_path, weights_only=True))
 
     arrays = ArrayRecord(global_model.state_dict())
 
-    # Initialize FedAvg strategy
+    ## Initialize FedAvg strategy
     # strategy = FedAvg(fraction_evaluate=fraction_evaluate)
     # strategy = CustomStrat(
     #     fraction_evaluate=fraction_evaluate, server_momentum=momentum
@@ -103,9 +102,9 @@ def main(grid: Grid, context: Context) -> None:
     state_dict = result.arrays.to_torch_state_dict()
 
     time = datetime.now().strftime("%H:%M--%d-%m-%Y")
-    output_path = f"/home/wnouicer24/thesis/fl_app/models/global_model_{time}.pt"
+    model_path = f"{ABS_PATH}models/global_model_{time}.pt"
 
-    torch.save(state_dict, output_path)
+    torch.save(state_dict, model_path)
 
     print("\nSaving Clients Metrics Data...")
     metrics = parse_raw_metrics(evaluate_replies)
@@ -116,5 +115,5 @@ def main(grid: Grid, context: Context) -> None:
 
     elapsed_time = datetime.now() - start_time
     print(f"\n##################################")
-    print(f"\nTotal Elapsed time: {elapsed_time}")
+    print(f"\nTotal Elapsed Time: {elapsed_time}")
     print(f"\n##################################")

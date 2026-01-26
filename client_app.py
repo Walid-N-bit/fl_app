@@ -35,8 +35,6 @@ CNN = ConvolutionalNeuralNetwork
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-MODEL_PATH = "models/local_model.pth"
-
 
 @client.train()
 def train(msg: Message, context: Context):
@@ -47,7 +45,6 @@ def train(msg: Message, context: Context):
     OUTPUT_CHANNELS = literal_eval(context.run_config["out_channels"])
     KERNEL_SIZE = context.run_config["kernel_size"]
     CLASSES = literal_eval(context.run_config["classes"])
-    # CLASSES = context.run_config["classes"].split(" ")
     DATASET_ID = context.run_config["dataset_id"]
 
     # Load the model and initialize it with the received weights
