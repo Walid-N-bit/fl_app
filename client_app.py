@@ -45,7 +45,7 @@ def train(msg: Message, context: Context):
     local_classes = CLASSES
 
     print("\nmessage:\n")
-    print(msg.content)
+    print(msg.content.keys())
     print("\n")
 
     # Load the model and initialize it with the received weights
