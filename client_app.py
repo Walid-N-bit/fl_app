@@ -120,7 +120,7 @@ def train(msg: Message, context: Context):
             t0 = time.perf_counter()
             print("Training commencing...")
             train_acc, train_loss = train_fn(
-                model, trainloader, optimizer, loss_fn, mixer
+                model, trainloader, optimizer, loss_fn, mixer, False
             )
             print("validation...")
             val_acc, val_loss = test_fn(model, valloader, loss_fn)

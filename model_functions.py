@@ -63,6 +63,7 @@ def train(
     optimizer,
     loss_func,
     mixer=None,
+    disp_log: bool = True,
 ):
     """Train the model on the training set."""
 
@@ -97,7 +98,7 @@ def train(
         optimizer.step()
         ########
 
-        if batch % 100 == 0:
+        if batch % 100 == 0 and disp_log:
             loss, current = loss.item(), (batch + 1) * len(images)
             print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
 
@@ -125,4 +126,3 @@ def test(model: NET, testloader: DataLoader, loss_func):
     test_acc /= size
 
     return test_acc, test_loss
-

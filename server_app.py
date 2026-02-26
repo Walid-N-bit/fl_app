@@ -56,7 +56,7 @@ def main(grid: Grid, context: Context) -> None:
         "freeze": freeze,
         "batch-size": batch_size,
         "use-sampler": use_sampler,
-        "num-workers": 0,
+        "num-workers": num_workers,
         "features-lr": features_lr,
         "classifier-lr": classifier_lr,
         "weight-decay": weight_decay,
