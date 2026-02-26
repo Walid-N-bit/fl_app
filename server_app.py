@@ -50,7 +50,29 @@ def main(grid: Grid, context: Context) -> None:
 
     model_name = context.run_config["model-name"]
     freeze = context.run_config["freeze"]
+    batch_size = context.run_config["batch-size"]
+    use_sampler = context.run_config["use-sampler"]
+    num_workers = context.run_config["num-workers"]
+    features_lr = context.run_config["features-lr"]
+    classifier_lr = context.run_config["classifier-lr"]
+    weight_decay = context.run_config["weight-decay"]
+    sch_patience = context.run_config["sch-patience"]
+    use_weights = context.run_config["use-weights"]
+    epochs = context.run_config["local-epochs"]
 
+    configs = {
+        "model-name": model_name,
+        "freeze": freeze,
+        "batch-size": batch_size,
+        "use-sampler": use_sampler,
+        "num-workers": num_workers,
+        "features-lr": features_lr,
+        "classifier-lr": classifier_lr,
+        "weight-decay": weight_decay,
+        "sch-patience": sch_patience,
+        "use-weights": use_weights,
+        "local-epochs": epochs,
+    }
     start_time = datetime.now()
 
     # Read run config
@@ -79,7 +101,7 @@ def main(grid: Grid, context: Context) -> None:
     evaluate_replies, result = strategy.start(
         grid=grid,
         initial_arrays=arrays,
-        train_config=ConfigRecord({"num-rounds": num_rounds}),
+        train_config=ConfigRecord(configs),
         num_rounds=num_rounds,
         # evaluate_fn=global_evaluate,
     )

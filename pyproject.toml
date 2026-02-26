@@ -33,7 +33,7 @@ momentum = 0.9
 
 model-name = "mobilenet_v3_large"
 freeze = 0
-features-lr = 0.01
+features-lr = 0.001
 classifier-lr = 0.01
 weight-decay = 1e-2
 
