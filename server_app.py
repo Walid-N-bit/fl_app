@@ -17,16 +17,6 @@ server = ServerApp()
 def global_evaluate(model: CNN, server_round: int, arrays: ArrayRecord) -> MetricRecord:
     """Evaluate model on central data."""
 
-    # DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    # # Load the model and initialize it with the received weights
-
-    # model = CNN(
-    #     in_channels=IMG_C,
-    #     out_channels=OUTPUT_CHANNELS,
-    #     kernel_size=KERNEL_SIZE,
-    #     out_features=len(CLASSES),
-    # ).to(DEVICE)
-
     model.load_state_dict(arrays.to_torch_state_dict())
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.to(device)
@@ -51,7 +41,7 @@ def main(grid: Grid, context: Context) -> None:
     CLASSES = literal_eval(context.run_config["classes"])
     global DATASET_ID
     DATASET_ID = context.run_config["dataset_id"]
-    ABS_PATH = context.node_config["abs_path"]
+    # ABS_PATH = context.node_config["abs_path"]
 
     start_time = datetime.now()
 
@@ -102,7 +92,7 @@ def main(grid: Grid, context: Context) -> None:
     state_dict = result.arrays.to_torch_state_dict()
 
     time = datetime.now().strftime("%H:%M--%d-%m-%Y")
-    model_path = f"{ABS_PATH}models/global_model_{time}.pt"
+    model_path = f"/home/wnouicer24/thesis/fl_app/models/global_model_{time}.pt"
 
     torch.save(state_dict, model_path)
 

@@ -8,3 +8,4 @@ test*.py
 models/
 launch_nodes.sh
 .flwr/
+compressed_images_wheat/

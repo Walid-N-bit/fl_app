@@ -34,7 +34,7 @@ momentum = 0.9
 
 #######################################################
 # project's absolute path
-abs_path = "/home/wnouicer24/thesis/fl_app/"
+# abs_path = "/home/wnouicer24/thesis/fl_app/"
 #######################################################
 # model configs
 dataset_id = "uoft-cs/cifar10"

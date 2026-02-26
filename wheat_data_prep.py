@@ -1,0 +1,77 @@
+from wheat_data_utils import WheatImgDataset, oversampler
+from torchvision import datasets
+from torchvision import transforms
+from torchvision.transforms import v2
+from typing import Literal
+from torch.utils.data import DataLoader, random_split
+import torch
+
+# imagenet images are 224x224 so we resize our custom data to 224
+TRANSFORM = transforms.Compose(
+    [
+        transforms.RandomHorizontalFlip(0.5),
+        transforms.RandomVerticalFlip(0.5),
+        transforms.ColorJitter(0.5, 0.5, 0.5, 0.1),
+        transforms.Resize(224),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+    ]
+)
+
+DATASET = WheatImgDataset(
+    data_file="compressed_images_wheat/train.csv", transform=TRANSFORM
+)
+
+size = len(DATASET)
+
+train_size = int(0.8 * size)
+
+TRAINING_DATA, VALIDATION_DATA = random_split(
+    DATASET,
+    [train_size, (size - train_size)],
+    generator=torch.Generator().manual_seed(33),
+)
+
+
+TESTING_DATA = WheatImgDataset(
+    data_file="compressed_images_wheat/test.csv", transform=TRANSFORM
+)
+
+# #######################################################
+# print(f"Train size: {len(TRAINING_DATA)}")
+# print(f"Val size: {len(VALIDATION_DATA)}")
+# print(f"Test size: {len(TESTING_DATA)}")
+# print(f"First train index: {TRAINING_DATA.indices[0]}")
+# print(f"First val index: {VALIDATION_DATA.indices[0]}")
+# #######################################################
+
+CLASSES = DATASET.classes.values()
+
+cutmix = v2.CutMix(num_classes=len(CLASSES))
+mixup = v2.MixUp(num_classes=len(CLASSES))
+cutmixup = v2.RandomChoice([cutmix, mixup])
+
+TRAIN_SAMPLER = oversampler(
+    data_path="compressed_images_wheat/train.csv", subset_indices=TRAINING_DATA.indices
+)
+
+
+def data_loader(
+    data,
+    device: Literal["cuda", "cpu"],
+    batch_size: int,
+    sampler=None,
+    num_workers: int = 4,
+):
+    pin_mem = False
+    if device == "cuda":
+        pin_mem = True
+    loader = DataLoader(
+        data,
+        num_workers=num_workers,
+        pin_memory=pin_mem,
+        batch_size=batch_size,
+        shuffle=(False if sampler else True),
+        sampler=sampler,
+    )
+    return loader
