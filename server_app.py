@@ -39,15 +39,6 @@ DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 def main(grid: Grid, context: Context) -> None:
     """Main entry point for the ServerApp."""
 
-    # IMG_C = context.run_config["img_c"]
-    # IMG_H = context.run_config["img_h"]
-    # OUTPUT_CHANNELS = literal_eval(context.run_config["out_channels"])
-    # KERNEL_SIZE = context.run_config["kernel_size"]
-    # CLASSES = literal_eval(context.run_config["classes"])
-    # global DATASET_ID
-    # DATASET_ID = context.run_config["dataset_id"]
-    # ABS_PATH = context.node_config["abs_path"]
-
     model_name = context.run_config["model-name"]
     freeze = context.run_config["freeze"]
     batch_size = context.run_config["batch-size"]
