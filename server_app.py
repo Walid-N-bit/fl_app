@@ -90,6 +90,7 @@ def main(grid: Grid, context: Context) -> None:
     strategy = CustomStrat(fraction_evaluate=fraction_evaluate)
     # Start strategy, run FedAvg for `num_rounds`
     evaluate_replies, result = strategy.start(
+        timeout=1e10,
         grid=grid,
         initial_arrays=arrays,
         train_config=ConfigRecord(configs),

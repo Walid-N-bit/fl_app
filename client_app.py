@@ -62,6 +62,7 @@ def train(msg: Message, context: Context):
 
     # Load the model and initialize it with the received weights
     model = choose_model(model_name, freeze, len(local_classes)).to(DEVICE)
+
     model.load_state_dict(msg.content["arrays"].to_torch_state_dict())
 
     # Load the data
@@ -88,6 +89,7 @@ def train(msg: Message, context: Context):
     )
     # for unfrozen backbone
     if not freeze:
+        print("\nFEATURES LAYERS NOT FROZEN\n")
         optimizer = opt_algo(
             [
                 {"params": model.features.parameters(), "lr": features_lr},
@@ -105,36 +107,42 @@ def train(msg: Message, context: Context):
     mixer = pick_mixer(context.run_config["mixer"])
 
     print("Device: ", DEVICE)
-    for e in range(epochs):
-        print(f"Epoch {e+1}\n-------------------------------")
+    try:
+        for e in range(epochs):
+            print(f"Epoch {e+1}\n-------------------------------")
 
-        f_lr = optimizer.param_groups[0]["lr"]
-        c_lr = optimizer.param_groups[1]["lr"]
-        print(f"Features learning rate: {f_lr}")
-        print(f"Classifier learning rate: {c_lr}\n")
+            f_lr = optimizer.param_groups[0]["lr"]
+            c_lr = optimizer.param_groups[1]["lr"]
+            print(f"Features learning rate: {f_lr}")
+            print(f"Classifier learning rate: {c_lr}\n")
 
-        t0 = time.perf_counter()
-        print("Training commencing...")
-        train_acc, train_loss = train_fn(model, trainloader, optimizer, loss_fn, mixer)
-        print("validation...")
-        val_acc, val_loss = test_fn(model, valloader, loss_fn)
-        print("Gathering data...")
-        t1 = time.perf_counter() - t0
-        train_times.append(t1)
-        passed_epochs.append(e + 1)
-        f_lrs.append(f_lr)
-        c_lrs.append(c_lr)
+            t0 = time.perf_counter()
+            print("Training commencing...")
+            train_acc, train_loss = train_fn(
+                model, trainloader, optimizer, loss_fn, mixer
+            )
+            print("validation...")
+            val_acc, val_loss = test_fn(model, valloader, loss_fn)
+            print("Gathering data...")
+            t1 = time.perf_counter() - t0
+            train_times.append(t1)
+            passed_epochs.append(e + 1)
+            f_lrs.append(f_lr)
+            c_lrs.append(c_lr)
 
-        scheduler.step(val_loss)
+            scheduler.step(val_loss)
 
-        print(
-            f"Training metrics:\n Accuracy: {(100*train_acc):>0.1f}%, Avg loss: {train_loss:>8f} \n"
-        )
-        print(
-            f"Validation metrics:\n Accuracy: {(100*val_acc):>0.1f}%, Avg loss: {val_loss:>8f} \n"
-        )
-        print("End of epoch.\n")
-    
+            print(
+                f"Training metrics:\n Accuracy: {(100*train_acc):>0.1f}%, Avg loss: {train_loss:>8f} \n"
+            )
+            print(
+                f"Validation metrics:\n Accuracy: {(100*val_acc):>0.1f}%, Avg loss: {val_loss:>8f} \n"
+            )
+            print("End of epoch.\n")
+    except Exception as e:
+        print("Training crashed: ", e)
+        raise e
+
     end_of_training_msg(sum(train_times))
 
     # Construct and return reply Message
