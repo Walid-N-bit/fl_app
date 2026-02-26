@@ -30,20 +30,29 @@ def train(msg: Message, context: Context):
     passed_epochs = []
     f_lrs = []
     c_lrs = []
+
     # model params
     model_name = context.run_config["model-name"]
     freeze = context.run_config["freeze"]
+    batch_size = context.run_config["batch-size"]
+    use_sampler = context.run_config["use-sampler"]
+    num_workers = context.run_config["num-workers"]
+    features_lr = context.run_config["features-lr"]
+    classifier_lr = context.run_config["classifier-lr"]
+    weight_decay = context.run_config["weight-decay"]
+    sch_patience = context.run_config["sch-patience"]
+    use_weights = context.run_config["use-weights"]
     local_classes = CLASSES
+
+    print("\nmessage:\n")
+    print(msg.content)
+    print("\n")
 
     # Load the model and initialize it with the received weights
     model = choose_model(model_name, freeze, len(local_classes)).to(DEVICE)
     model.load_state_dict(msg.content["arrays"].to_torch_state_dict())
 
     # Load the data
-    batch_size = context.run_config["batch-size"]
-    use_sampler = context.run_config["use-sampler"]
-    num_workers = context.run_config["num-workers"]
-
     dev = "cuda:0" if torch.cuda.is_available() else "cpu"
     trainloader = data_loader(
         TRAINING_DATA,
@@ -60,11 +69,7 @@ def train(msg: Message, context: Context):
     )
 
     # optimizer and loss_fn
-    features_lr = context.run_config["features-lr"]
-    classifier_lr = context.run_config["classifier-lr"]
-    weight_decay = context.run_config["weight-decay"]
-    sch_patience = context.run_config["sch-patience"]
-    use_weights = context.run_config["use-weights"]
+
     opt_algo = torch.optim.AdamW
     optimizer = opt_algo(
         model.classifier.parameters(), classifier_lr, weight_decay=weight_decay

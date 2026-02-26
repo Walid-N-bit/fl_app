@@ -31,7 +31,7 @@ local-epochs = 1
 
 momentum = 0.9
 
-model-name = ""
+model-name = "mobilenet_v3_large"
 freeze = 0
 features-lr = 0.01
 classifier-lr = 0.01

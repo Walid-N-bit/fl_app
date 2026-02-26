@@ -2,12 +2,13 @@ import torch
 from flwr.app import ArrayRecord, Context, MetricRecord
 from flwr.serverapp import Grid, ServerApp
 from flwr.serverapp.strategy import FedAvg, FedAvgM
-from CustomClasses import ConvolutionalNeuralNetwork as CNN, CustomStrat
+from CustomClasses import CustomStrat
 from flwr.app import ConfigRecord
-from utils import load_centralized_dataset, test, parse_raw_metrics, metrics_to_csv
+from utils import parse_raw_metrics, metrics_to_csv
 
 from datetime import datetime
-from ast import literal_eval
+
+# from ast import literal_eval
 
 from model_functions import choose_model
 from wheat_data_prep import CLASSES
@@ -78,7 +79,7 @@ def main(grid: Grid, context: Context) -> None:
     evaluate_replies, result = strategy.start(
         grid=grid,
         initial_arrays=arrays,
-        # train_config=ConfigRecord({"lr": lr}),
+        train_config=ConfigRecord({"num-rounds": num_rounds}),
         num_rounds=num_rounds,
         # evaluate_fn=global_evaluate,
     )
