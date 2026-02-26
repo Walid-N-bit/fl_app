@@ -30,7 +30,7 @@ def train(msg: Message, context: Context):
     passed_epochs = []
     f_lrs = []
     c_lrs = []
-
+    dev = "cuda:0" if torch.cuda.is_available() else "cpu"
     # model params
     server_config = msg.content["config"]
     # model_name = context.run_config["model-name"]
@@ -50,6 +50,8 @@ def train(msg: Message, context: Context):
     batch_size = server_config.get("batch-size", context.run_config["batch-size"])
     use_sampler = server_config.get("use-sampler", context.run_config["use-sampler"])
     num_workers = server_config.get("num-workers", context.run_config["num-workers"])
+    if dev == "cpu":
+        num_workers = 0
     features_lr = server_config.get("features-lr", context.run_config["features-lr"])
     classifier_lr = server_config.get(
         "classifier-lr", context.run_config["classifier-lr"]
@@ -68,7 +70,6 @@ def train(msg: Message, context: Context):
     model.load_state_dict(msg.content["arrays"].to_torch_state_dict())
 
     # Load the data
-    dev = "cuda:0" if torch.cuda.is_available() else "cpu"
     trainloader = data_loader(
         TRAINING_DATA,
         dev,
@@ -120,7 +121,7 @@ def train(msg: Message, context: Context):
             t0 = time.perf_counter()
             print("Training commencing...")
             train_acc, train_loss = train_fn(
-                model, trainloader, optimizer, loss_fn, mixer, False
+                model, trainloader, optimizer, loss_fn, mixer
             )
             print("validation...")
             val_acc, val_loss = test_fn(model, valloader, loss_fn)
