@@ -114,9 +114,11 @@ def train(msg: Message, context: Context):
         print(f"Classifier learning rate: {c_lr}\n")
 
         t0 = time.perf_counter()
+        print("Training commencing...")
         train_acc, train_loss = train_fn(model, trainloader, optimizer, loss_fn, mixer)
+        print("validation...")
         val_acc, val_loss = test_fn(model, valloader, loss_fn)
-
+        print("Gathering data...")
         t1 = time.perf_counter() - t0
         train_times.append(t1)
         passed_epochs.append(e + 1)
@@ -131,7 +133,8 @@ def train(msg: Message, context: Context):
         print(
             f"Validation metrics:\n Accuracy: {(100*val_acc):>0.1f}%, Avg loss: {val_loss:>8f} \n"
         )
-
+        print("End of epoch.\n")
+    
     end_of_training_msg(sum(train_times))
 
     # Construct and return reply Message
