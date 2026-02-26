@@ -32,34 +32,36 @@ def train(msg: Message, context: Context):
     c_lrs = []
 
     # model params
-    # server_config = msg.content["config"]
-    model_name = context.run_config["model-name"]
-    freeze = context.run_config["freeze"]
-    batch_size = context.run_config["batch-size"]
-    use_sampler = context.run_config["use-sampler"]
-    num_workers = context.run_config["num-workers"]
-    features_lr = context.run_config["features-lr"]
-    classifier_lr = context.run_config["classifier-lr"]
-    weight_decay = context.run_config["weight-decay"]
-    sch_patience = context.run_config["sch-patience"]
-    use_weights = context.run_config["use-weights"]
-    epochs = context.run_config["local-epochs"]
+    server_config = msg.content["config"]
+    # model_name = context.run_config["model-name"]
+    # freeze = context.run_config["freeze"]
+    # batch_size = context.run_config["batch-size"]
+    # use_sampler = context.run_config["use-sampler"]
+    # num_workers = context.run_config["num-workers"]
+    # features_lr = context.run_config["features-lr"]
+    # classifier_lr = context.run_config["classifier-lr"]
+    # weight_decay = context.run_config["weight-decay"]
+    # sch_patience = context.run_config["sch-patience"]
+    # use_weights = context.run_config["use-weights"]
+    # epochs = context.run_config["local-epochs"]
 
-    # model_name = server_config.get("model-name", context.run_config["model-name"])
-    # freeze = server_config.get("freeze", context.run_config["freeze"])
-    # batch_size = server_config.get("batch-size", context.run_config["batch-size"])
-    # use_sampler = server_config.get("use-sampler", context.run_config["use-sampler"])
-    # num_workers = server_config.get("num-workers", context.run_config["num-workers"])
-    # features_lr = server_config.get("features-lr", context.run_config["features-lr"])
-    # classifier_lr = server_config.get(
-    #     "classifier-lr", context.run_config["classifier-lr"]
-    # )
-    # weight_decay = server_config.get("weight-decay", context.run_config["weight-decay"])
-    # sch_patience = server_config.get("sch-patience", context.run_config["sch-patience"])
-    # use_weights = server_config.get("use-weights", context.run_config["use-weights"])
-    # epochs = server_config.get("local-epochs", context.run_config["local-epochs"])
+    model_name = server_config.get("model-name", context.run_config["model-name"])
+    freeze = server_config.get("freeze", context.run_config["freeze"])
+    batch_size = server_config.get("batch-size", context.run_config["batch-size"])
+    use_sampler = server_config.get("use-sampler", context.run_config["use-sampler"])
+    num_workers = server_config.get("num-workers", context.run_config["num-workers"])
+    features_lr = server_config.get("features-lr", context.run_config["features-lr"])
+    classifier_lr = server_config.get(
+        "classifier-lr", context.run_config["classifier-lr"]
+    )
+    weight_decay = server_config.get("weight-decay", context.run_config["weight-decay"])
+    sch_patience = server_config.get("sch-patience", context.run_config["sch-patience"])
+    use_weights = server_config.get("use-weights", context.run_config["use-weights"])
+    epochs = server_config.get("local-epochs", context.run_config["local-epochs"])
     local_classes = CLASSES
 
+    print("\nNumber of workers: ", num_workers)
+    print(" ")
     # Load the model and initialize it with the received weights
     model = choose_model(model_name, freeze, len(local_classes)).to(DEVICE)
 
@@ -89,7 +91,6 @@ def train(msg: Message, context: Context):
     )
     # for unfrozen backbone
     if not freeze:
-        print("\nFEATURES LAYERS NOT FROZEN\n")
         optimizer = opt_algo(
             [
                 {"params": model.features.parameters(), "lr": features_lr},
