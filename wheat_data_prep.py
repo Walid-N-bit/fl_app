@@ -51,6 +51,17 @@ cutmix = v2.CutMix(num_classes=len(CLASSES))
 mixup = v2.MixUp(num_classes=len(CLASSES))
 cutmixup = v2.RandomChoice([cutmix, mixup])
 
+
+def pick_mixer(name: str):
+    match name:
+        case "cutmix":
+            return cutmix
+        case "mixup":
+            return mixup
+        case "cutmixup":
+            return cutmixup
+
+
 TRAIN_SAMPLER = oversampler(
     data_path="compressed_images_wheat/train.csv", subset_indices=TRAINING_DATA.indices
 )

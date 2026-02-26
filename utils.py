@@ -46,43 +46,6 @@ def load_data(partition_id: int, num_partitions: int, batch_size: int, dataset: 
     return trainloader, testloader
 
 
-def train(model, trainloader, epochs, lr, device):
-    """Train the model on the training set."""
-    model.to(device)  # move model to GPU if available
-    loss_func = torch.nn.CrossEntropyLoss().to(device)
-    optimizer = torch.optim.SGD(model.parameters(), lr=lr, momentum=0.9)
-    model.train()
-    running_loss = 0.0
-    for _ in range(epochs):
-        for batch in trainloader:
-            images = batch["img"].to(device)
-            labels = batch["label"].to(device)
-            optimizer.zero_grad()
-            loss = loss_func(model(images), labels)
-            loss.backward()
-            optimizer.step()
-            running_loss += loss.item()
-    avg_trainloss = running_loss / len(trainloader)
-    return avg_trainloss
-
-
-def test(model, testloader, device):
-    """Validate the model on the test set."""
-    model.to(device)
-    loss_func = torch.nn.CrossEntropyLoss()
-    correct, loss = 0, 0.0
-    with torch.no_grad():
-        for batch in testloader:
-            images = batch["img"].to(device)
-            labels = batch["label"].to(device)
-            outputs = model(images)
-            loss += loss_func(outputs, labels).item()
-            correct += (torch.max(outputs.data, 1)[1] == labels).sum().item()
-    accuracy = correct / len(testloader.dataset)
-    loss = loss / len(testloader)
-    return loss, accuracy
-
-
 def load_centralized_dataset(dataset: str):
     """Load test set and return dataloader."""
     from datasets import load_dataset
@@ -167,20 +130,20 @@ def save_txt(data, path="logs.txt"):
         f.write(data)
 
 
-from CustomClasses import ConvolutionalNeuralNetwork as CNN
-from model_params import *
-
-
 def test_img(image):
-    DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model = CNN(
-        in_channels=IMG_C,
-        out_channels=OUTPUT_CHANNELS,
-        kernel_size=KERNEL_SIZE,
-        out_features=len(CLASSES),
-    ).to(DEVICE)
-
-    model.eval()
 
     pass
 
+
+def readable_time(seconds: float):
+    import time
+
+    return time.strftime("%H:%M:%S", time.gmtime(seconds))
+
+
+def end_of_training_msg(time: float):
+    msg = f"\nEnd of Training. Elapsed Time: {readable_time(time)}"
+    bars = "".join(["#" for _ in range(len(msg))])
+    print(bars)
+    print(msg)
+    print(bars)

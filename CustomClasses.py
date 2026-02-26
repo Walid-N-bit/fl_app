@@ -118,7 +118,10 @@ class CustomStrat(FedAvg):
                 result.evaluate_metrics_serverapp[0] = res
 
         arrays = initial_arrays
+
+        # added this to capture client metrics #
         replies = []
+        ########################################
 
         for current_round in range(1, num_rounds + 1):
             log(INFO, "")
@@ -169,7 +172,10 @@ class CustomStrat(FedAvg):
                 ),
                 timeout=timeout,
             )
+
+            # saving client metrics
             replies.append(evaluate_replies)
+            ###############################
 
             # Aggregate evaluate
             agg_evaluate_metrics = self.aggregate_evaluate(

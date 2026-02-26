@@ -26,28 +26,24 @@ clientapp = "client_app:client"
 
 [tool.flwr.app.config]
 num-server-rounds = 1
-fraction-evaluate = 0.5
+fraction-evaluate = 0  # fraction of clients selected for evaluation. set to 0 to skip eval
 local-epochs = 1
-learning-rate = 0.01
-batch-size = 32
+
 momentum = 0.9
 
-#######################################################
-# project's absolute path
-# abs_path = "/home/wnouicer24/thesis/fl_app/"
-#######################################################
-# model configs
-dataset_id = "uoft-cs/cifar10"
-classes = "['airplane', 'automobile', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck']"
-img_c = 3
-img_h = 32
-img_w = 32
+model-name = ""
+freeze = 0
+features-lr = 0.01
+classifier-lr = 0.01
+weight-decay = 1e-2
 
-out_channels = "[8, 16]"
-kernel_size = 5
+batch-size = 32
+use-sampler = 0
+num-workers = 4
+sch-patience = 10
+mixer = "cutmix"
+use-weights = 0
 
-out_features = 10
-#######################################################
 
 
 [tool.flwr.federations]

@@ -9,59 +9,58 @@ from utils import load_centralized_dataset, test, parse_raw_metrics, metrics_to_
 from datetime import datetime
 from ast import literal_eval
 
-# from model_params import *
+from model_functions import choose_model
+from wheat_data_prep import CLASSES
 
 server = ServerApp()
 
+DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-def global_evaluate(model: CNN, server_round: int, arrays: ArrayRecord) -> MetricRecord:
-    """Evaluate model on central data."""
 
-    model.load_state_dict(arrays.to_torch_state_dict())
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model.to(device)
+# def global_evaluate(model: CNN, server_round: int, arrays: ArrayRecord) -> MetricRecord:
+#     """Evaluate model on central data."""
 
-    # Load entire test set
-    test_dataloader = load_centralized_dataset(dataset=DATASET_ID)
+#     model.load_state_dict(arrays.to_torch_state_dict())
+#     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+#     model.to(device)
 
-    # Evaluate the global model on the test set
-    test_loss, test_acc = test(model, test_dataloader, device)
+#     # Load entire test set
+#     test_dataloader = load_centralized_dataset(dataset=DATASET_ID)
 
-    # Return the evaluation metrics
-    return MetricRecord({"accuracy": test_acc, "loss": test_loss})
+#     # Evaluate the global model on the test set
+#     test_loss, test_acc = test(model, test_dataloader, device)
+
+#     # Return the evaluation metrics
+#     return MetricRecord({"accuracy": test_acc, "loss": test_loss})
 
 
 @server.main()
 def main(grid: Grid, context: Context) -> None:
     """Main entry point for the ServerApp."""
-    IMG_C = context.run_config["img_c"]
-    IMG_H = context.run_config["img_h"]
-    OUTPUT_CHANNELS = literal_eval(context.run_config["out_channels"])
-    KERNEL_SIZE = context.run_config["kernel_size"]
-    CLASSES = literal_eval(context.run_config["classes"])
-    global DATASET_ID
-    DATASET_ID = context.run_config["dataset_id"]
+
+    # IMG_C = context.run_config["img_c"]
+    # IMG_H = context.run_config["img_h"]
+    # OUTPUT_CHANNELS = literal_eval(context.run_config["out_channels"])
+    # KERNEL_SIZE = context.run_config["kernel_size"]
+    # CLASSES = literal_eval(context.run_config["classes"])
+    # global DATASET_ID
+    # DATASET_ID = context.run_config["dataset_id"]
     # ABS_PATH = context.node_config["abs_path"]
+
+    model_name = context.run_config["model-name"]
+    freeze = context.run_config["freeze"]
 
     start_time = datetime.now()
 
     # Read run config
     fraction_evaluate: float = context.run_config["fraction-evaluate"]
     num_rounds: int = context.run_config["num-server-rounds"]
-    lr: float = context.run_config["learning-rate"]
     local_epochs = context.run_config["local-epochs"]
     momentum = context.run_config["momentum"]
 
-    DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     # Load global model
 
-    global_model = CNN(
-        in_channels=IMG_C,
-        out_channels=OUTPUT_CHANNELS,
-        kernel_size=KERNEL_SIZE,
-        out_features=len(CLASSES),
-        img_h=IMG_H,
-    ).to(DEVICE)
+    global_model = choose_model(model_name, freeze, len(CLASSES)).to(DEVICE)
 
     ## model_exists = file_exists(output_path)
     # if model_exists:
@@ -79,31 +78,28 @@ def main(grid: Grid, context: Context) -> None:
     evaluate_replies, result = strategy.start(
         grid=grid,
         initial_arrays=arrays,
-        train_config=ConfigRecord({"lr": lr}),
+        # train_config=ConfigRecord({"lr": lr}),
         num_rounds=num_rounds,
         # evaluate_fn=global_evaluate,
     )
 
-    final_metrics = global_evaluate(global_model, num_rounds, result.arrays)
-    print(f"Final accuracy: {final_metrics['accuracy']}")
+    # final_metrics = global_evaluate(global_model, num_rounds, result.arrays)
+    # print(f"Final accuracy: {final_metrics['accuracy']}")
 
     # Save final model to disk
     print("\nSaving final model to disk...")
     state_dict = result.arrays.to_torch_state_dict()
 
-    time = datetime.now().strftime("%H:%M--%d-%m-%Y")
-    model_path = f"/home/wnouicer24/thesis/fl_app/models/global_model_{time}.pt"
+    # time = datetime.now().strftime("%H:%M-%d/%m/%Y")
+    # model_path = f"/home/wnouicer24/thesis/fl_app/models/global_model_{time}.pt"
 
-    torch.save(state_dict, model_path)
+    # torch.save(state_dict, model_path)
 
     print("\nSaving Clients Metrics Data...")
     metrics = parse_raw_metrics(evaluate_replies)
-    client_data_path = (
-        f"clients_data/lr:{lr}-epochs:{local_epochs}-momentum:{momentum}/{time}.csv"
-    )
-    metrics_to_csv(metrics, path=client_data_path)
-
-    elapsed_time = datetime.now() - start_time
-    print(f"\n##################################")
-    print(f"\nTotal Elapsed Time: {elapsed_time}")
-    print(f"\n##################################")
+    print("\nraw metrics:\n", evaluate_replies)
+    print("\nparsed metrics:\n", metrics)
+    # client_data_path = (
+    #     f"clients_data/lr:{lr}-epochs:{local_epochs}-momentum:{momentum}/{time}.csv"
+    # )
+    # metrics_to_csv(metrics, path=client_data_path)
