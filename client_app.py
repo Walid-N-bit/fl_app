@@ -45,7 +45,7 @@ def train(msg: Message, context: Context):
     local_classes = CLASSES
 
     print("\nmessage:\n")
-    print(msg.content.keys())
+    print(msg.content["config"].get("num-rounds"))
     print("\n")
 
     # Load the model and initialize it with the received weights
@@ -92,6 +92,8 @@ def train(msg: Message, context: Context):
     # commence training loop
     epochs = context.run_config["local-epochs"]
     mixer = pick_mixer(context.run_config["mixer"])
+
+    print("Device: ", DEVICE)
     for e in range(epochs):
         print(f"Epoch {e+1}\n-------------------------------")
 

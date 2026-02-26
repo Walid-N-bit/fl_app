@@ -37,7 +37,7 @@ features-lr = 0.01
 classifier-lr = 0.01
 weight-decay = 1e-2
 
-batch-size = 32
+batch-size = 128
 use-sampler = 0
 num-workers = 4
 sch-patience = 10
