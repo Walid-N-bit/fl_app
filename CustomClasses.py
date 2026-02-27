@@ -120,7 +120,8 @@ class CustomStrat(FedAvg):
         arrays = initial_arrays
 
         # added this to capture client metrics #
-        replies = []
+        train_replies_all = []
+        eval_replies_all = []
         ########################################
 
         for current_round in range(1, num_rounds + 1):
@@ -174,7 +175,8 @@ class CustomStrat(FedAvg):
             )
 
             # saving client metrics
-            replies.append(evaluate_replies)
+            train_replies_all.append(train_replies)
+            eval_replies_all.append(evaluate_replies)
             ###############################
 
             # Aggregate evaluate
@@ -209,7 +211,7 @@ class CustomStrat(FedAvg):
             log(INFO, "\t%s", line.strip("\n"))
         log(INFO, "")
 
-        return replies, result
+        return train_replies_all, eval_replies_all, result
 
 
 class ConvolutionalNeuralNetwork(nn.Module):

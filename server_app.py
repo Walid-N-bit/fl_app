@@ -89,7 +89,7 @@ def main(grid: Grid, context: Context) -> None:
     # )
     strategy = CustomStrat(fraction_evaluate=fraction_evaluate)
     # Start strategy, run FedAvg for `num_rounds`
-    evaluate_replies, result = strategy.start(
+    train_replies, evaluate_replies, result = strategy.start(
         timeout=1e10,
         grid=grid,
         initial_arrays=arrays,
@@ -112,8 +112,9 @@ def main(grid: Grid, context: Context) -> None:
 
     print("\nSaving Clients Metrics Data...")
     metrics = parse_raw_metrics(evaluate_replies)
-    print("\nraw metrics:\n", evaluate_replies)
-    print("\nparsed metrics:\n", metrics)
+    print("\nraw train metrics:\n", train_replies)
+    print("\nraw eval metrics:\n", evaluate_replies)
+    print("\nparsed eval metrics:\n", metrics)
     # client_data_path = (
     #     f"clients_data/lr:{lr}-epochs:{local_epochs}-momentum:{momentum}/{time}.csv"
     # )
