@@ -62,8 +62,6 @@ def train(msg: Message, context: Context):
     epochs = server_config.get("local-epochs", context.run_config["local-epochs"])
     local_classes = CLASSES
 
-    print("\nNumber of workers: ", num_workers)
-    print(" ")
     # Load the model and initialize it with the received weights
     model = choose_model(model_name, freeze, len(local_classes)).to(DEVICE)
 
