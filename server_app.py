@@ -50,6 +50,7 @@ def main(grid: Grid, context: Context) -> None:
     sch_patience = context.run_config["sch-patience"]
     use_weights = context.run_config["use-weights"]
     epochs = context.run_config["local-epochs"]
+    dataset_name = context.run_config["dataset-name"]
 
     configs = {
         "model-name": model_name,
@@ -63,6 +64,7 @@ def main(grid: Grid, context: Context) -> None:
         "sch-patience": sch_patience,
         "use-weights": use_weights,
         "local-epochs": epochs,
+        "dataset-name": dataset_name,
     }
     start_time = datetime.now()
 

@@ -8,14 +8,19 @@ import time
 from utils import end_of_training_msg
 from model_functions import train as train_fn, test as test_fn, choose_model
 from wheat_data_prep import (
-    TRAINING_DATA,
-    VALIDATION_DATA,
+    TRAINING_DATA as wheat_train,
+    VALIDATION_DATA as wheat_val,
     data_loader,
     TRAIN_SAMPLER,
-    CLASSES,
+    CLASSES as wheat_classes,
     pick_mixer,
 )
 from wheat_data_utils import get_class_weights
+from flwr_data_prep import (
+    CIFAR10_CLASSES,
+    TRAIN_LOADER as cifar_trainloader,
+    VAL_LOADER as cifar_valloader,
+)
 
 client = ClientApp()
 
@@ -33,17 +38,6 @@ def train(msg: Message, context: Context):
     dev = "cuda:0" if torch.cuda.is_available() else "cpu"
     # model params
     server_config = msg.content["config"]
-    # model_name = context.run_config["model-name"]
-    # freeze = context.run_config["freeze"]
-    # batch_size = context.run_config["batch-size"]
-    # use_sampler = context.run_config["use-sampler"]
-    # num_workers = context.run_config["num-workers"]
-    # features_lr = context.run_config["features-lr"]
-    # classifier_lr = context.run_config["classifier-lr"]
-    # weight_decay = context.run_config["weight-decay"]
-    # sch_patience = context.run_config["sch-patience"]
-    # use_weights = context.run_config["use-weights"]
-    # epochs = context.run_config["local-epochs"]
 
     model_name = server_config.get("model-name", context.run_config["model-name"])
     freeze = server_config.get("freeze", context.run_config["freeze"])
@@ -60,7 +54,31 @@ def train(msg: Message, context: Context):
     sch_patience = server_config.get("sch-patience", context.run_config["sch-patience"])
     use_weights = server_config.get("use-weights", context.run_config["use-weights"])
     epochs = server_config.get("local-epochs", context.run_config["local-epochs"])
-    local_classes = CLASSES
+    dataset_name = server_config.get("dataset-name", context.run_config["dataset-name"])
+
+    if dataset_name == "wheat":
+        local_classes = wheat_classes
+        trainloader = data_loader(
+            wheat_train,
+            dev,
+            batch_size,
+            TRAIN_SAMPLER if use_sampler else None,
+            num_workers=num_workers,
+        )
+        valloader = data_loader(
+            wheat_val,
+            dev,
+            batch_size,
+            num_workers=num_workers,
+        )
+        class_weights = get_class_weights(
+            "compressed_images_wheat/train.csv", wheat_train.indices
+        ).to(DEVICE)
+
+    elif dataset_name == "cifar10":
+        local_classes = CIFAR10_CLASSES
+        trainloader = cifar_trainloader
+        valloader = cifar_valloader
 
     # Load the model and initialize it with the received weights
     model = choose_model(model_name, freeze, len(local_classes)).to(DEVICE)
@@ -68,19 +86,6 @@ def train(msg: Message, context: Context):
     model.load_state_dict(msg.content["arrays"].to_torch_state_dict())
 
     # Load the data
-    trainloader = data_loader(
-        TRAINING_DATA,
-        dev,
-        batch_size,
-        TRAIN_SAMPLER if use_sampler else None,
-        num_workers=num_workers,
-    )
-    valloader = data_loader(
-        VALIDATION_DATA,
-        dev,
-        batch_size,
-        num_workers=num_workers,
-    )
 
     # optimizer and loss_fn
 
@@ -98,9 +103,7 @@ def train(msg: Message, context: Context):
             weight_decay=weight_decay,
         )
     scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, "min", patience=sch_patience)
-    class_weights = get_class_weights(
-        "compressed_images_wheat/train.csv", TRAINING_DATA.indices
-    ).to(DEVICE)
+
     loss_fn = nn.CrossEntropyLoss(weight=(class_weights if use_weights else None))
 
     # commence training loop

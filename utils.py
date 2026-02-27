@@ -130,14 +130,9 @@ def save_txt(data, path="logs.txt"):
         f.write(data)
 
 
-def test_img(image):
-
-    pass
-
 
 def readable_time(seconds: float):
     import time
-
     return time.strftime("%H:%M:%S", time.gmtime(seconds))
 
 
@@ -147,3 +142,4 @@ def end_of_training_msg(time: float):
     print(bars)
     print(msg)
     print(bars)
+

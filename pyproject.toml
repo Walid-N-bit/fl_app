@@ -44,6 +44,8 @@ sch-patience = 10
 mixer = "cutmix"
 use-weights = 0  # 1 for true, 0 for false
 
+# currently usable datasets: "wheat", "cifar10"
+dataset-name = "wheat"
 
 
 [tool.flwr.federations]
