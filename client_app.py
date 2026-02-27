@@ -18,8 +18,10 @@ from wheat_data_prep import (
 from wheat_data_utils import get_class_weights
 from flwr_data_prep import (
     CIFAR10_CLASSES,
-    TRAIN_LOADER as cifar_trainloader,
-    VAL_LOADER as cifar_valloader,
+    CIFAR10_TRAIN,
+    CIFAR10_VAL,
+    CIFAR10_TEST,
+    loader,
 )
 
 client = ClientApp()
@@ -77,8 +79,8 @@ def train(msg: Message, context: Context):
 
     elif dataset_name == "cifar10":
         local_classes = CIFAR10_CLASSES
-        trainloader = cifar_trainloader
-        valloader = cifar_valloader
+        trainloader = loader(CIFAR10_TRAIN, batch_size)
+        valloader = loader(CIFAR10_VAL, batch_size)
 
     # Load the model and initialize it with the received weights
     model = choose_model(model_name, freeze, len(local_classes)).to(DEVICE)
