@@ -55,7 +55,7 @@ class CustomStrat(FedAvg):
         train_config: ConfigRecord | None = None,
         evaluate_config: ConfigRecord | None = None,
         evaluate_fn: Callable[[int, ArrayRecord], MetricRecord | None] | None = None,
-    ) -> tuple[list[Iterable[Message]], Result]:
+    ) -> tuple[list[Iterable[Message]], list[Iterable[Message]], Result]:
         """
         Override start() method to return both replies and the result
         """
@@ -228,7 +228,7 @@ class ConvolutionalNeuralNetwork(nn.Module):
         img_h: int,
     ):
         super().__init__()
-        
+
         self.conv1 = nn.Conv2d(in_channels, out_channels[0], kernel_size)
         self.conv2 = nn.Conv2d(out_channels[0], out_channels[1], kernel_size)
         self.mx_pool = nn.MaxPool2d(2, 2)
