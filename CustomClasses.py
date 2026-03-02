@@ -221,22 +221,19 @@ class ConvolutionalNeuralNetwork(nn.Module):
 
     def __init__(
         self,
-        in_channels: int,
-        out_channels: list[int],
-        kernel_size: int,
         out_features: int,
-        img_h: int,
+        kernel_size: int = 5,
     ):
         super().__init__()
 
-        self.conv1 = nn.Conv2d(in_channels, out_channels[0], kernel_size)
-        self.conv2 = nn.Conv2d(out_channels[0], out_channels[1], kernel_size)
+        self.conv1 = nn.Conv2d(224, 6, kernel_size)
+        self.conv2 = nn.Conv2d(6, 16, kernel_size)
         self.mx_pool = nn.MaxPool2d(2, 2)
         # self.adp_pool = nn.AdaptiveAvgPool2d((1, 1))
         # self.fc1 = nn.Linear(filters_nbr * 1 * 1, 120)
-        out_1 = int(out_len(input_len=img_h, fltr_len=kernel_size) / 2)
+        out_1 = int(out_len(224, fltr_len=kernel_size) / 2)
         out_2 = int(out_len(out_1, fltr_len=kernel_size) / 2)
-        self.fc1 = nn.Linear(out_channels[1] * out_2 * out_2, 120)
+        self.fc1 = nn.Linear(16 * out_2 * out_2, 120)
         self.fc2 = nn.Linear(120, 84)
         self.fc3 = nn.Linear(84, out_features)
 

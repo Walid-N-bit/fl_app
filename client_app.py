@@ -57,7 +57,7 @@ def train(msg: Message, context: Context):
     use_weights = server_config.get("use-weights", context.run_config["use-weights"])
     epochs = server_config.get("local-epochs", context.run_config["local-epochs"])
     dataset_name = server_config.get("dataset-name", context.run_config["dataset-name"])
-
+    
     if dataset_name == "wheat":
         local_classes = wheat_classes
         trainloader = data_loader(
@@ -111,7 +111,9 @@ def train(msg: Message, context: Context):
     # commence training loop
     mixer = pick_mixer(context.run_config["mixer"])
 
-    print("Device: ", DEVICE)
+    print("\nDevice: ", DEVICE)
+    print("\nChosen model: ", model_name)
+
     try:
         for e in range(epochs):
             print(f"Epoch {e+1}\n-------------------------------")

@@ -10,6 +10,7 @@ from torchvision.models import (
 from wheat_data_utils import get_class_weights
 from typing import Literal
 
+from CustomClasses import ConvolutionalNeuralNetwork as CNN
 
 global NET
 NET = models.MobileNetV3
@@ -53,6 +54,9 @@ def choose_model(model_name: str, freeze: bool | Literal[0, 1], out_features: in
                 in_features=1280, out_features=out_features, bias=True
             )
             NET = models.EfficientNet
+        case "cnn":
+            model = CNN(out_features).to(DEVICE)
+            NET = CNN
 
     return model
 

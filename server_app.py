@@ -113,10 +113,10 @@ def main(grid: Grid, context: Context) -> None:
     # torch.save(state_dict, model_path)
 
     print("\nSaving Clients Metrics Data...")
-    metrics = parse_raw_metrics(evaluate_replies)
-    print("\nraw train metrics:\n", train_replies)
-    print("\nraw eval metrics:\n", evaluate_replies)
-    print("\nparsed eval metrics:\n", metrics)
+    t_metrics = parse_raw_metrics(train_replies)
+    e_metrics = parse_raw_metrics(evaluate_replies)
+    print("\nparsed train metrics:\n", t_metrics)
+    print("\nparsed eval metrics:\n", e_metrics)
     # client_data_path = (
     #     f"clients_data/lr:{lr}-epochs:{local_epochs}-momentum:{momentum}/{time}.csv"
     # )
