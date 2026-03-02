@@ -88,7 +88,6 @@ def train(msg: Message, context: Context):
     print("\nChosen model: ", model_name)
     print("\nDataset: ", dataset_name.upper())
     print("\nClasses: ", local_classes)
-    print("\nDataset: ", dataset_name.upper())
 
     model = choose_model(model_name, freeze, len(local_classes)).to(DEVICE)
 
@@ -98,9 +97,9 @@ def train(msg: Message, context: Context):
 
     # optimizer and loss_fn
 
-    opt_algo = torch.optim.AdamW
+    opt_algo = torch.optim.AdamW        
     optimizer = opt_algo(
-        model.classifier.parameters(), classifier_lr, weight_decay=weight_decay
+        model.parameters(), classifier_lr, weight_decay=weight_decay
     )
     # for unfrozen backbone
     if not freeze:
@@ -120,7 +119,7 @@ def train(msg: Message, context: Context):
 
     try:
         for e in range(epochs):
-            print(f"Epoch {e+1}\n-------------------------------")
+            print(f"\nEpoch {e+1}\n-------------------------------")
 
             f_lr = optimizer.param_groups[0]["lr"]
             c_lr = optimizer.param_groups[1]["lr"]
