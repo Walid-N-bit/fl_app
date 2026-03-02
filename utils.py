@@ -76,10 +76,13 @@ def image_shape(image: torch.Tensor):
 
 
 def node_metrics(message: Message) -> dict:
-    node_id = message.metadata.src_node_id
-    metrics = message.content.metric_records["metrics"]
-    metrics.update({"node_id": node_id})
-    return metrics
+    if message.has_content():
+        node_id = message.metadata.src_node_id
+        metrics = message.content.metric_records["metrics"]
+        metrics.update({"node_id": node_id})
+        return metrics
+    else:
+        return {"metrics": None}
 
 
 def round_metrics(replies: list[Message]) -> list[dict]:

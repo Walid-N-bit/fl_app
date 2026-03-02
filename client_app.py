@@ -16,7 +16,7 @@ from wheat_data_prep import (
     pick_mixer,
 )
 from wheat_data_utils import get_class_weights
-from flwr_data_prep import (
+from cifar10_data_prep import (
     CIFAR10_CLASSES,
     CIFAR10_TRAIN,
     CIFAR10_VAL,
@@ -57,7 +57,7 @@ def train(msg: Message, context: Context):
     use_weights = server_config.get("use-weights", context.run_config["use-weights"])
     epochs = server_config.get("local-epochs", context.run_config["local-epochs"])
     dataset_name = server_config.get("dataset-name", context.run_config["dataset-name"])
-    
+
     if dataset_name == "wheat":
         local_classes = wheat_classes
         trainloader = data_loader(
@@ -83,6 +83,13 @@ def train(msg: Message, context: Context):
         valloader = loader(CIFAR10_VAL, batch_size)
 
     # Load the model and initialize it with the received weights
+
+    print("\nDevice: ", DEVICE)
+    print("\nChosen model: ", model_name)
+    print("\nDataset: ", dataset_name.upper())
+    print("\nClasses: ", local_classes)
+    print("\nDataset: ", dataset_name.upper())
+
     model = choose_model(model_name, freeze, len(local_classes)).to(DEVICE)
 
     model.load_state_dict(msg.content["arrays"].to_torch_state_dict())
@@ -110,9 +117,6 @@ def train(msg: Message, context: Context):
 
     # commence training loop
     mixer = pick_mixer(context.run_config["mixer"])
-
-    print("\nDevice: ", DEVICE)
-    print("\nChosen model: ", model_name)
 
     try:
         for e in range(epochs):

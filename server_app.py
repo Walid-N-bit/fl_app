@@ -11,7 +11,8 @@ from datetime import datetime
 # from ast import literal_eval
 
 from model_functions import choose_model
-from wheat_data_prep import CLASSES
+from wheat_data_prep import CLASSES as wheat_classes
+from cifar10_data_prep import CIFAR10_CLASSES as cifar_classes
 
 server = ServerApp()
 
@@ -75,8 +76,12 @@ def main(grid: Grid, context: Context) -> None:
     momentum = context.run_config["momentum"]
 
     # Load global model
-
-    global_model = choose_model(model_name, freeze, len(CLASSES)).to(DEVICE)
+    out_features = 1
+    if dataset_name == "wheat":
+        out_features = len(wheat_classes)
+    elif dataset_name == "cifar10":
+        out_features = len(cifar_classes)
+    global_model = choose_model(model_name, freeze, out_features).to(DEVICE)
 
     ## model_exists = file_exists(output_path)
     # if model_exists:

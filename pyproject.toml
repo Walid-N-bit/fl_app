@@ -32,6 +32,7 @@ local-epochs = 1
 momentum = 0.9
 
 model-name = "mobilenet_v3_large"
+# model-name = "cnn"
 freeze = 0    # 1 for true, 0 for false
 features-lr = 0.001
 classifier-lr = 0.01
@@ -45,7 +46,7 @@ mixer = "cutmix"
 use-weights = 0  # 1 for true, 0 for false
 
 # currently usable datasets: "wheat", "cifar10"
-dataset-name = "wheat"
+dataset-name = "cifar10"
 
 
 [tool.flwr.federations]
