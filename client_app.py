@@ -5,7 +5,7 @@ from flwr.app import ArrayRecord, Context, Message, MetricRecord, RecordDict
 from flwr.clientapp import ClientApp
 from ast import literal_eval
 import time
-from utils import end_of_training_msg
+from utils import end_of_training_msg, pick_mixer
 from model_functions import train as train_fn, test as test_fn, choose_model
 from wheat_data_prep import (
     TRAINING_DATA as wheat_train,
@@ -13,7 +13,6 @@ from wheat_data_prep import (
     data_loader,
     TRAIN_SAMPLER,
     CLASSES as wheat_classes,
-    pick_mixer,
 )
 from wheat_data_utils import get_class_weights
 from cifar10_data_prep import (
@@ -81,6 +80,7 @@ def train(msg: Message, context: Context):
         local_classes = CIFAR10_CLASSES
         trainloader = loader(CIFAR10_TRAIN, batch_size)
         valloader = loader(CIFAR10_VAL, batch_size)
+        mixer = ""
 
     # Load the model and initialize it with the received weights
 
@@ -116,7 +116,7 @@ def train(msg: Message, context: Context):
     loss_fn = nn.CrossEntropyLoss(weight=(class_weights if use_weights else None))
 
     # commence training loop
-    mixer = pick_mixer(context.run_config["mixer"])
+    mixer = pick_mixer(mixer, local_classes)
 
     try:
         for e in range(epochs):

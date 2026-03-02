@@ -133,9 +133,9 @@ def save_txt(data, path="logs.txt"):
         f.write(data)
 
 
-
 def readable_time(seconds: float):
     import time
+
     return time.strftime("%H:%M:%S", time.gmtime(seconds))
 
 
@@ -146,3 +146,19 @@ def end_of_training_msg(time: float):
     print(msg)
     print(bars)
 
+
+def pick_mixer(name: str, classes: list):
+    from torchvision.transforms import v2
+
+    cutmix = v2.CutMix(num_classes=len(classes))
+    mixup = v2.MixUp(num_classes=len(classes))
+    cutmixup = v2.RandomChoice([cutmix, mixup])
+    match name:
+        case "cutmix":
+            return cutmix
+        case "mixup":
+            return mixup
+        case "cutmixup":
+            return cutmixup
+        case _:
+            return None

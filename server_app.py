@@ -52,6 +52,7 @@ def main(grid: Grid, context: Context) -> None:
     use_weights = context.run_config["use-weights"]
     epochs = context.run_config["local-epochs"]
     dataset_name = context.run_config["dataset-name"]
+    mixer = context.run_config["mixer"]
 
     configs = {
         "model-name": model_name,
@@ -66,6 +67,7 @@ def main(grid: Grid, context: Context) -> None:
         "use-weights": use_weights,
         "local-epochs": epochs,
         "dataset-name": dataset_name,
+        "mixer": mixer,
     }
     start_time = datetime.now()
 

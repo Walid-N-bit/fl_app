@@ -47,19 +47,24 @@ TESTING_DATA = WheatImgDataset(
 
 CLASSES = DATASET.classes.values()
 
-cutmix = v2.CutMix(num_classes=len(CLASSES))
-mixup = v2.MixUp(num_classes=len(CLASSES))
-cutmixup = v2.RandomChoice([cutmix, mixup])
+# cutmix = v2.CutMix(num_classes=len(CLASSES))
+# mixup = v2.MixUp(num_classes=len(CLASSES))
+# cutmixup = v2.RandomChoice([cutmix, mixup])
 
 
-def pick_mixer(name: str):
-    match name:
-        case "cutmix":
-            return cutmix
-        case "mixup":
-            return mixup
-        case "cutmixup":
-            return cutmixup
+# def pick_mixer(name: str, classes:list):
+#     cutmix = v2.CutMix(num_classes=len(CLASSES))
+#     mixup = v2.MixUp(num_classes=len(CLASSES))
+#     cutmixup = v2.RandomChoice([cutmix, mixup])
+#     match name:
+#         case "cutmix":
+#             return cutmix
+#         case "mixup":
+#             return mixup
+#         case "cutmixup":
+#             return cutmixup
+#         case _:
+#             return None
 
 
 TRAIN_SAMPLER = oversampler(
