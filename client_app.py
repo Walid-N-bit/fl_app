@@ -7,21 +7,7 @@ from ast import literal_eval
 import time
 from utils import end_of_training_msg, pick_mixer
 from model_functions import train as train_fn, test as test_fn, choose_model
-from wheat_data_prep import (
-    TRAINING_DATA as wheat_train,
-    VALIDATION_DATA as wheat_val,
-    data_loader,
-    TRAIN_SAMPLER,
-    CLASSES as wheat_classes,
-)
-from wheat_data_utils import get_class_weights
-from cifar10_data_prep import (
-    CIFAR10_CLASSES,
-    CIFAR10_TRAIN,
-    CIFAR10_VAL,
-    CIFAR10_TEST,
-    loader,
-)
+
 
 client = ClientApp()
 
@@ -58,6 +44,15 @@ def train(msg: Message, context: Context):
     dataset_name = server_config.get("dataset-name", context.run_config["dataset-name"])
 
     if dataset_name == "wheat":
+        from wheat_data_utils import get_class_weights
+        from wheat_data_prep import (
+            TRAINING_DATA as wheat_train,
+            VALIDATION_DATA as wheat_val,
+            data_loader,
+            TRAIN_SAMPLER,
+            CLASSES as wheat_classes,
+        )
+
         local_classes = wheat_classes
         trainloader = data_loader(
             wheat_train,
@@ -77,6 +72,14 @@ def train(msg: Message, context: Context):
         ).to(DEVICE)
 
     elif dataset_name == "cifar10":
+        from cifar10_data_prep import (
+            CIFAR10_CLASSES,
+            CIFAR10_TRAIN,
+            CIFAR10_VAL,
+            CIFAR10_TEST,
+            loader,
+        )
+
         local_classes = CIFAR10_CLASSES
         trainloader = loader(CIFAR10_TRAIN, batch_size)
         valloader = loader(CIFAR10_VAL, batch_size)
@@ -97,10 +100,8 @@ def train(msg: Message, context: Context):
 
     # optimizer and loss_fn
 
-    opt_algo = torch.optim.AdamW        
-    optimizer = opt_algo(
-        model.parameters(), classifier_lr, weight_decay=weight_decay
-    )
+    opt_algo = torch.optim.AdamW
+    optimizer = opt_algo(model.parameters(), classifier_lr, weight_decay=weight_decay)
     # for unfrozen backbone
     if not freeze:
         optimizer = opt_algo(
