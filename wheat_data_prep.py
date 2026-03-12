@@ -18,6 +18,8 @@ TRANSFORM = transforms.Compose(
     ]
 )
 
+
+
 DATASET = WheatImgDataset(
     data_file="compressed_images_wheat/train.csv", transform=TRANSFORM
 )

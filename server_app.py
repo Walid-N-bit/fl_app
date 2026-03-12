@@ -11,7 +11,6 @@ from datetime import datetime
 # from ast import literal_eval
 
 from model_functions import choose_model
-from wheat_data_prep import CLASSES as wheat_classes
 from cifar10_data_prep import CIFAR10_CLASSES as cifar_classes
 
 server = ServerApp()
@@ -80,6 +79,7 @@ def main(grid: Grid, context: Context) -> None:
     # Load global model
     out_features = 1
     if dataset_name == "wheat":
+        from wheat_data_prep import CLASSES as wheat_classes
         out_features = len(wheat_classes)
     elif dataset_name == "cifar10":
         out_features = len(cifar_classes)
