@@ -140,7 +140,7 @@ def readable_time(seconds: float):
 
 
 def end_of_training_msg(time: float):
-    msg = f"\nEnd of Training. Elapsed Time: {readable_time(time)}"
+    msg = f"\nEnd of Training. Elapsed Time: {readable_time(time)}\n"
     bars = "".join(["#" for _ in range(len(msg))])
     print(bars)
     print(msg)

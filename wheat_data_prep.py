@@ -46,6 +46,7 @@ TESTING_DATA = WheatImgDataset(
 # #######################################################
 
 CLASSES = DATASET.classes.values()
+LABELS_MAP = {i:c for i,c in enumerate(CLASSES)}
 
 # cutmix = v2.CutMix(num_classes=len(CLASSES))
 # mixup = v2.MixUp(num_classes=len(CLASSES))

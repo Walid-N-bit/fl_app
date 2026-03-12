@@ -2,7 +2,7 @@
 *dataset/
 quickstart-pytorch/
 process.txt
-venv_fl/
+*venv*/
 __pycache__ 
 test*.py
 models/
