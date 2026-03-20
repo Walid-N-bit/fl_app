@@ -46,6 +46,7 @@ def train(msg: Message, context: Context):
     if dataset_name == "wheat":
         from wheat_data_utils import get_class_weights
         from wheat_data_prep import (
+            TRAIN_DATA_PATH,
             TRAINING_DATA as wheat_train,
             VALIDATION_DATA as wheat_val,
             data_loader,
@@ -68,7 +69,7 @@ def train(msg: Message, context: Context):
             num_workers=num_workers,
         )
         class_weights = get_class_weights(
-            "compressed_images_wheat/train.csv", wheat_train.indices
+            TRAIN_DATA_PATH, wheat_train.indices
         ).to(DEVICE)
 
     elif dataset_name == "cifar10":
@@ -85,8 +86,13 @@ def train(msg: Message, context: Context):
         valloader = loader(CIFAR10_VAL, batch_size)
         mixer = ""
 
+    # check if this is a prep phase, return classes if True
+    prep_phase = server_config.get("prep-phase")
+    if prep_phase:
+        content = RecordDict({"local-classes": local_classes})
+        return Message(content=content, reply_to=msg)
+        
     # Load the model and initialize it with the received weights
-
     print("\nDevice: ", DEVICE)
     print("\nChosen model: ", model_name)
     print("\nDataset: ", dataset_name.upper())

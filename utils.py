@@ -15,6 +15,42 @@ fds = None  # Cache FederatedDataset
 pytorch_transforms = Compose([ToTensor(), Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
 
+def cmd(input: str | list, passwd: bool = False, shell: bool = False) -> str:
+    """
+    take input and run as a command on shell. return output.
+
+    :param input: input command
+    :type input: str | list
+    :param passwd: does the command require password input
+    :type passwd: bool
+    :param shell: set as true if you need shell functionalities (like > or --)
+    :type shell: bool
+    :return: command output
+    :rtype: str
+    """
+    import subprocess
+    from getpass import getpass
+
+    if type(input) == str and not shell:
+        input = input.split(" ")
+    proc = subprocess.Popen(
+        args=input,
+        stdout=subprocess.PIPE,
+        stdin=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        shell=shell,
+        text=True,
+    )
+
+    out = ""
+    if passwd:
+        pw = getpass()
+        out, _ = proc.communicate(input=pw)
+    else:
+        out, _ = proc.communicate()
+    return out
+
+
 def apply_transforms(batch):
     """Apply transforms to the partition from FederatedDataset."""
     batch["img"] = [pytorch_transforms(img) for img in batch["img"]]

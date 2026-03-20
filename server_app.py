@@ -67,6 +67,7 @@ def main(grid: Grid, context: Context) -> None:
         "local-epochs": epochs,
         "dataset-name": dataset_name,
         "mixer": mixer,
+        "prep": False,
     }
     start_time = datetime.now()
 
@@ -80,6 +81,7 @@ def main(grid: Grid, context: Context) -> None:
     out_features = 1
     if dataset_name == "wheat":
         from wheat_data_prep import CLASSES as wheat_classes
+
         out_features = len(wheat_classes)
     elif dataset_name == "cifar10":
         out_features = len(cifar_classes)
@@ -97,6 +99,13 @@ def main(grid: Grid, context: Context) -> None:
     #     fraction_evaluate=fraction_evaluate, server_momentum=momentum
     # )
     strategy = CustomStrat(fraction_evaluate=fraction_evaluate)
+
+    # prepare for training by receiving client arrays
+    prep_conf = {"prep-phase": True}
+    prep_replies = strategy.prepare(grid, prep_config=prep_conf)
+    print(prep_replies)
+    return
+
     # Start strategy, run FedAvg for `num_rounds`
     train_replies, evaluate_replies, result = strategy.start(
         timeout=1e10,

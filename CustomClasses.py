@@ -123,8 +123,9 @@ class CustomStrat(FedAvg):
         train_replies_all = []
         eval_replies_all = []
         ########################################
-        
-        for current_round in range(1, num_rounds + 1):
+
+        for current_round in range(0, num_rounds + 1):
+
             log(INFO, "")
             log(INFO, "[ROUND %s/%s]", current_round, num_rounds)
 
@@ -212,6 +213,34 @@ class CustomStrat(FedAvg):
         log(INFO, "")
 
         return train_replies_all, eval_replies_all, result
+
+    # added this method to prepare for building the global model by the server
+    # server sends a prep flag to clients, clients reply ith their local classes
+    def prepare(
+        self,
+        grid: Grid,
+        arrays: ArrayRecord | None = None,
+        prep_config: ConfigRecord | None = None,
+        timeout: float = 3600,
+    ):
+        prep_replies = grid.send_and_receive(
+            messages=self.configure_train(
+                0,
+                arrays,
+                prep_config,
+                grid,
+            ),
+            timeout=timeout,
+        )
+
+        return prep_replies
+
+
+def is_round_zero(current_round: int) -> bool:
+    return not current_round
+
+
+###############################################################################
 
 
 class ConvolutionalNeuralNetwork(nn.Module):

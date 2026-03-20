@@ -5,6 +5,7 @@ from torchvision.transforms import v2
 from typing import Literal
 from torch.utils.data import DataLoader, random_split
 import torch
+from utils import cmd
 
 # imagenet images are 224x224 so we resize our custom data to 224
 TRANSFORM = transforms.Compose(
@@ -18,10 +19,14 @@ TRANSFORM = transforms.Compose(
     ]
 )
 
+DATA_PATH ="/root/data"
+client_name = cmd("hostname")
+TRAIN_DATA_PATH = f"{DATA_PATH}/{client_name}_train.csv"
+TEST_DATA_PATH = f"{DATA_PATH}/{client_name}_test.csv"
 
 
 DATASET = WheatImgDataset(
-    data_file="compressed_images_wheat/train.csv", transform=TRANSFORM
+    data_file=TRAIN_DATA_PATH, transform=TRANSFORM
 )
 
 size = len(DATASET)
@@ -36,7 +41,7 @@ TRAINING_DATA, VALIDATION_DATA = random_split(
 
 
 TESTING_DATA = WheatImgDataset(
-    data_file="compressed_images_wheat/test.csv", transform=TRANSFORM
+    data_file=TEST_DATA_PATH, transform=TRANSFORM
 )
 
 # #######################################################
@@ -55,19 +60,19 @@ LABELS_MAP = {i:c for i,c in enumerate(CLASSES)}
 # cutmixup = v2.RandomChoice([cutmix, mixup])
 
 
-# def pick_mixer(name: str, classes:list):
-#     cutmix = v2.CutMix(num_classes=len(CLASSES))
-#     mixup = v2.MixUp(num_classes=len(CLASSES))
-#     cutmixup = v2.RandomChoice([cutmix, mixup])
-#     match name:
-#         case "cutmix":
-#             return cutmix
-#         case "mixup":
-#             return mixup
-#         case "cutmixup":
-#             return cutmixup
-#         case _:
-#             return None
+def pick_mixer(name: str, classes:list):
+    cutmix = v2.CutMix(num_classes=len(classes))
+    mixup = v2.MixUp(num_classes=len(classes))
+    cutmixup = v2.RandomChoice([cutmix, mixup])
+    match name:
+        case "cutmix":
+            return cutmix
+        case "mixup":
+            return mixup
+        case "cutmixup":
+            return cutmixup
+        case _:
+            return None
 
 
 TRAIN_SAMPLER = oversampler(
