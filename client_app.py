@@ -68,9 +68,9 @@ def train(msg: Message, context: Context):
             batch_size,
             num_workers=num_workers,
         )
-        class_weights = get_class_weights(
-            TRAIN_DATA_PATH, wheat_train.indices
-        ).to(DEVICE)
+        class_weights = get_class_weights(TRAIN_DATA_PATH, wheat_train.indices).to(
+            DEVICE
+        )
 
     elif dataset_name == "cifar10":
         from cifar10_data_prep import (
@@ -89,9 +89,9 @@ def train(msg: Message, context: Context):
     # check if this is a prep phase, return classes if True
     prep_phase = server_config.get("prep-phase")
     if prep_phase:
-        content = RecordDict({"local-classes": local_classes})
+        content = RecordDict({"local-classes": MetricRecord(local_classes)})
         return Message(content=content, reply_to=msg)
-        
+
     # Load the model and initialize it with the received weights
     print("\nDevice: ", DEVICE)
     print("\nChosen model: ", model_name)
