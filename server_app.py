@@ -107,7 +107,7 @@ def main(grid: Grid, context: Context) -> None:
     for item in prep_replies:
         print("")
         print(item.metadata)
-        print(item.content)
+        print(item.content.get("metrics").get("local-classes"))
     return
 
     # Start strategy, run FedAvg for `num_rounds`
