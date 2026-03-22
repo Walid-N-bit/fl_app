@@ -55,7 +55,7 @@ def train(msg: Message, context: Context):
             CLASSES as wheat_classes,
         )
 
-        local_classes = wheat_classes
+        local_classes = list(wheat_classes)
         trainloader = data_loader(
             wheat_train,
             dev,
