@@ -90,8 +90,8 @@ def train(msg: Message, context: Context):
     # check if this is a prep phase, return classes if True
     prep_phase = server_config.get("prep-phase")
     if prep_phase:
-        prep_metrics = ({"local-classes": local_classes})
-        content = ConfigRecord({"metrics":prep_metrics})
+        prep_metrics = ConfigRecord({"local-classes": local_classes})
+        content = RecordDict({"classes": prep_metrics})
         return Message(content=content, reply_to=msg)
 
     # Load the model and initialize it with the received weights
