@@ -103,7 +103,10 @@ def main(grid: Grid, context: Context) -> None:
     # prepare for training by receiving client arrays
     prep_conf = MetricRecord({"prep-phase": 1})
     prep_replies = strategy.prepare(grid, arrays, prep_config=prep_conf)
-    print(prep_replies)
+    for item in prep_replies:
+        print('')
+        print(item.metadata)
+        print(item.content)
     return
 
     # Start strategy, run FedAvg for `num_rounds`
