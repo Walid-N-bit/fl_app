@@ -80,9 +80,10 @@ def main(grid: Grid, context: Context) -> None:
     # Load global model
     out_features = 1
     if dataset_name == "wheat":
-        from wheat_data_prep import CLASSES as wheat_classes
+        # from wheat_data_prep import CLASSES as wheat_classes
 
-        out_features = len(wheat_classes)
+        # out_features = len(wheat_classes)
+        out_features = 1
     elif dataset_name == "cifar10":
         out_features = len(cifar_classes)
     global_model = choose_model(model_name, freeze, out_features).to(DEVICE)
@@ -104,7 +105,7 @@ def main(grid: Grid, context: Context) -> None:
     prep_conf = MetricRecord({"prep-phase": 1})
     prep_replies = strategy.prepare(grid, arrays, prep_config=prep_conf)
     for item in prep_replies:
-        print('')
+        print("")
         print(item.metadata)
         print(item.content)
     return
