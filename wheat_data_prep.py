@@ -19,15 +19,13 @@ TRANSFORM = transforms.Compose(
     ]
 )
 
-DATA_PATH ="/root/data"
-client_name = cmd("hostname")
+DATA_PATH = "/root/data"
+client_name = cmd("hostname").strip()
 TRAIN_DATA_PATH = f"{DATA_PATH}/{client_name}_train.csv"
 TEST_DATA_PATH = f"{DATA_PATH}/{client_name}_test.csv"
 
 
-DATASET = WheatImgDataset(
-    data_file=TRAIN_DATA_PATH, transform=TRANSFORM
-)
+DATASET = WheatImgDataset(data_file=TRAIN_DATA_PATH, transform=TRANSFORM)
 
 size = len(DATASET)
 
@@ -40,9 +38,7 @@ TRAINING_DATA, VALIDATION_DATA = random_split(
 )
 
 
-TESTING_DATA = WheatImgDataset(
-    data_file=TEST_DATA_PATH, transform=TRANSFORM
-)
+TESTING_DATA = WheatImgDataset(data_file=TEST_DATA_PATH, transform=TRANSFORM)
 
 # #######################################################
 # print(f"Train size: {len(TRAINING_DATA)}")
@@ -53,14 +49,14 @@ TESTING_DATA = WheatImgDataset(
 # #######################################################
 
 CLASSES = DATASET.classes.values()
-LABELS_MAP = {i:c for i,c in enumerate(CLASSES)}
+LABELS_MAP = {i: c for i, c in enumerate(CLASSES)}
 
 # cutmix = v2.CutMix(num_classes=len(CLASSES))
 # mixup = v2.MixUp(num_classes=len(CLASSES))
 # cutmixup = v2.RandomChoice([cutmix, mixup])
 
 
-def pick_mixer(name: str, classes:list):
+def pick_mixer(name: str, classes: list):
     cutmix = v2.CutMix(num_classes=len(classes))
     mixup = v2.MixUp(num_classes=len(classes))
     cutmixup = v2.RandomChoice([cutmix, mixup])
