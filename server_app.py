@@ -102,7 +102,7 @@ def main(grid: Grid, context: Context) -> None:
 
     # prepare for training by receiving client arrays
     prep_conf = {"prep-phase": True}
-    prep_replies = strategy.prepare(grid, prep_config=prep_conf)
+    prep_replies = strategy.prepare(grid, arrays, prep_config=prep_conf)
     print(prep_replies)
     return
 
