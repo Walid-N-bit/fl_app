@@ -101,7 +101,7 @@ def main(grid: Grid, context: Context) -> None:
     strategy = CustomStrat(fraction_evaluate=fraction_evaluate)
 
     # prepare for training by receiving client arrays
-    prep_conf = {"prep-phase": True}
+    prep_conf = MetricRecord({"prep-phase": True})
     prep_replies = strategy.prepare(grid, arrays, prep_config=prep_conf)
     print(prep_replies)
     return
