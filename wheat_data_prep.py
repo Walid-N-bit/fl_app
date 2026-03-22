@@ -72,7 +72,7 @@ def pick_mixer(name: str, classes: list):
 
 
 TRAIN_SAMPLER = oversampler(
-    data_path="compressed_images_wheat/train.csv", subset_indices=TRAINING_DATA.indices
+    data_path=TRAIN_DATA_PATH, subset_indices=TRAINING_DATA.indices
 )
 
 
