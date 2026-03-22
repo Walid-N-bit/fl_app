@@ -3,6 +3,7 @@ from torch import nn
 from torch.optim import lr_scheduler
 from flwr.app import ArrayRecord, Context, Message, MetricRecord, RecordDict
 from flwr.clientapp import ClientApp
+from flwr.app import ConfigRecord
 from ast import literal_eval
 import time
 from utils import end_of_training_msg, pick_mixer
@@ -89,8 +90,8 @@ def train(msg: Message, context: Context):
     # check if this is a prep phase, return classes if True
     prep_phase = server_config.get("prep-phase")
     if prep_phase:
-        prep_metrics = MetricRecord({"local-classes": local_classes})
-        content = RecordDict({prep_metrics})
+        prep_metrics = ({"local-classes": local_classes})
+        content = ConfigRecord({prep_metrics})
         return Message(content=content, reply_to=msg)
 
     # Load the model and initialize it with the received weights
