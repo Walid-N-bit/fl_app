@@ -18,7 +18,9 @@ server = ServerApp()
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
-def prep_phase(strategy: CustomStrat, grid: Grid, arrays: ArrayRecord) -> list:
+def prep_phase(
+    strategy: CustomStrat, grid: Grid, arrays: ArrayRecord
+) -> tuple[list, list]:
     """
     send flag to clients to signify preparation phase of the training.
     receive and compile local classes from each client into a list of global classes.
@@ -35,22 +37,31 @@ def prep_phase(strategy: CustomStrat, grid: Grid, arrays: ArrayRecord) -> list:
     prep_conf = MetricRecord({"prep-phase": 1})
     prep_replies = strategy.prepare(grid, arrays, prep_config=prep_conf)
     global_classes = set()
+    clients_metrics = []
     for item in prep_replies:
 
-        print("\nsource ", item.metadata.src_node_id)
-        print("\ndestination ", item.metadata.dst_node_id)
-        print("\ncontent ", item.content)
-
-        client_classes = item.content.get("metrics").get("local-classes")
+        # print("\nsource ", item.metadata.src_node_id)
+        # print("\ndestination ", item.metadata.dst_node_id)
+        # print("\ncontent ", item.content)
+        client_metrics = item.content.get("metrics")
+        client_classes = client_metrics.get("local-classes")
+        clients_metrics.append(client_metrics)
         global_classes.update(set(client_classes))
 
-    return sorted(list(global_classes))
+    return sorted(list(global_classes)), clients_metrics
 
 
-def labels_per_client(global_classes: list, grid: Grid):
+def labels_map_per_client(global_classes: list, metrics: list[dict]):
+
     labels_map = {i: c for i, c in enumerate(global_classes)}
-
-    pass
+    contents = []
+    for item in metrics:
+        node_name = item.get("node-name")
+        node_id = item.get("node-id")
+        node_classes = item.get("local-classes")
+        node_labels_map = {k: v for k, v in labels_map if (v in node_classes)}
+        contents.append((node_id, {"test": 1, "labels-map": node_labels_map}))
+    return contents
 
 
 # def global_evaluate(model: CNN, server_round: int, arrays: ArrayRecord) -> MetricRecord:
@@ -73,6 +84,7 @@ def labels_per_client(global_classes: list, grid: Grid):
 @server.main()
 def main(grid: Grid, context: Context) -> None:
     """Main entry point for the ServerApp."""
+    from CustomClasses import send_to_node, construct_messages
 
     model_name = context.run_config["model-name"]
     freeze = context.run_config["freeze"]
@@ -137,7 +149,15 @@ def main(grid: Grid, context: Context) -> None:
     strategy = CustomStrat(fraction_evaluate=fraction_evaluate)
 
     # prepare for training by receiving client arrays
-    golobal_classes = prep_phase(strategy, grid, temp_arrays)
+    golobal_classes, all_metrics = prep_phase(strategy, grid, temp_arrays)
+    labels_maps = labels_map_per_client(golobal_classes, all_metrics)
+    messages_to_clients = construct_messages(labels_maps)
+    test_replies = send_to_node(messages_to_clients)
+
+    print("\nReplies: ")
+    for r in test_replies:
+        print(r)
+
     out_features = len(golobal_classes)
     global_model = choose_model(model_name, freeze, out_features).to(DEVICE)
     arrays = ArrayRecord(global_model.state_dict())

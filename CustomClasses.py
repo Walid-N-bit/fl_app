@@ -7,7 +7,7 @@ from torchvision.io import decode_image
 import torch.nn.functional as F
 from flwr.serverapp.strategy import FedAvg, FedAvgM
 from collections.abc import Iterable
-from flwr.app import Message, MetricRecord
+from flwr.app import Message, MetricRecord, RecordDict
 
 # from model_params import FLTRS_NBR, IMG_H, IMG_W
 import time, io
@@ -219,6 +219,7 @@ class CustomStrat(FedAvg):
     def prepare(
         self,
         grid: Grid,
+        client_id: int | None = None,
         arrays: ArrayRecord | None = None,
         prep_config: ConfigRecord | None = None,
         timeout: float = 3600,
@@ -236,8 +237,19 @@ class CustomStrat(FedAvg):
         return prep_replies
 
 
-def is_round_zero(current_round: int) -> bool:
-    return not current_round
+def construct_messages(content_and_id: list[tuple[int, dict]]) -> Iterable[Message]:
+    messages = []
+    for item in content_and_id:
+        node_id = item[0]
+        content = item[1]
+        msg = Message(RecordDict(content), dst_node_id=node_id)
+        messages.append(msg)
+    return messages
+
+
+def send_to_node(grid: Grid, messages: Iterable[Message]):
+    replies = grid.send_and_receive(messages)
+    return replies
 
 
 ###############################################################################
