@@ -38,18 +38,18 @@ def prep_phase(
     prep_conf = ConfigRecord({"prep-phase": 1})
     prep_replies = strategy.prepare(grid, arrays, prep_config=prep_conf)
     global_classes = set()
-    clients_metrics = []
+    clients_configs = []
     for item in prep_replies:
 
         # print("\nsource ", item.metadata.src_node_id)
         # print("\ndestination ", item.metadata.dst_node_id)
         # print("\ncontent ", item.content)
-        client_metrics = item.content.get("metrics")
-        client_classes = client_metrics.get("local-classes")
-        clients_metrics.append(client_metrics)
+        client_conf = item.content.get("config")
+        client_classes = client_conf.get("local-classes")
+        clients_configs.append(client_conf)
         global_classes.update(set(client_classes))
 
-    return sorted(list(global_classes)), clients_metrics
+    return sorted(list(global_classes)), clients_configs
 
 
 def labels_map_per_client(global_classes: list, metrics: list[dict]):
