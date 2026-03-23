@@ -100,9 +100,9 @@ def train(msg: Message, context: Context):
             {"local-classes": local_classes, "node-name": node_name, "node-id": node_id}
         )
         # content = {"metrics": prep_metrics}
-        content = ConfigRecord({"config": prep_conf})
+        content = RecordDict({"config": prep_conf})
 
-        return Message(content=RecordDict(content), reply_to=msg)
+        return Message(content=content, reply_to=msg)
 
     labels = server_config.get("labels")
     if labels:
