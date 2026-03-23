@@ -238,10 +238,12 @@ class CustomStrat(FedAvg):
 
 def construct_messages(content_and_id: list[tuple[int, dict]]) -> Iterable[Message]:
     messages = []
+    print("\nConstruct msg:")
     for item in content_and_id:
         node_id = item[0]
         content = item[1]
-        msg = Message(RecordDict(content), dst_node_id=node_id)
+        print(f"\nnode id: {node_id}\ncontent{content}\n")
+        msg = Message(content=RecordDict(content), dst_node_id=node_id)
         messages.append(msg)
     return messages
 
