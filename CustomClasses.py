@@ -233,11 +233,6 @@ class CustomStrat(FedAvg):
             timeout=timeout,
         )
 
-        # prep_replies = grid.send_and_receive(
-        #     messages=Message(),
-        #     timeout=timeout,
-        # )
-
         return prep_replies
 
 

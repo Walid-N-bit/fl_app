@@ -36,9 +36,21 @@ def prep_phase(strategy: CustomStrat, grid: Grid, arrays: ArrayRecord) -> list:
     prep_replies = strategy.prepare(grid, arrays, prep_config=prep_conf)
     global_classes = set()
     for item in prep_replies:
+
+        print("\nsource ", item.metadata.src_node_id)
+        print("\destination ", item.metadata.dst_node_id)
+        print("\ncontent ", item.content)
+
         client_classes = item.content.get("metrics").get("local-classes")
         global_classes.update(set(client_classes))
+
     return sorted(list(global_classes))
+
+
+def labels_per_client(global_classes:list, grid:Grid):
+    labels_map = {i: c for i, c in enumerate(global_classes)}
+
+    pass
 
 
 # def global_evaluate(model: CNN, server_round: int, arrays: ArrayRecord) -> MetricRecord:
@@ -129,9 +141,6 @@ def main(grid: Grid, context: Context) -> None:
     out_features = len(golobal_classes)
     global_model = choose_model(model_name, freeze, out_features).to(DEVICE)
     arrays = ArrayRecord(global_model.state_dict())
-
-    print(f"\n{golobal_classes}\n")
-    return
 
     # Start strategy, run FedAvg for `num_rounds`
     train_replies, evaluate_replies, result = strategy.start(

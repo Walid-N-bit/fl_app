@@ -93,6 +93,10 @@ def train(msg: Message, context: Context):
         prep_metrics = ConfigRecord({"local-classes": local_classes})
         content = RecordDict({"metrics": prep_metrics})
         return Message(content=content, reply_to=msg)
+    else:
+        pass
+    
+    # classes 
 
     # Load the model and initialize it with the received weights
     print("\nDevice: ", DEVICE)
