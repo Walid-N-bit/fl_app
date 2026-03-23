@@ -157,7 +157,7 @@ def main(grid: Grid, context: Context) -> None:
     golobal_classes, all_metrics = prep_phase(strategy, grid, temp_arrays)
     labels_maps = labels_map_per_client(golobal_classes, all_metrics)
     messages_to_clients = construct_messages(labels_maps)
-    test_replies = send_to_node(messages_to_clients)
+    test_replies = send_to_node(grid, messages_to_clients)
 
     print("\nReplies: ")
     for r in test_replies:
