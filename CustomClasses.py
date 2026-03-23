@@ -219,7 +219,6 @@ class CustomStrat(FedAvg):
     def prepare(
         self,
         grid: Grid,
-        client_id: int | None = None,
         arrays: ArrayRecord | None = None,
         prep_config: ConfigRecord | None = None,
         timeout: float = 3600,

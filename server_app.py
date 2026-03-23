@@ -34,7 +34,8 @@ def prep_phase(
     :return: Description
     :rtype: set
     """
-    prep_conf = MetricRecord({"prep-phase": 1})
+    # prep_conf = MetricRecord({"prep-phase": 1})
+    prep_conf = ConfigRecord({"prep-phase": 1})
     prep_replies = strategy.prepare(grid, arrays, prep_config=prep_conf)
     global_classes = set()
     clients_metrics = []
@@ -148,6 +149,7 @@ def main(grid: Grid, context: Context) -> None:
     # )
     strategy = CustomStrat(fraction_evaluate=fraction_evaluate)
 
+    #################################################################
     # prepare for training by receiving client arrays
     golobal_classes, all_metrics = prep_phase(strategy, grid, temp_arrays)
     labels_maps = labels_map_per_client(golobal_classes, all_metrics)
@@ -162,6 +164,7 @@ def main(grid: Grid, context: Context) -> None:
     global_model = choose_model(model_name, freeze, out_features).to(DEVICE)
     arrays = ArrayRecord(global_model.state_dict())
     return
+    ##########################################################3
 
     # Start strategy, run FedAvg for `num_rounds`
     train_replies, evaluate_replies, result = strategy.start(
