@@ -107,9 +107,10 @@ def train(msg: Message, context: Context):
     labels = server_config.get("labels")
     if labels:
         print("local labels: ", labels)
-        return
-    else:
-        return
+        test_conf = ConfigRecord({"test": 1})
+        content = RecordDict({"test": test_conf})
+        return Message(content=content, reply_to=msg)
+
     # classes
 
     # Load the model and initialize it with the received weights
