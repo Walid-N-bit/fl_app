@@ -108,6 +108,8 @@ def train(msg: Message, context: Context):
     if labels:
         print("local labels: ", labels)
         return
+    else:
+        return
     # classes
 
     # Load the model and initialize it with the received weights
