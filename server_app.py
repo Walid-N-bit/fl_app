@@ -18,6 +18,29 @@ server = ServerApp()
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
+def prep_phase(strategy: CustomStrat, grid: Grid, arrays: ArrayRecord) -> list:
+    """
+    send flag to clients to signify preparation phase of the training.
+    receive and compile local classes from each client into a list of global classes.
+
+    :param strategy: Description
+    :type strategy: CustomStrat
+    :param grid: Description
+    :type grid: Grid
+    :param arrays: Description
+    :type arrays: ArrayRecord
+    :return: Description
+    :rtype: set
+    """
+    prep_conf = MetricRecord({"prep-phase": 1})
+    prep_replies = strategy.prepare(grid, arrays, prep_config=prep_conf)
+    global_classes = set()
+    for item in prep_replies:
+        client_classes = item.content.get("metrics").get("local-classes")
+        global_classes.add(set(client_classes))
+    return sorted(list(global_classes))
+
+
 # def global_evaluate(model: CNN, server_round: int, arrays: ArrayRecord) -> MetricRecord:
 #     """Evaluate model on central data."""
 
@@ -102,12 +125,8 @@ def main(grid: Grid, context: Context) -> None:
     strategy = CustomStrat(fraction_evaluate=fraction_evaluate)
 
     # prepare for training by receiving client arrays
-    prep_conf = MetricRecord({"prep-phase": 1})
-    prep_replies = strategy.prepare(grid, arrays, prep_config=prep_conf)
-    for item in prep_replies:
-        print("")
-        print(item.metadata)
-        print(item.content.get("metrics").get("local-classes"))
+    golobal_classes = prep_phase(strategy, grid, arrays)
+    print(f"\n{golobal_classes}\n")
     return
 
     # Start strategy, run FedAvg for `num_rounds`
