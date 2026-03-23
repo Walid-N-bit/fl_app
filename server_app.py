@@ -47,7 +47,7 @@ def prep_phase(strategy: CustomStrat, grid: Grid, arrays: ArrayRecord) -> list:
     return sorted(list(global_classes))
 
 
-def labels_per_client(global_classes:list, grid:Grid):
+def labels_per_client(global_classes: list, grid: Grid):
     labels_map = {i: c for i, c in enumerate(global_classes)}
 
     pass
@@ -141,6 +141,7 @@ def main(grid: Grid, context: Context) -> None:
     out_features = len(golobal_classes)
     global_model = choose_model(model_name, freeze, out_features).to(DEVICE)
     arrays = ArrayRecord(global_model.state_dict())
+    return
 
     # Start strategy, run FedAvg for `num_rounds`
     train_replies, evaluate_replies, result = strategy.start(
