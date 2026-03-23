@@ -101,21 +101,21 @@ def main(grid: Grid, context: Context) -> None:
     momentum = context.run_config["momentum"]
 
     # Load global model
-    out_features = 1
-    if dataset_name == "wheat":
-        # from wheat_data_prep import CLASSES as wheat_classes
+    # if dataset_name == "wheat":
+    #     # from wheat_data_prep import CLASSES as wheat_classes
 
-        # out_features = len(wheat_classes)
-        out_features = 1
-    elif dataset_name == "cifar10":
-        out_features = len(cifar_classes)
-    global_model = choose_model(model_name, freeze, out_features).to(DEVICE)
+    #     # out_features = len(wheat_classes)
+    #     out_features = 1
+    # elif dataset_name == "cifar10":
+    #     out_features = len(cifar_classes)
+
+    temp_model = choose_model("cnn", freeze, 1).to(DEVICE)
 
     ## model_exists = file_exists(output_path)
     # if model_exists:
     #     global_model.load_state_dict(torch.load(output_path, weights_only=True))
 
-    arrays = ArrayRecord(global_model.state_dict())
+    temp_arrays = ArrayRecord(temp_model.state_dict())
 
     ## Initialize FedAvg strategy
     # strategy = FedAvg(fraction_evaluate=fraction_evaluate)
@@ -125,7 +125,11 @@ def main(grid: Grid, context: Context) -> None:
     strategy = CustomStrat(fraction_evaluate=fraction_evaluate)
 
     # prepare for training by receiving client arrays
-    golobal_classes = prep_phase(strategy, grid, arrays)
+    golobal_classes = prep_phase(strategy, grid, temp_arrays)
+    out_features = len(golobal_classes)
+    global_model = choose_model(model_name, freeze, out_features).to(DEVICE)
+    arrays = ArrayRecord(global_model.state_dict())
+
     print(f"\n{golobal_classes}\n")
     return
 
