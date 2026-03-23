@@ -107,8 +107,8 @@ def train(msg: Message, context: Context):
     labels = server_config.get("labels")
     if labels:
         print("local labels: ", labels)
-        test_conf = ConfigRecord({"test": 1})
-        content = RecordDict({"test": test_conf})
+        test_conf = ConfigRecord({"node-name": node_name, "test": 1})
+        content = RecordDict({"config": test_conf})
         return Message(content=content, reply_to=msg)
 
     # classes
