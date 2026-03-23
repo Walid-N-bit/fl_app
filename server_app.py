@@ -38,7 +38,7 @@ def prep_phase(strategy: CustomStrat, grid: Grid, arrays: ArrayRecord) -> list:
     for item in prep_replies:
 
         print("\nsource ", item.metadata.src_node_id)
-        print("\destination ", item.metadata.dst_node_id)
+        print("\ndestination ", item.metadata.dst_node_id)
         print("\ncontent ", item.content)
 
         client_classes = item.content.get("metrics").get("local-classes")
