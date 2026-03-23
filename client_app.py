@@ -99,8 +99,8 @@ def train(msg: Message, context: Context):
         prep_metrics = ConfigRecord(
             {"local-classes": local_classes, "node-name": node_name, "node-id": node_id}
         )
-        content = {"metrics": prep_metrics}
-        # content = RecordDict({"metrics": prep_metrics})
+        # content = {"metrics": prep_metrics}
+        content = RecordDict({"metrics": prep_metrics})
 
         return Message(content=content, reply_to=msg)
     test = server_config.get("test")
