@@ -6,7 +6,7 @@ from flwr.clientapp import ClientApp
 from flwr.app import ConfigRecord
 from ast import literal_eval
 import time
-from utils import end_of_training_msg, pick_mixer
+from utils import end_of_training_msg, pick_mixer, cmd
 from model_functions import train as train_fn, test as test_fn, choose_model
 
 
@@ -18,6 +18,8 @@ DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 @client.train()
 def train(msg: Message, context: Context):
     """Train the model on local data."""
+
+    node_name = cmd("hostname").strip()
 
     train_times = []
     passed_epochs = []
@@ -90,9 +92,7 @@ def train(msg: Message, context: Context):
     # check if this is a prep phase, return classes if True
     prep_phase = server_config.get("prep-phase")
     if prep_phase:
-        from utils import cmd
 
-        node_name = cmd("hostname").strip()
         node_id = context.node_id
         print("\n this node's name:", node_name)
         print("\n this node's id: ", node_id)
