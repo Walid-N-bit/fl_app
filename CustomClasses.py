@@ -246,13 +246,14 @@ def construct_messages(content_and_id: list[tuple[int, dict]]) -> Iterable[Messa
         msg = Message(
             content=RecordDict({"config": ConfigRecord(content)}),
             dst_node_id=node_id,
+            message_type=MessageType.TRAIN,
         )
         messages.append(msg)
     return messages
 
 
 def send_to_node(grid: Grid, messages: Iterable[Message]):
-    replies = grid.send_and_receive(messages, MessageType.TRAIN)
+    replies = grid.send_and_receive(messages)
     return replies
 
 
