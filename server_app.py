@@ -55,13 +55,14 @@ def prep_phase(
 def labels_map_per_client(global_classes: list, metrics: list[dict]):
 
     labels_map = {i: c for i, c in enumerate(global_classes)}
+    print("\nGlobal labels map: ", labels_map)
     contents = []
     for item in metrics:
         node_name = item.get("node-name")
         node_id = item.get("node-id")
         node_classes = item.get("local-classes")
         node_labels_map = {k: v for k, v in labels_map.items() if (v in node_classes)}
-        contents.append((int(node_id), {"test": 1, "labels-map": node_labels_map}))
+        contents.append((int(node_id), {"labels": list(node_labels_map.keys())}))
     print("\nContents: ", contents)
     print(" ")
     return contents

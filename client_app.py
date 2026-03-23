@@ -103,9 +103,9 @@ def train(msg: Message, context: Context):
         content = RecordDict({"metrics": prep_metrics})
 
         return Message(content=content, reply_to=msg)
-    test = server_config.get("test")
-    labels = server_config.get("labels-map")
-    if test:
+
+    labels = server_config.get("labels")
+    if labels:
         print("local labels: ", labels)
         return Message(content=RecordDict({"client-name": node_name}), reply_to=msg)
 
