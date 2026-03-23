@@ -37,7 +37,7 @@ def prep_phase(strategy: CustomStrat, grid: Grid, arrays: ArrayRecord) -> list:
     global_classes = set()
     for item in prep_replies:
         client_classes = item.content.get("metrics").get("local-classes")
-        global_classes.add(set(client_classes))
+        global_classes.update(set(client_classes))
     return sorted(list(global_classes))
 
 
