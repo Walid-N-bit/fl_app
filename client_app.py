@@ -96,19 +96,18 @@ def train(msg: Message, context: Context):
         node_id = context.node_id
         print("\n this node's name:", node_name)
         print("\n this node's id: ", node_id)
-        prep_metrics = ConfigRecord(
+        prep_conf = ConfigRecord(
             {"local-classes": local_classes, "node-name": node_name, "node-id": node_id}
         )
         # content = {"metrics": prep_metrics}
-        content = RecordDict({"metrics": prep_metrics})
+        content = RecordDict({"config": prep_conf})
 
         return Message(content=content, reply_to=msg)
 
     labels = server_config.get("labels")
     if labels:
         print("local labels: ", labels)
-        return Message(content=RecordDict({"client-name": node_name}), reply_to=msg)
-
+        return
     # classes
 
     # Load the model and initialize it with the received weights

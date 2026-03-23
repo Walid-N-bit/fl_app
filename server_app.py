@@ -88,7 +88,7 @@ def labels_map_per_client(global_classes: list, metrics: list[dict]):
 @server.main()
 def main(grid: Grid, context: Context) -> None:
     """Main entry point for the ServerApp."""
-    from CustomClasses import send_to_node, construct_messages
+    from CustomClasses import send_to_node, construct_messages_per_node
 
     model_name = context.run_config["model-name"]
     freeze = context.run_config["freeze"]
@@ -156,7 +156,7 @@ def main(grid: Grid, context: Context) -> None:
     # prepare for training by receiving client arrays
     golobal_classes, all_metrics = prep_phase(strategy, grid, temp_arrays)
     labels_maps = labels_map_per_client(golobal_classes, all_metrics)
-    messages_to_clients = construct_messages(labels_maps)
+    messages_to_clients = construct_messages_per_node(labels_maps)
     test_replies = send_to_node(grid, messages_to_clients)
 
     print("\nReplies: ")

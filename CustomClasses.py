@@ -236,15 +236,18 @@ class CustomStrat(FedAvg):
         return prep_replies
 
 
-def construct_messages(content_and_id: list[tuple[int, dict]]) -> Iterable[Message]:
+def construct_messages_per_node(
+    content_and_id: list[tuple[int, dict]],
+    record: type[ConfigRecord] | type[ArrayRecord] | type[MetricRecord] = ConfigRecord,
+) -> Iterable[Message]:
     messages = []
     print("\nConstruct msg:")
     for item in content_and_id:
-        node_id = item[0]
-        content = item[1]
+        node_id = item[0]  # this should be int
+        content = item[1]  # this should be dict
         print(f"node id: {node_id}\ncontent: {content}\n")
         msg = Message(
-            content=RecordDict({"config": ConfigRecord(content)}),
+            content=RecordDict({"config": record(content)}),
             dst_node_id=node_id,
             message_type=MessageType.TRAIN,
         )
