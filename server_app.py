@@ -60,7 +60,7 @@ def labels_map_per_client(global_classes: list, metrics: list[dict]):
         node_name = item.get("node-name")
         node_id = item.get("node-id")
         node_classes = item.get("local-classes")
-        node_labels_map = {k: v for k, v in labels_map if (v in node_classes)}
+        node_labels_map = {k: v for k, v in labels_map.items() if (v in node_classes)}
         contents.append((node_id, {"test": 1, "labels-map": node_labels_map}))
     return contents
 
