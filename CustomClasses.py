@@ -14,7 +14,7 @@ import time, io
 from collections.abc import Callable
 from logging import INFO
 
-from flwr.common import ArrayRecord, ConfigRecord, MetricRecord, log
+from flwr.common import ArrayRecord, ConfigRecord, MetricRecord, log, MessageType
 from flwr.server import Grid
 
 from flwr.serverapp.strategy.result import Result
@@ -249,7 +249,7 @@ def construct_messages(content_and_id: list[tuple[int, dict]]) -> Iterable[Messa
 
 
 def send_to_node(grid: Grid, messages: Iterable[Message]):
-    replies = grid.send_and_receive(messages)
+    replies = grid.send_and_receive(messages, MessageType.TRAIN)
     return replies
 
 
