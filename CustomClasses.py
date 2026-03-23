@@ -242,7 +242,7 @@ def construct_messages(content_and_id: list[tuple[int, dict]]) -> Iterable[Messa
     for item in content_and_id:
         node_id = item[0]
         content = item[1]
-        print(f"\nnode id: {node_id}\ncontent{content}\n")
+        print(f"node id: {node_id}\ncontent{content}\n")
         msg = Message(content=RecordDict(content), dst_node_id=node_id)
         messages.append(msg)
     return messages
