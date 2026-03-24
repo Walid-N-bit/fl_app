@@ -73,6 +73,7 @@ def train(msg: Message, context: Context):
     use_weights = server_config.get("use-weights", context.run_config["use-weights"])
     epochs = server_config.get("local-epochs", context.run_config["local-epochs"])
     dataset_name = server_config.get("dataset-name", context.run_config["dataset-name"])
+    mixer = server_config.get("mixer", context.run_config["mixer"])
     out_features = server_config.get("out-features")
 
     if dataset_name == "wheat":
