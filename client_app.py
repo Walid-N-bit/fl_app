@@ -6,6 +6,7 @@ from flwr.clientapp import ClientApp
 from flwr.app import ConfigRecord
 from ast import literal_eval
 import time
+import numpy as np
 from utils import end_of_training_msg, pick_mixer, cmd
 from model_functions import train as train_fn, test as test_fn, choose_model
 
@@ -13,6 +14,32 @@ from model_functions import train as train_fn, test as test_fn, choose_model
 client = ClientApp()
 
 DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+
+def zero_out_weights(
+    out_features: int, selected_labels: list, weights: torch.Tensor
+) -> torch.Tensor:
+    """
+    assign a weight of 0 for classes meant to be ignored during training.
+
+    :param out_features: number of output features in the NN
+    :type out_features: int
+    :param selected_labels: labels of nodes to be trained
+    :type selected_labels: list
+    :param weights: class weights for local data
+    :type weights: torch.Tensor
+    :return: class weights for model training on this client
+    :rtype: Tensor
+    """
+
+    new_weights = np.zeros(out_features)
+    c = 0
+    for i, _ in enumerate(new_weights):
+        if i in selected_labels:
+            new_weights[i] = weights.tolist()[c]
+            c += 1
+
+    return torch.tensor(new_weights)
 
 
 @client.train()
@@ -45,6 +72,7 @@ def train(msg: Message, context: Context):
     use_weights = server_config.get("use-weights", context.run_config["use-weights"])
     epochs = server_config.get("local-epochs", context.run_config["local-epochs"])
     dataset_name = server_config.get("dataset-name", context.run_config["dataset-name"])
+    out_features = server_config.get("out-features")
 
     if dataset_name == "wheat":
         from wheat_data_utils import get_class_weights
@@ -114,11 +142,11 @@ def train(msg: Message, context: Context):
     print("\nDataset: ", dataset_name.upper())
     print("\nClasses: ", local_classes)
 
-    model = choose_model(model_name, freeze, len(local_classes)).to(DEVICE)
+    model = choose_model(model_name, freeze, out_features).to(DEVICE)
 
     model.load_state_dict(msg.content["arrays"].to_torch_state_dict())
 
-    # Load the data
+    modified_weights = zero_out_weights(out_features, labels, class_weights)
 
     # optimizer and loss_fn
 
@@ -135,7 +163,7 @@ def train(msg: Message, context: Context):
         )
     scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, "min", patience=sch_patience)
 
-    loss_fn = nn.CrossEntropyLoss(weight=(class_weights if use_weights else None))
+    loss_fn = nn.CrossEntropyLoss(weight=(modified_weights if use_weights else None))
 
     # commence training loop
     mixer = pick_mixer(mixer, local_classes)

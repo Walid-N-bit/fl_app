@@ -52,12 +52,12 @@ def prep_phase(
     return sorted(list(global_classes)), clients_configs
 
 
-def labels_map_per_client(global_classes: list, metrics: list[dict]):
+def labels_map_per_client(global_classes: list, configs: list[dict]):
 
     labels_map = {i: c for i, c in enumerate(global_classes)}
     print("\nGlobal labels map: ", labels_map)
     contents = []
-    for item in metrics:
+    for item in configs:
         node_name = item.get("node-name")
         node_id = item.get("node-id")
         node_classes = item.get("local-classes")
@@ -159,13 +159,31 @@ def main(grid: Grid, context: Context) -> None:
 
     # print replies for sent labels
     for item in labels_sent_replies:
-        print(f"\n--> {item.content.get("node-name")} received assigned labels successfully.")
+        print(
+            f"\n--> {item.content.get("config").get("node-name")} have received assigned labels successfully."
+        )
 
-    return
     out_features = len(global_classes)
     global_model = choose_model(model_name, freeze, out_features).to(DEVICE)
     arrays = ArrayRecord(global_model.state_dict())
 
+    # compile training configs
+    train_configs = {
+        "model-name": model_name,
+        "freeze": freeze,
+        "batch-size": batch_size,
+        "use-sampler": use_sampler,
+        "num-workers": num_workers,
+        "features-lr": features_lr,
+        "classifier-lr": classifier_lr,
+        "weight-decay": weight_decay,
+        "sch-patience": sch_patience,
+        "use-weights": use_weights,
+        "local-epochs": epochs,
+        "dataset-name": dataset_name,
+        "mixer": mixer,
+        "out-features": len(global_classes),
+    }
     # Start strategy, run FedAvg for `num_rounds`
     train_replies, evaluate_replies, result = strategy.start(
         timeout=1e10,
