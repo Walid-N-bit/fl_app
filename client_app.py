@@ -130,11 +130,11 @@ def train(msg: Message, context: Context):
 
     labels = server_config.get("labels")
     if labels:
-        print("\nlocal labels: ", labels)
-        print("\nweights: ", class_weights)
-        test_conf = ConfigRecord({"node-name": node_name})
-        content = RecordDict({"config": test_conf})
-        return Message(content=content, reply_to=msg)
+        print("\n-->local labels: ", labels)
+        print("-->Weights: ", class_weights)
+        # test_conf = ConfigRecord({"node-name": node_name})
+        # content = RecordDict({"config": test_conf})
+        # return Message(content=content, reply_to=msg)
 
     # Load the model and initialize it with the received weights
     print("\nDevice: ", DEVICE)
@@ -146,9 +146,8 @@ def train(msg: Message, context: Context):
 
     model.load_state_dict(msg.content["arrays"].to_torch_state_dict())
 
-    print("\n### Selected labels: ", labels)
     modified_weights = zero_out_weights(out_features, labels, class_weights)
-    print("### Modified Weights: ", modified_weights)
+    print("-->Modified Weights: ", modified_weights)
     print(" ")
 
     # optimizer and loss_fn

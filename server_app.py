@@ -104,21 +104,6 @@ def main(grid: Grid, context: Context) -> None:
     dataset_name = context.run_config["dataset-name"]
     mixer = context.run_config["mixer"]
 
-    train_configs = {
-        "model-name": model_name,
-        "freeze": freeze,
-        "batch-size": batch_size,
-        "use-sampler": use_sampler,
-        "num-workers": num_workers,
-        "features-lr": features_lr,
-        "classifier-lr": classifier_lr,
-        "weight-decay": weight_decay,
-        "sch-patience": sch_patience,
-        "use-weights": use_weights,
-        "local-epochs": epochs,
-        "dataset-name": dataset_name,
-        "mixer": mixer,
-    }
     start_time = datetime.now()
 
     # Read run config
