@@ -167,7 +167,7 @@ def main(grid: Grid, context: Context) -> None:
         "local-epochs": epochs,
         "dataset-name": dataset_name,
         "mixer": mixer,
-        "out-features": len(global_classes),
+        "out-features": out_features,
     }
     # Start strategy, run FedAvg for `num_rounds`
     train_replies, evaluate_replies, result = strategy.start(

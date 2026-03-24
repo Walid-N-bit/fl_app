@@ -48,6 +48,7 @@ use-weights = 0  # 1 for true, 0 for false
 # currently usable datasets: "wheat", "cifar10"
 dataset-name = "wheat"
 # dataset-name = "cifar10"
+out-features = 99
 
 
 [tool.flwr.federations]

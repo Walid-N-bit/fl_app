@@ -72,8 +72,12 @@ def train(msg: Message, context: Context):
     use_weights = server_config.get("use-weights", context.run_config["use-weights"])
     epochs = server_config.get("local-epochs", context.run_config["local-epochs"])
     dataset_name = server_config.get("dataset-name", context.run_config["dataset-name"])
-    out_features = server_config.get("out-features")
-
+    # out_features = server_config.get("out-features", context.run_config["out-features"])
+    out_msg = server_config.get("out-features")
+    out_ctxt = context.run_config["out-features"]
+    print("msg out: ", out_msg)
+    print("context out: ", out_ctxt)
+    return
     if dataset_name == "wheat":
         from wheat_data_utils import get_class_weights
         from wheat_data_prep import (
