@@ -72,11 +72,8 @@ def train(msg: Message, context: Context):
     use_weights = server_config.get("use-weights", context.run_config["use-weights"])
     epochs = server_config.get("local-epochs", context.run_config["local-epochs"])
     dataset_name = server_config.get("dataset-name", context.run_config["dataset-name"])
-    # out_features = server_config.get("out-features", context.run_config["out-features"])
-    out_msg = server_config.get("out-features")
-    out_ctxt = context.run_config["out-features"]
-    print("msg out: ", out_msg)
-    print("context out: ", out_ctxt)
+    out_features = server_config.get("out-features")
+
     if dataset_name == "wheat":
         from wheat_data_utils import get_class_weights
         from wheat_data_prep import (
@@ -138,7 +135,7 @@ def train(msg: Message, context: Context):
         # test_conf = ConfigRecord({"node-name": node_name})
         # content = RecordDict({"config": test_conf})
         # return Message(content=content, reply_to=msg)
-    return
+
     # Load the model and initialize it with the received weights
     print("\nDevice: ", DEVICE)
     print("\nChosen model: ", model_name)
