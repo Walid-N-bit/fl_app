@@ -140,7 +140,8 @@ def train(msg: Message, context: Context):
     print("\nDevice: ", DEVICE)
     print("\nChosen model: ", model_name)
     print("\nDataset: ", dataset_name.upper())
-    print("\nClasses: ", local_classes)
+    print("\nLocal classes: ", local_classes)
+    print("\nOutput features: ", out_features)
 
     model = choose_model(model_name, freeze, out_features).to(DEVICE)
 
