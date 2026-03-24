@@ -77,7 +77,6 @@ def train(msg: Message, context: Context):
     out_ctxt = context.run_config["out-features"]
     print("msg out: ", out_msg)
     print("context out: ", out_ctxt)
-    return
     if dataset_name == "wheat":
         from wheat_data_utils import get_class_weights
         from wheat_data_prep import (
@@ -139,7 +138,7 @@ def train(msg: Message, context: Context):
         # test_conf = ConfigRecord({"node-name": node_name})
         # content = RecordDict({"config": test_conf})
         # return Message(content=content, reply_to=msg)
-
+    return
     # Load the model and initialize it with the received weights
     print("\nDevice: ", DEVICE)
     print("\nChosen model: ", model_name)
