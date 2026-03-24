@@ -142,11 +142,11 @@ def main(grid: Grid, context: Context) -> None:
     messages_to_clients = construct_messages_per_node(labels_maps)
     labels_msg_replies = send_to_node(grid, messages_to_clients)
 
-    # # print replies for sent labels
-    # for item in labels_sent_replies:
-    #     print(
-    #         f"\n--> {item.content.get("config").get("node-name")} have received assigned labels successfully."
-    #     )
+    # print replies for sent labels
+    for item in labels_msg_replies:
+        print(
+            f"\n--> {item.content.get("config").get("node-name")} have received assigned labels successfully."
+        )
 
     out_features = len(global_classes)
     global_model = choose_model(model_name, freeze, out_features).to(DEVICE)

@@ -7,6 +7,7 @@ from flwr.app import ConfigRecord
 from ast import literal_eval
 import time
 import numpy as np
+import json
 from utils import end_of_training_msg, pick_mixer, cmd
 from model_functions import train as train_fn, test as test_fn, choose_model
 
@@ -132,9 +133,14 @@ def train(msg: Message, context: Context):
     if labels:
         print("\n-->local labels: ", labels)
         print("-->Weights: ", class_weights)
-        # test_conf = ConfigRecord({"node-name": node_name})
-        # content = RecordDict({"config": test_conf})
-        # return Message(content=content, reply_to=msg)
+        test_conf = ConfigRecord({"node-name": node_name})
+        content = RecordDict({"config": test_conf})
+        with open("assigned_labels.json", "w") as f:
+            json.dump({"labels": labels}, f)
+        return Message(content=content, reply_to=msg)
+    else:
+        with open("assigned_labels.json", "r") as f:
+            labels = json.load(f).get("labels")
 
     # Load the model and initialize it with the received weights
     print("\nDevice: ", DEVICE)
