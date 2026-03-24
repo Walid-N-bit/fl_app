@@ -92,26 +92,21 @@ def train(msg: Message, context: Context):
     # check if this is a prep phase, return classes if True
     prep_phase = server_config.get("prep-phase")
     if prep_phase:
-
         node_id = context.node_id
-        print("\n this node's name:", node_name)
-        print("\n this node's id: ", node_id)
         prep_conf = ConfigRecord(
             {"local-classes": local_classes, "node-name": node_name, "node-id": node_id}
         )
-        # content = {"metrics": prep_metrics}
         content = RecordDict({"config": prep_conf})
 
         return Message(content=content, reply_to=msg)
 
     labels = server_config.get("labels")
     if labels:
-        print("local labels: ", labels)
-        test_conf = ConfigRecord({"node-name": node_name, "test": 1})
+        print("\nlocal labels: ", labels)
+        print("\nweights: ", class_weights)
+        test_conf = ConfigRecord({"node-name": node_name})
         content = RecordDict({"config": test_conf})
         return Message(content=content, reply_to=msg)
-
-    # classes
 
     # Load the model and initialize it with the received weights
     print("\nDevice: ", DEVICE)

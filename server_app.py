@@ -104,7 +104,7 @@ def main(grid: Grid, context: Context) -> None:
     dataset_name = context.run_config["dataset-name"]
     mixer = context.run_config["mixer"]
 
-    configs = {
+    train_configs = {
         "model-name": model_name,
         "freeze": freeze,
         "batch-size": batch_size,
@@ -118,7 +118,6 @@ def main(grid: Grid, context: Context) -> None:
         "local-epochs": epochs,
         "dataset-name": dataset_name,
         "mixer": mixer,
-        "prep": False,
     }
     start_time = datetime.now()
 
@@ -152,29 +151,27 @@ def main(grid: Grid, context: Context) -> None:
     # )
     strategy = CustomStrat(fraction_evaluate=fraction_evaluate)
 
-    #################################################################
     # prepare for training by receiving client arrays
-    golobal_classes, all_metrics = prep_phase(strategy, grid, temp_arrays)
-    labels_maps = labels_map_per_client(golobal_classes, all_metrics)
+    global_classes, all_metrics = prep_phase(strategy, grid, temp_arrays)
+    labels_maps = labels_map_per_client(global_classes, all_metrics)
     messages_to_clients = construct_messages_per_node(labels_maps)
-    test_replies = send_to_node(grid, messages_to_clients)
+    labels_sent_replies = send_to_node(grid, messages_to_clients)
 
-    print("\nReplies: ")
-    for r in test_replies:
-        print(r)
+    # print replies for sent labels
+    for item in labels_sent_replies:
+        print(f"\n--> {item.content.get("node-name")} received assigned labels successfully.")
 
-    out_features = len(golobal_classes)
+    return
+    out_features = len(global_classes)
     global_model = choose_model(model_name, freeze, out_features).to(DEVICE)
     arrays = ArrayRecord(global_model.state_dict())
-    return
-    ##########################################################3
 
     # Start strategy, run FedAvg for `num_rounds`
     train_replies, evaluate_replies, result = strategy.start(
         timeout=1e10,
         grid=grid,
         initial_arrays=arrays,
-        train_config=ConfigRecord(configs),
+        train_config=ConfigRecord(train_configs),
         num_rounds=num_rounds,
         # evaluate_fn=global_evaluate,
     )
