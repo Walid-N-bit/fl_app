@@ -87,7 +87,11 @@ def train(
         if mixer:
             images, labels = mixer(images, labels)
 
-        print(f"\n{mixer = }\n{images.shape =}\n{labels.shape =}\n")
+        print(
+            f"\n{mixer = }\n{images.shape =}\n{labels.dtype =}\n{labels.shape =}\n{labels.squeeze().shape =}\n"
+        )
+        print("row sums:", labels.sum(dim=1))
+        print("min/max:", labels.min().item(), labels.max().item())
 
         predictions = model(images)
         loss = loss_func(predictions, labels)
