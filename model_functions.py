@@ -1,5 +1,5 @@
 import torch
-from torch import nn
+from torch import nn, Tensor
 from torch.utils.data import DataLoader
 from torchvision import models
 from torchvision.models import (
@@ -18,7 +18,13 @@ NET = models.MobileNetV3
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def choose_model(model_name: str, freeze: bool | Literal[0, 1], out_features: int):
+def choose_model(
+    model_name: Literal[
+        "mobilenet_v3_small", "mobilenet_v3_large", "efficientnet_b0", "cnn"
+    ],
+    freeze: bool | Literal[0, 1],
+    out_features: int,
+):
     match model_name:
         case "mobilenet_v3_small":
             model = models.mobilenet_v3_small(
@@ -81,17 +87,18 @@ def train(
         if mixer:
             images, labels = mixer(images, labels)
 
+        print(f"\n{mixer = }\n{images.shape =}\n{labels.shape =}\n")
+
         predictions = model(images)
         loss = loss_func(predictions, labels)
 
         pred_labels = predictions.argmax(1)
 
-        # if labels.ndim > 1:
-        #     target_labels = labels.argmax(1)
-        # else:
-        #     target_labels = labels
+        if labels.ndim > 1:
+            target_labels = labels.argmax(1)
+        else:
+            target_labels = labels
 
-        target_labels = labels
         train_acc += (
             (pred_labels == target_labels).type(torch.float).sum().item()
         )  # here all correct preds are summed
