@@ -127,13 +127,12 @@ def train(msg: Message, context: Context):
             {"local-classes": local_classes, "node-name": node_name, "node-id": node_id}
         )
         content = RecordDict({"config": prep_conf})
-
         return Message(content=content, reply_to=msg)
 
     labels = server_config.get("labels")
     if labels:
         print("\n-->local labels: ", labels)
-        print("-->Weights: ", class_weights)
+        print("-->Weights: ", class_weights, end="\n\n")
         test_conf = ConfigRecord({"node-name": node_name})
         content = RecordDict({"config": test_conf})
         with open("assigned_labels.json", "w") as f:
@@ -176,7 +175,7 @@ def train(msg: Message, context: Context):
     loss_fn = nn.CrossEntropyLoss(weight=(modified_weights if use_weights else None))
 
     # commence training loop
-    mixer = pick_mixer(mixer, local_classes)
+    mixer = pick_mixer(mixer, out_features)
 
     try:
         for e in range(epochs):

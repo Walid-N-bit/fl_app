@@ -22,7 +22,7 @@ def choose_model(model_name: str, freeze: bool | Literal[0, 1], out_features: in
     match model_name:
         case "mobilenet_v3_small":
             model = models.mobilenet_v3_small(
-                weights=MobileNet_V3_Small_Weights.DEFAULT, num_classes=out_features
+                weights=MobileNet_V3_Small_Weights.DEFAULT
             ).to(DEVICE)
             if freeze:
                 for param in model.parameters():
@@ -33,9 +33,9 @@ def choose_model(model_name: str, freeze: bool | Literal[0, 1], out_features: in
             model.classifier.insert(0, nn.Dropout(p=0.3, inplace=True))
 
         case "mobilenet_v3_large":
-            model = models.mobilenet_v3_large(
-                MobileNet_V3_Large_Weights.DEFAULT, num_classes=out_features
-            ).to(DEVICE)
+            model = models.mobilenet_v3_large(MobileNet_V3_Large_Weights.DEFAULT).to(
+                DEVICE
+            )
             if freeze:
                 for param in model.parameters():
                     param.requires_grad = False
@@ -86,11 +86,12 @@ def train(
 
         pred_labels = predictions.argmax(1)
 
-        if labels.ndim > 1:
-            target_labels = labels.argmax(1)
-        else:
-            target_labels = labels
+        # if labels.ndim > 1:
+        #     target_labels = labels.argmax(1)
+        # else:
+        #     target_labels = labels
 
+        target_labels = labels
         train_acc += (
             (pred_labels == target_labels).type(torch.float).sum().item()
         )  # here all correct preds are summed

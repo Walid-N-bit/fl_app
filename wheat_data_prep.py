@@ -56,9 +56,9 @@ LABELS_MAP = {i: c for i, c in enumerate(CLASSES)}
 # cutmixup = v2.RandomChoice([cutmix, mixup])
 
 
-def pick_mixer(name: str, classes: list):
-    cutmix = v2.CutMix(num_classes=len(classes))
-    mixup = v2.MixUp(num_classes=len(classes))
+def pick_mixer(name: str, num_classes: int):
+    cutmix = v2.CutMix(num_classes=num_classes)
+    mixup = v2.MixUp(num_classes=num_classes)
     cutmixup = v2.RandomChoice([cutmix, mixup])
     match name:
         case "cutmix":
