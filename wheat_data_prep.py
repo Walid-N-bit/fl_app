@@ -25,20 +25,20 @@ TRAIN_DATA_PATH = f"{DATA_PATH}/{client_name}_train.csv"
 TEST_DATA_PATH = f"{DATA_PATH}/{client_name}_test.csv"
 
 
-# DATASET = WheatImgDataset(data_file=TRAIN_DATA_PATH, transform=TRANSFORM)
+DATASET = WheatImgDataset(data_file=TRAIN_DATA_PATH, transform=TRANSFORM)
 
-# size = len(DATASET)
+size = len(DATASET)
 
-# train_size = int(0.8 * size)
+train_size = int(0.8 * size)
 
-# TRAINING_DATA, VALIDATION_DATA = random_split(
-#     DATASET,
-#     [train_size, (size - train_size)],
-#     generator=torch.Generator().manual_seed(33),
-# )
+TRAINING_DATA, VALIDATION_DATA = random_split(
+    DATASET,
+    [train_size, (size - train_size)],
+    generator=torch.Generator().manual_seed(33),
+)
 
 
-# TESTING_DATA = WheatImgDataset(data_file=TEST_DATA_PATH, transform=TRANSFORM)
+TESTING_DATA = WheatImgDataset(data_file=TEST_DATA_PATH, transform=TRANSFORM)
 
 # #######################################################
 # print(f"Train size: {len(TRAINING_DATA)}")
@@ -48,8 +48,9 @@ TEST_DATA_PATH = f"{DATA_PATH}/{client_name}_test.csv"
 # print(f"First val index: {VALIDATION_DATA.indices[0]}")
 # #######################################################
 
-# CLASSES = DATASET.classes.values()
-# LABELS_MAP = {i: c for i, c in enumerate(CLASSES)}
+CLASSES = DATASET.classes.values()
+LABELS_MAP = {i: c for i, c in enumerate(CLASSES)}
+
 
 def pick_mixer(name: str, num_classes: int):
     cutmix = v2.CutMix(num_classes=num_classes)
@@ -66,9 +67,9 @@ def pick_mixer(name: str, num_classes: int):
             return None
 
 
-# TRAIN_SAMPLER = oversampler(
-#     data_path=TRAIN_DATA_PATH, subset_indices=TRAINING_DATA.indices
-# )
+TRAIN_SAMPLER = oversampler(
+    data_path=TRAIN_DATA_PATH, subset_indices=TRAINING_DATA.indices
+)
 
 
 def data_loader(
