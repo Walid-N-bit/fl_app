@@ -87,11 +87,13 @@ def train(
         if mixer:
             images, labels = mixer(images, labels)
 
-        print(
-            f"\n{mixer = }\n{images.shape =}\n{labels.dtype =}\n{labels.shape =}\n{labels.squeeze().shape =}\n"
-        )
-        print("row sums:", labels.sum(dim=1))
-        print("min/max:", labels.min().item(), labels.max().item())
+        if batch % 100 == 0 and disp_log:
+            print(
+                f"\n{mixer = }\n{images.shape =}\n{images.dtype =}\n{labels.dtype =}\n{labels.shape =}\n{labels.squeeze().shape =}\n"
+            )
+            print("row sums:", labels.sum(dim=1))
+            print("min/max:", labels.min().item(), labels.max().item())
+            print("")
 
         predictions = model(images)
         loss = loss_func(predictions, labels)
