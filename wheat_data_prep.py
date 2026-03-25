@@ -52,19 +52,19 @@ CLASSES = DATASET.classes.values()
 LABELS_MAP = {i: c for i, c in enumerate(CLASSES)}
 
 
-def pick_mixer(name: str, num_classes: int):
-    cutmix = v2.CutMix(num_classes=num_classes)
-    mixup = v2.MixUp(num_classes=num_classes)
-    cutmixup = v2.RandomChoice([cutmix, mixup])
-    match name:
-        case "cutmix":
-            return cutmix
-        case "mixup":
-            return mixup
-        case "cutmixup":
-            return cutmixup
-        case _:
-            return None
+# def pick_mixer(name: str, num_classes: int):
+#     cutmix = v2.CutMix(num_classes=num_classes)
+#     mixup = v2.MixUp(num_classes=num_classes)
+#     cutmixup = v2.RandomChoice([cutmix, mixup])
+#     match name:
+#         case "cutmix":
+#             return cutmix
+#         case "mixup":
+#             return mixup
+#         case "cutmixup":
+#             return cutmixup
+#         case _:
+#             return None
 
 
 TRAIN_SAMPLER = oversampler(

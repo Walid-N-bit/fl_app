@@ -183,11 +183,11 @@ def end_of_training_msg(time: float):
     print(bars)
 
 
-def pick_mixer(name: str, classes: list):
+def pick_mixer(name: str, num_classes: int):
     from torchvision.transforms import v2
 
-    cutmix = v2.CutMix(num_classes=len(classes))
-    mixup = v2.MixUp(num_classes=len(classes))
+    cutmix = v2.CutMix(num_classes=num_classes)
+    mixup = v2.MixUp(num_classes=num_classes)
     cutmixup = v2.RandomChoice([cutmix, mixup])
     match name:
         case "cutmix":
