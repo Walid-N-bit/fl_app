@@ -80,15 +80,21 @@ def train(
         labels = y.to(DEVICE)
         if mixer:
             images, labels = mixer(images, labels)
-        predictions = model(images)
-        loss = loss_func(predictions, labels)
-
-        pred_labels = predictions.argmax(1)
 
         if labels.ndim > 1:
             target_labels = labels.argmax(1)
         else:
             target_labels = labels
+
+        predictions = model(images)
+        loss = loss_func(predictions, labels)
+
+        pred_labels = predictions.argmax(1)
+
+        # if labels.ndim > 1:
+        #     target_labels = labels.argmax(1)
+        # else:
+        #     target_labels = labels
 
         train_acc += (
             (pred_labels == target_labels).type(torch.float).sum().item()
@@ -97,7 +103,7 @@ def train(
 
         # Backpropagation
         optimizer.zero_grad(set_to_none=True)
-        loss = loss_func(model(images), labels)
+        # loss = loss_func(model(images), labels)
         loss.backward()
         optimizer.step()
         ########
