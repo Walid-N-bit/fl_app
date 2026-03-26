@@ -71,13 +71,13 @@ def train(
     model: NET,
     trainloader: DataLoader,
     optimizer,
-    # loss_func,
-    weights,
+    loss_func,
     mixer=None,
     disp_log: bool = True,
+    weights=None,
 ):
     """Train the model on the training set."""
-    loss_func = nn.CrossEntropyLoss(weight=weights)
+    # loss_func = nn.CrossEntropyLoss(weight=weights)
 
     size = len(trainloader.dataset)
     num_batches = len(trainloader)
