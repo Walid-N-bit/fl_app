@@ -89,7 +89,7 @@ def train(
 
         if batch % 100 == 0 and disp_log:
             print(
-                f"\n{mixer = }\n{images.shape =}\n{images.dtype =}\n{labels.dtype =}\n{labels.shape =}\n{labels.squeeze().shape =}\n"
+                f"\n{mixer = }\n{images.shape = }\n{images.dtype = }\n{images.ndim = }\n{labels[0] = }\n{labels.dtype = }\n{labels.shape = }\n{labels.ndim = }\n{labels.squeeze().shape = }\n"
             )
             print("row sums:", labels.sum(dim=1))
             print("min/max:", labels.min().item(), labels.max().item())
