@@ -90,7 +90,7 @@ def train(
         is_hot, hot_idx = is_hot_one(labels)
         if (batch % 100 == 0 or is_hot) and disp_log:
             if is_hot:
-                print(f"hot-one detected: {labels[hot_idx] = }")
+                print(f"hot-one detected at {hot_idx}: {labels[hot_idx] = }")
             print(
                 f"\n{mixer = }\n{images.shape = }\n{images.dtype = }\n{images.ndim = }\n{labels.dtype = }\n{labels.shape = }\n{labels.ndim = }\n{labels.squeeze().shape = }\n"
             )
