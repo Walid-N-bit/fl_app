@@ -171,8 +171,8 @@ def train(msg: Message, context: Context):
             weight_decay=weight_decay,
         )
     scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, "min", patience=sch_patience)
-
-    loss_fn = nn.CrossEntropyLoss(weight=(modified_weights if use_weights else None))
+    weights = modified_weights if use_weights else None
+    loss_fn = nn.CrossEntropyLoss(weight=weights)
 
     # commence training loop
     mixer = pick_mixer(mixer, len(local_classes))
@@ -188,8 +188,11 @@ def train(msg: Message, context: Context):
 
             t0 = time.perf_counter()
             print("Training commencing...")
+            # train_acc, train_loss = train_fn(
+            #     model, trainloader, optimizer, loss_fn, mixer
+            # )
             train_acc, train_loss = train_fn(
-                model, trainloader, optimizer, loss_fn, mixer
+                model, trainloader, optimizer, weights, mixer
             )
             print("validation...")
             val_acc, val_loss = test_fn(model, valloader, loss_fn)
