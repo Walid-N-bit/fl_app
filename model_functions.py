@@ -87,9 +87,12 @@ def train(
         if mixer:
             images, labels = mixer(images, labels)
 
-        if batch % 100 == 0 and disp_log:
+        is_hot, hot_idx = is_hot_one(labels)
+        if (batch % 100 == 0 or is_hot) and disp_log:
+            if is_hot:
+                print(f"hot-one detected: {labels[hot_idx] = }")
             print(
-                f"\n{mixer = }\n{images.shape = }\n{images.dtype = }\n{images.ndim = }\n{labels[0] = }\n{labels.dtype = }\n{labels.shape = }\n{labels.ndim = }\n{labels.squeeze().shape = }\n"
+                f"\n{mixer = }\n{images.shape = }\n{images.dtype = }\n{images.ndim = }\n{labels.dtype = }\n{labels.shape = }\n{labels.ndim = }\n{labels.squeeze().shape = }\n"
             )
             print("row sums:", labels.sum(dim=1))
             print("min/max:", labels.min().item(), labels.max().item())
@@ -145,3 +148,11 @@ def test(model: NET, testloader: DataLoader, loss_func):
     test_acc /= size
 
     return test_acc, test_loss
+
+
+def is_hot_one(labels: torch.Tensor) -> tuple[bool, int]:
+    for idx, val in enumerate(labels):
+        if 1.0 in val:
+            return True, idx
+
+    return False, 0
