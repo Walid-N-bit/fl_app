@@ -8,6 +8,7 @@ from ast import literal_eval
 import time
 import numpy as np
 import json
+from pprint import pprint
 from utils import end_of_training_msg, pick_mixer, cmd
 from model_functions import train as train_fn, test as test_fn, choose_model
 
@@ -55,6 +56,11 @@ def train(msg: Message, context: Context):
     c_lrs = []
     dev = "cuda:0" if torch.cuda.is_available() else "cpu"
     # model params
+    print(f"######################################################")
+    print(f"\n Loading Params \n")
+    pprint(f"{msg.content = }", indent=2)
+    print(f"######################################################")
+
     server_config = msg.content["config"]
 
     model_name = server_config.get("model-name", context.run_config["model-name"])
@@ -127,6 +133,7 @@ def train(msg: Message, context: Context):
             {"local-classes": local_classes, "node-name": node_name, "node-id": node_id}
         )
         content = RecordDict({"config": prep_conf})
+        print("\nPreparation Phase complete\n")
         return Message(content=content, reply_to=msg)
 
     labels = server_config.get("labels")
