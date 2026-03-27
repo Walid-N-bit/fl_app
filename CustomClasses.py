@@ -124,7 +124,8 @@ class CustomStrat(FedAvg):
         eval_replies_all = []
         ########################################
 
-        for current_round in range(0, num_rounds + 1):
+        # for current_round in range(0, num_rounds + 1):
+        for current_round in range(1, num_rounds + 1):
 
             log(INFO, "")
             log(INFO, "[ROUND %s/%s]", current_round, num_rounds)
