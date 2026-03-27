@@ -58,7 +58,7 @@ def train(msg: Message, context: Context):
     # model params
     print(f"######################################################")
     print(f"\n Loading Params \n")
-    pprint(f"{msg.content.get["config"] = }", indent=2)
+    pprint(f"{msg.content.get("config") = }", indent=2)
     print(f"######################################################")
 
     server_config = msg.content["config"]
