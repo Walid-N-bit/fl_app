@@ -89,10 +89,10 @@ def train(
         if mixer:
             images, labels = mixer(images, labels)
 
-        is_hot, _ = is_one_hot(labels)
-        if (batch % 100 == 0 or is_hot) and disp_log:
-            if is_hot:
-                print(f"hot-one detected at batch {batch}: {labels = }")
+        # is_hot, _ = is_one_hot(labels)
+        if (batch % 100 == 0) and disp_log:
+            # if is_hot:
+            #     print(f"hot-one detected at batch {batch}: {labels = }")
             print(
                 f"\n{mixer = }\n{images.shape = }\n{images.dtype = }\n{images.ndim = }\n{labels.dtype = }\n{labels.shape = }\n{labels.ndim = }\n{labels.squeeze().shape = }\n"
             )
