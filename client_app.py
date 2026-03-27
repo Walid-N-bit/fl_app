@@ -195,12 +195,12 @@ def train(msg: Message, context: Context):
 
             t0 = time.perf_counter()
             print("Training commencing...")
-            # train_acc, train_loss = train_fn(
-            #     model, trainloader, optimizer, loss_fn, mixer
-            # )
             train_acc, train_loss = train_fn(
-                model, trainloader, optimizer, weights, mixer
+                model, trainloader, optimizer, loss_fn, mixer
             )
+            # train_acc, train_loss = train_fn(
+            #     model, trainloader, optimizer, weights, mixer
+            # )
             print("validation...")
             val_acc, val_loss = test_fn(model, valloader, loss_fn)
             print("Gathering data...")
