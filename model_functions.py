@@ -88,7 +88,7 @@ def train(
         labels = y.to(DEVICE)
         if mixer:
             images, labels = mixer(images, labels)
-        predictions = model(images).to(DEVICE)
+        predictions = model(images)
         if (batch % 100 == 0) and disp_log:
             # if is_hot:
             #     print(f"hot-one detected at batch {batch}: {labels = }")
