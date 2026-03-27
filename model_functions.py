@@ -88,19 +88,18 @@ def train(
         labels = y.to(DEVICE)
         if mixer:
             images, labels = mixer(images, labels)
-
-        # is_hot, _ = is_one_hot(labels)
+        predictions = model(images).to(DEVICE)
         if (batch % 100 == 0) and disp_log:
             # if is_hot:
             #     print(f"hot-one detected at batch {batch}: {labels = }")
-            print(
-                f"\n{mixer = }\n{images.shape = }\n{images.dtype = }\n{images.ndim = }\n{labels.dtype = }\n{labels.shape = }\n{labels.ndim = }\n{labels.squeeze().shape = }\n"
-            )
-            print("row sums:", labels.sum(dim=1))
-            print("min/max:", labels.min().item(), labels.max().item())
+            # print(
+            #     f"\n{mixer = }\n{images.shape = }\n{images.dtype = }\n{images.ndim = }\n{labels.dtype = }\n{labels.shape = }\n{labels.ndim = }\n{labels.squeeze().shape = }\n"
+            # )
+            # print("row sums:", labels.sum(dim=1))
+            # print("min/max:", labels.min().item(), labels.max().item())
+            print(f"{labels = }\n{predictions = }")
             print("")
 
-        predictions = model(images)
         loss = loss_func(predictions, labels)
 
         pred_labels = predictions.argmax(1)
