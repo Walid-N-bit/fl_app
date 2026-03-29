@@ -8,8 +8,6 @@ from utils import parse_raw_metrics, metrics_to_csv
 
 from datetime import datetime
 
-# from ast import literal_eval
-
 from model_functions import choose_model
 from cifar10_data_prep import CIFAR10_CLASSES as cifar_classes
 
@@ -68,7 +66,7 @@ def labels_map_per_client(global_classes: list, configs: list[dict]):
     return contents
 
 
-# def global_evaluate(model: CNN, server_round: int, arrays: ArrayRecord) -> MetricRecord:
+# def global_evaluate(model, server_round: int, arrays: ArrayRecord) -> MetricRecord:
 #     """Evaluate model on central data."""
 
 #     model.load_state_dict(arrays.to_torch_state_dict())
@@ -76,7 +74,7 @@ def labels_map_per_client(global_classes: list, configs: list[dict]):
 #     model.to(device)
 
 #     # Load entire test set
-#     test_dataloader = load_centralized_dataset(dataset=DATASET_ID)
+#     # test_dataloader = load_centralized_dataset(dataset=DATASET_ID)
 
 #     # Evaluate the global model on the test set
 #     test_loss, test_acc = test(model, test_dataloader, device)
