@@ -161,7 +161,7 @@ def train(msg: Message, context: Context):
 
     model.load_state_dict(msg.content["arrays"].to_torch_state_dict())
 
-    modified_weights = zero_out_weights(out_features, labels, class_weights)
+    modified_weights = zero_out_weights(out_features, labels, class_weights).to(DEVICE)
     print("-->Modified Weights: ", modified_weights)
     print(" ")
 
