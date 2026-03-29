@@ -41,7 +41,7 @@ def zero_out_weights(
             new_weights[i] = weights.tolist()[c]
             c += 1
 
-    return torch.tensor(new_weights)
+    return torch.tensor(new_weights).float()
 
 
 @client.train()
@@ -81,6 +81,7 @@ def train(msg: Message, context: Context):
     dataset_name = server_config.get("dataset-name", context.run_config["dataset-name"])
     mixer = server_config.get("mixer", context.run_config["mixer"])
     out_features = server_config.get("out-features")
+    labels = server_config.get("labels")
 
     if dataset_name == "wheat":
         from wheat_data_utils import get_class_weights
@@ -94,6 +95,7 @@ def train(msg: Message, context: Context):
         )
 
         local_classes = list(wheat_classes)
+
         trainloader = data_loader(
             wheat_train,
             dev,
@@ -136,7 +138,6 @@ def train(msg: Message, context: Context):
         print("\nPreparation Phase complete\n")
         return Message(content=content, reply_to=msg)
 
-    labels = server_config.get("labels")
     if labels:
         print("\n-->local labels: ", labels)
         print("-->Weights: ", class_weights, end="\n\n")

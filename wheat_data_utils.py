@@ -31,18 +31,26 @@ def get_label(label_map: dict, class_name: str) -> int:
 
 
 def labels_map_from_csv(csv_path: str) -> dict:
+    """
+    retrieve labels map from a csv file
+
+    :param csv_path: Description
+    :type csv_path: str
+    :return: Description
+    :rtype: dict
+    """
     data = pd.read_csv(csv_path)
     classes_names = sorted(set(data["class_name"]))
     labels_map = {name: i for name, i in enumerate(classes_names, 0)}
     return labels_map
 
 
-def img_labels(data_file: str):
+def img_labels(data_file: str, labels_map: dict = {}):
     img_labels = []
-    labels_map = labels_map_from_csv(data_file)
+    l_map = labels_map if labels_map else labels_map_from_csv(data_file)
     data = pd.read_csv(data_file)
     for row in data.itertuples():
-        img_labels.append((row.name, get_label(labels_map, row.class_name)))
+        img_labels.append((row.name, get_label(l_map, row.class_name)))
     return pd.DataFrame(img_labels)
 
 
@@ -154,13 +162,19 @@ def update_csv(file_path: str, new_row: pd.DataFrame):
 
 class WheatImgDataset(Dataset):
 
-    def __init__(self, data_file, transform=None, target_transform=None):
-        self.img_labels = img_labels(data_file)
+    def __init__(
+        self,
+        data_file,
+        transform=None,
+        target_transform=None,
+        labels_map: dict = {},
+    ):
+        self.img_labels = img_labels(data_file, labels_map)
         self.data_dir = pd.read_csv(data_file, index_col=0)
         # self.data_dir = pd.read_csv(data_file, index_col=0).to_numpy()
         self.transform = transform
         self.target_transform = target_transform
-        self.classes = labels_map_from_csv(data_file)
+        self.classes = labels_map if labels_map else labels_map_from_csv(data_file)
 
     def __len__(self):
         return len(self.img_labels)
@@ -179,3 +193,46 @@ class WheatImgDataset(Dataset):
             label = self.target_transform(label)
         label = torch.tensor(label, dtype=torch.long)
         return image, label
+
+
+# class CustomCollator:
+#     def __init__(self, selected_labels, out_features, mixer):
+#         self.selected_labels = selected_labels
+#         self.out_features = out_features
+#         self.mixer = mixer
+
+#     def __call__(self, batch):
+
+#         images, labels = self.auto_batch(batch)
+#         print(f"{self.selected_labels = }")
+#         print(f"{labels = }")
+
+#         if self.mixer:
+#             images, labels = self.mixer(torch.tensor(images), torch.tensor(labels))
+
+
+# new_labels = []
+# for y in labels:
+#     if type(y) == int:
+#         pass
+#     elif type(y) == list:
+#         new_label = np.zeros(
+#             self.out_features
+#         )  # has length of global nmr of classes
+#         for i, v in zip(self.selected_labels, y):
+#             new_label[i] = v
+
+#         print(f"{y = }")
+#         print(f"{new_label = }")
+
+#         new_labels.append(new_label)
+
+# return torch.tensor(images), torch.tensor(new_labels)
+
+# def auto_batch(self, batch):
+#     images = []
+#     labels = []
+#     for image, label in batch:
+#         images.append(image.tolist())
+#         labels.append(label.item())
+#     return images, labels

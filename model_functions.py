@@ -83,21 +83,22 @@ def train(
     num_batches = len(trainloader)
     train_acc, train_loss = 0, 0
     model.train()
-    for batch, (X, y) in enumerate(trainloader):
+
+    for batch, pair in enumerate(trainloader):
+        (X, y) = pair
         images = X.to(DEVICE)
         labels = y.to(DEVICE)
         if mixer:
             images, labels = mixer(images, labels)
         predictions = model(images)
         if (batch % 100 == 0) and disp_log:
-            # if is_hot:
-            #     print(f"hot-one detected at batch {batch}: {labels = }")
-            # print(
-            #     f"\n{mixer = }\n{images.shape = }\n{images.dtype = }\n{images.ndim = }\n{labels.dtype = }\n{labels.shape = }\n{labels.ndim = }\n{labels.squeeze().shape = }\n"
-            # )
-            # print("row sums:", labels.sum(dim=1))
-            # print("min/max:", labels.min().item(), labels.max().item())
+
+            print(f"{labels.shape = }\n{predictions.shape = }")
+            print(f"{labels.dtype = }\n{predictions.dtype = }")
             print(f"{labels = }\n{predictions = }")
+
+            print(f"{images.dtype = }\n")
+
             print("")
 
         loss = loss_func(predictions, labels)
@@ -149,11 +150,3 @@ def test(model: NET, testloader: DataLoader, loss_func):
     test_acc /= size
 
     return test_acc, test_loss
-
-
-def is_one_hot(labels: torch.Tensor) -> tuple[bool, int]:
-    for idx, val in enumerate(labels):
-        if 1.0 in val:
-            return True, idx
-
-    return False, 0
