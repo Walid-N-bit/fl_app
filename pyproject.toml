@@ -38,12 +38,12 @@ features-lr = 0.001
 classifier-lr = 0.01
 weight-decay = 1e-2
 
-batch-size = 16
+batch-size = 64
 use-sampler = 0  # 1 for true, 0 for false
 num-workers = 4
 sch-patience = 10
 mixer = "cutmix"
-use-weights = 0  # 1 for true, 0 for false
+use-weights = 1  # 1 for true, 0 for false
 
 # currently usable datasets: "wheat", "cifar10"
 dataset-name = "wheat"
