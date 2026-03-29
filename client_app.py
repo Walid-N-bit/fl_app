@@ -183,7 +183,7 @@ def train(msg: Message, context: Context):
     loss_fn = nn.CrossEntropyLoss(weight=weights)
 
     # commence training loop
-    mixer = pick_mixer(mixer, len(local_classes))
+    mixer = pick_mixer(mixer, out_features)
 
     try:
         for e in range(epochs):
