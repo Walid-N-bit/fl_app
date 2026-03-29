@@ -95,8 +95,6 @@ def train(
 
             print(f"{labels.shape = }\n{predictions.shape = }")
             print(f"{labels.dtype = }\n{predictions.dtype = }")
-            print(f"{labels = }\n{predictions = }")
-
             print(f"{images.dtype = }\n")
 
             print("")
