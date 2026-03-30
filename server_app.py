@@ -158,13 +158,13 @@ def main(grid: Grid, context: Context) -> None:
         print(
             f"\n--> {item.content.get("config").get("node-name")} have received assigned labels successfully."
         )
+    print("")
 
     out_features = len(global_classes)
     global_model = choose_model(model_name, freeze, out_features).to(DEVICE)
     arrays = ArrayRecord(global_model.state_dict())
 
     print("\n### global classes: ", global_classes)
-    print("\n### output features: ", out_features)
 
     # compile training configs
     train_configs = {

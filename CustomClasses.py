@@ -242,11 +242,11 @@ def construct_messages_per_node(
     record: type[ConfigRecord] | type[ArrayRecord] | type[MetricRecord] = ConfigRecord,
 ) -> Iterable[Message]:
     messages = []
-    print("\nConstruct msg:")
+    # print("\nConstruct msg:")
     for item in content_and_id:
         node_id = item[0]  # this should be int
         content = item[1]  # this should be dict
-        print(f"node id: {node_id}\ncontent: {content}\n")
+        # print(f"node id: {node_id}\ncontent: {content}\n")
         msg = Message(
             content=RecordDict({"config": record(content)}),
             dst_node_id=node_id,

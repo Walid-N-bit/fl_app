@@ -159,6 +159,8 @@ def train(msg: Message, context: Context):
 
     model = choose_model(model_name, freeze, out_features).to(DEVICE)
 
+    print(f"\n{msg.content.keys() = }\n")
+    
     model.load_state_dict(msg.content["arrays"].to_torch_state_dict())
 
     modified_weights = zero_out_weights(out_features, labels, class_weights).to(DEVICE)
