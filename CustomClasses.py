@@ -299,7 +299,7 @@ class GlobalEvaluation:
         test_dataloader = data_loader(test_data, self.dev, 128)
 
         # Evaluate the global model on the test set
-        test_loss, test_acc = test(
+        test_acc, test_loss = test(
             self.model, test_dataloader, torch.nn.CrossEntropyLoss()
         )
 
