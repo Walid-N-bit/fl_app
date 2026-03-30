@@ -264,6 +264,54 @@ def send_to_node(grid: Grid, messages: Iterable[Message]):
 ###############################################################################
 
 
+class GlobalEvaluation:
+    def __init__(self, model, dev):
+        self.model = model
+        self.dev = dev
+
+    def __call__(self, *args, **kwds):
+        from model_functions import test
+        from wheat_data_utils import WheatImgDataset
+        from wheat_data_prep import TEST_DATA_PATH, data_loader
+        from torchvision import transforms
+
+        for arg in args:
+            if isinstance(arg, int):
+                server_round = arg
+            elif isinstance(arg, ArrayRecord):
+                arrays = arg
+
+        device = torch.device(self.dev)
+        pt_transforms = transforms.Compose(
+            [
+                transforms.ToTensor(),
+                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
+            ]
+        )
+
+        self.model.load_state_dict(arrays.to_torch_state_dict())
+        # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.model.to(device)
+
+        # Load entire test set (for CIFAR10)
+        # test_dataloader = load_centralized_dataset(dataset=DATASET_ID)
+        test_data = WheatImgDataset(TEST_DATA_PATH, pt_transforms)
+        test_dataloader = data_loader(test_data, self.dev, 128)
+
+        # Evaluate the global model on the test set
+        test_loss, test_acc = test(
+            self.model, test_dataloader, torch.nn.CrossEntropyLoss()
+        )
+
+        # Return the evaluation metrics
+        return MetricRecord(
+            {"accuracy": test_acc, "loss": test_loss, "server-round": server_round}
+        )
+
+
+###############################################################################
+
+
 class ConvolutionalNeuralNetwork(nn.Module):
     """
     Class for a Convolutional Neural Network

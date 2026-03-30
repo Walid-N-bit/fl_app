@@ -2,7 +2,7 @@ import torch
 from flwr.app import ArrayRecord, Context, MetricRecord
 from flwr.serverapp import Grid, ServerApp
 from flwr.serverapp.strategy import FedAvg, FedAvgM
-from CustomClasses import CustomStrat
+from CustomClasses import CustomStrat, GlobalEvaluation
 from flwr.app import ConfigRecord
 from utils import parse_raw_metrics, metrics_to_csv
 
@@ -67,33 +67,33 @@ def labels_map_per_client(global_classes: list, configs: list[dict]):
     return contents
 
 
-def global_evaluate(server_round: int, arrays: ArrayRecord, model) -> MetricRecord:
-    """Evaluate model on central data."""
-    from model_functions import test
-    from wheat_data_utils import WheatImgDataset
-    from wheat_data_prep import TEST_DATA_PATH, data_loader
-    from torchvision import transforms
+# def global_evaluate(server_round: int, arrays: ArrayRecord, model=None) -> MetricRecord:
+#     """Evaluate model on central data."""
+#     from model_functions import test
+#     from wheat_data_utils import WheatImgDataset
+#     from wheat_data_prep import TEST_DATA_PATH, data_loader
+#     from torchvision import transforms
 
-    pt_transforms = transforms.Compose(
-        [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
-    )
+#     pt_transforms = transforms.Compose(
+#         [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+#     )
 
-    model.load_state_dict(arrays.to_torch_state_dict())
-    # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    model.to(DEVICE)
+#     model.load_state_dict(arrays.to_torch_state_dict())
+#     # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+#     model.to(DEVICE)
 
-    # Load entire test set (for CIFAR10)
-    # test_dataloader = load_centralized_dataset(dataset=DATASET_ID)
-    test_data = WheatImgDataset(TEST_DATA_PATH, pt_transforms)
-    test_dataloader = data_loader(test_data, DEV, 128)
+#     # Load entire test set (for CIFAR10)
+#     # test_dataloader = load_centralized_dataset(dataset=DATASET_ID)
+#     test_data = WheatImgDataset(TEST_DATA_PATH, pt_transforms)
+#     test_dataloader = data_loader(test_data, DEV, 128)
 
-    # Evaluate the global model on the test set
-    test_loss, test_acc = test(model, test_dataloader, torch.nn.CrossEntropyLoss())
+#     # Evaluate the global model on the test set
+#     test_loss, test_acc = test(model, test_dataloader, torch.nn.CrossEntropyLoss())
 
-    # Return the evaluation metrics
-    return MetricRecord(
-        {"accuracy": test_acc, "loss": test_loss, "server-round": server_round}
-    )
+#     # Return the evaluation metrics
+#     return MetricRecord(
+#         {"accuracy": test_acc, "loss": test_loss, "server-round": server_round}
+#     )
 
 
 @server.main()
@@ -190,7 +190,7 @@ def main(grid: Grid, context: Context) -> None:
         initial_arrays=arrays,
         train_config=ConfigRecord(train_configs),
         num_rounds=num_rounds,
-        evaluate_fn=global_evaluate(model=global_model),
+        evaluate_fn=GlobalEvaluation(global_model, DEV),
     )
 
     # final_metrics = global_evaluate(global_model, num_rounds, result.arrays)
