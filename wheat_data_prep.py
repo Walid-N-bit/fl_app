@@ -32,9 +32,14 @@ try:
         TRAIN_DATA_PATH = f"{DATA_PATH}/train.csv"
         TEST_DATA_PATH = f"{DATA_PATH}/test.csv"
 except Exception as e:
-    print("\nData not found: ", e)
+    print("\n.csv data files not found: ", e, end="\n")
 
-DATASET = WheatImgDataset(data_file=TRAIN_DATA_PATH, transform=TRANSFORM)
+for path in DATA_PATH:
+    try:
+        if Path(path).exists():
+            DATASET = WheatImgDataset(data_file=TRAIN_DATA_PATH, transform=TRANSFORM)
+    except Exception as e:
+        print("\nDataset not found: ", e, end="\n")
 
 size = len(DATASET)
 
