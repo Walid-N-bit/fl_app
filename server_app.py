@@ -198,12 +198,12 @@ def main(grid: Grid, context: Context) -> None:
     print(f"\nAggregated metrics: {aggregated_metrics}\n")
 
     # Save final model to disk
-    print("\nSaving final model to disk...")
     state_dict = result.arrays.to_torch_state_dict()
 
     time = datetime.now().strftime("%H:%M-%d/%m/%Y")
     model_path = f"/root/data/models/{dataset_name}_{model_name}_epochs:{epochs}_batch-size:{batch_size}_aug:{mixer}_{time}.pt"
 
+    print("\nSaving final model to disk...")
     torch.save(state_dict, model_path)
 
     print("\n\nSaving Clients Metrics Data...\n")
