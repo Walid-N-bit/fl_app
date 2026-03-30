@@ -21,25 +21,25 @@ TRANSFORM = transforms.Compose(
 )
 
 client_name = cmd("hostname").strip()
-DATA_PATH = ["/root/data", "/home/wnouicer24/thesis/fl_app/compressed_images_wheat"]
+PATHS = ["/root/data", "/home/wnouicer24/thesis/fl_app/compressed_images_wheat"]
+DATA_PATH = ""
 TRAIN_DATA_PATH = ""
 TEST_DATA_PATH = ""
+
 try:
-    if Path(DATA_PATH[0]).exists():
+    if Path(PATHS[0]).exists():
+        DATA_PATH = PATHS[0]
         TRAIN_DATA_PATH = f"{DATA_PATH}/{client_name}_train.csv"
         TEST_DATA_PATH = f"{DATA_PATH}/{client_name}_test.csv"
-    elif Path(DATA_PATH[1]).exists():
+    elif Path(PATHS[1]).exists():
+        DATA_PATH = PATHS[1]
         TRAIN_DATA_PATH = f"{DATA_PATH}/train.csv"
         TEST_DATA_PATH = f"{DATA_PATH}/test.csv"
 except Exception as e:
-    print("\n.csv data files not found: ", e, end="\n")
+    print("\n.csv data files not found: ", e, end="\n\n")
 
-for path in DATA_PATH:
-    try:
-        if Path(path).exists():
-            DATASET = WheatImgDataset(data_file=TRAIN_DATA_PATH, transform=TRANSFORM)
-    except Exception as e:
-        print("\nDataset not found: ", e, end="\n")
+
+DATASET = WheatImgDataset(data_file=TRAIN_DATA_PATH, transform=TRANSFORM)
 
 size = len(DATASET)
 
