@@ -195,22 +195,24 @@ def main(grid: Grid, context: Context) -> None:
 
     # final_metrics = global_evaluate(global_model, num_rounds, result.arrays)
     aggregated_metrics = result.evaluate_metrics_serverapp
-    print(f"Aggregated metrics: {aggregated_metrics}")
+    print(f"\nAggregated metrics: {aggregated_metrics}\n")
 
     # Save final model to disk
     print("\nSaving final model to disk...")
     state_dict = result.arrays.to_torch_state_dict()
 
     time = datetime.now().strftime("%H:%M-%d/%m/%Y")
-    model_path = f"/root/data/compressed_images_wheat/models/{dataset_name}_{model_name}_epochs:{epochs}_batch-size:{batch_size}_aug:{mixer}_{time}.pt"
+    model_path = f"/root/data/models/{dataset_name}_{model_name}_epochs:{epochs}_batch-size:{batch_size}_aug:{mixer}_{time}.pt"
 
     torch.save(state_dict, model_path)
 
-    print("\nSaving Clients Metrics Data...")
-    t_metrics = parse_raw_metrics(train_replies)
-    e_metrics = parse_raw_metrics(evaluate_replies)
-    print("\nparsed train metrics:\n", t_metrics)
-    print("\nparsed eval metrics:\n", e_metrics)
+    print("\n\nSaving Clients Metrics Data...\n")
+    print(f"\n{train_replies = }\n")
+    print(f"\n{evaluate_replies = }\n")
+    # t_metrics = parse_raw_metrics(train_replies)
+    # e_metrics = parse_raw_metrics(evaluate_replies)
+    # print("\nparsed train metrics:\n", t_metrics)
+    # print("\nparsed eval metrics:\n", e_metrics)
 
     metrics_data_path = f"/root/data/metrics/{dataset_name}_{model_name}_epochs:{epochs}_batch-size:{batch_size}_aug:{mixer}_{time}.pt"
 
