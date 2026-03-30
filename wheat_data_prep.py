@@ -5,6 +5,7 @@ from torchvision.transforms import v2
 from typing import Literal
 from torch.utils.data import DataLoader, random_split
 import torch
+from pathlib import Path
 from utils import cmd
 
 # imagenet images are 224x224 so we resize our custom data to 224
@@ -19,11 +20,19 @@ TRANSFORM = transforms.Compose(
     ]
 )
 
-DATA_PATH = "/root/data"
 client_name = cmd("hostname").strip()
-TRAIN_DATA_PATH = f"{DATA_PATH}/{client_name}_train.csv"
-TEST_DATA_PATH = f"{DATA_PATH}/{client_name}_test.csv"
-
+DATA_PATH = ["/root/data", "/home/wnouicer24/thesis/fl_app/compressed_images_wheat"]
+TRAIN_DATA_PATH = ""
+TEST_DATA_PATH = ""
+try:
+    if Path(DATA_PATH[0]).exists():
+        TRAIN_DATA_PATH = f"{DATA_PATH}/{client_name}_train.csv"
+        TEST_DATA_PATH = f"{DATA_PATH}/{client_name}_test.csv"
+    elif Path(DATA_PATH[1]).exists():
+        TRAIN_DATA_PATH = f"{DATA_PATH}/train.csv"
+        TEST_DATA_PATH = f"{DATA_PATH}/test.csv"
+except Exception as e:
+    print("\nData not found: ", e)
 
 DATASET = WheatImgDataset(data_file=TRAIN_DATA_PATH, transform=TRANSFORM)
 
@@ -50,7 +59,6 @@ TESTING_DATA = WheatImgDataset(data_file=TEST_DATA_PATH, transform=TRANSFORM)
 
 CLASSES = DATASET.classes.values()
 LABELS_MAP = {i: c for i, c in enumerate(CLASSES)}
-
 
 
 TRAIN_SAMPLER = oversampler(

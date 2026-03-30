@@ -13,7 +13,8 @@ from cifar10_data_prep import CIFAR10_CLASSES as cifar_classes
 
 server = ServerApp()
 
-DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+DEV = "cuda:0" if torch.cuda.is_available() else "cpu"
+DEVICE = torch.device(DEV)
 
 
 def prep_phase(
@@ -66,21 +67,33 @@ def labels_map_per_client(global_classes: list, configs: list[dict]):
     return contents
 
 
-# def global_evaluate(model, server_round: int, arrays: ArrayRecord) -> MetricRecord:
-#     """Evaluate model on central data."""
+def global_evaluate(server_round: int, arrays: ArrayRecord, model) -> MetricRecord:
+    """Evaluate model on central data."""
+    from model_functions import test
+    from wheat_data_utils import WheatImgDataset
+    from wheat_data_prep import TEST_DATA_PATH, data_loader
+    from torchvision import transforms
 
-#     model.load_state_dict(arrays.to_torch_state_dict())
-#     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-#     model.to(device)
+    pt_transforms = transforms.Compose(
+        [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+    )
 
-#     # Load entire test set
-#     # test_dataloader = load_centralized_dataset(dataset=DATASET_ID)
+    model.load_state_dict(arrays.to_torch_state_dict())
+    # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    model.to(DEVICE)
 
-#     # Evaluate the global model on the test set
-#     test_loss, test_acc = test(model, test_dataloader, device)
+    # Load entire test set (for CIFAR10)
+    # test_dataloader = load_centralized_dataset(dataset=DATASET_ID)
+    test_data = WheatImgDataset(TEST_DATA_PATH, pt_transforms)
+    test_dataloader = data_loader(test_data, DEV, 128)
 
-#     # Return the evaluation metrics
-#     return MetricRecord({"accuracy": test_acc, "loss": test_loss})
+    # Evaluate the global model on the test set
+    test_loss, test_acc = test(model, test_dataloader, torch.nn.CrossEntropyLoss())
+
+    # Return the evaluation metrics
+    return MetricRecord(
+        {"accuracy": test_acc, "loss": test_loss, "server-round": server_round}
+    )
 
 
 @server.main()
@@ -177,11 +190,12 @@ def main(grid: Grid, context: Context) -> None:
         initial_arrays=arrays,
         train_config=ConfigRecord(train_configs),
         num_rounds=num_rounds,
-        # evaluate_fn=global_evaluate,
+        evaluate_fn=global_evaluate(model=global_model),
     )
 
     # final_metrics = global_evaluate(global_model, num_rounds, result.arrays)
-    # print(f"Final accuracy: {final_metrics['accuracy']}")
+    aggregated_metrics = result.evaluate_metrics_serverapp
+    print(f"Aggregated metrics: {aggregated_metrics}")
 
     # Save final model to disk
     print("\nSaving final model to disk...")
