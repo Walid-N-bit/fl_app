@@ -50,6 +50,10 @@ def train(msg: Message, context: Context):
 
     node_name = cmd("hostname").strip()
 
+    train_acc_data = []
+    val_acc_data = []
+    train_loss_data = []
+    val_loss_data = []
     train_times = []
     passed_epochs = []
     f_lrs = []
@@ -58,7 +62,7 @@ def train(msg: Message, context: Context):
     # model params
     print(f"######################################################")
     print(f"\n Loading Params \n")
-    pprint(f"{msg.content.get("config") = }", indent=2)
+    print(f"{msg.content.get("config") = }\n")
     print(f"######################################################")
 
     server_config = msg.content["config"]
@@ -159,8 +163,6 @@ def train(msg: Message, context: Context):
 
     model = choose_model(model_name, freeze, out_features).to(DEVICE)
 
-    print(f"\n{msg.content.keys() = }\n")
-    
     model.load_state_dict(msg.content["arrays"].to_torch_state_dict())
 
     modified_weights = zero_out_weights(out_features, labels, class_weights).to(DEVICE)
@@ -201,12 +203,15 @@ def train(msg: Message, context: Context):
             train_acc, train_loss = train_fn(
                 model, trainloader, optimizer, loss_fn, mixer
             )
-            # train_acc, train_loss = train_fn(
-            #     model, trainloader, optimizer, weights, mixer
-            # )
+
             print("validation...")
             val_acc, val_loss = test_fn(model, valloader, loss_fn)
+
             print("Gathering data...")
+            train_acc_data.append(train_acc)
+            train_loss_data.append(train_loss)
+            val_acc_data.append(val_acc)
+            val_loss_data.append(val_loss)
             t1 = time.perf_counter() - t0
             train_times.append(t1)
             passed_epochs.append(e + 1)
