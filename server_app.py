@@ -4,9 +4,10 @@ from flwr.serverapp import Grid, ServerApp
 from flwr.serverapp.strategy import FedAvg, FedAvgM
 from CustomClasses import CustomStrat, GlobalEvaluation
 from flwr.app import ConfigRecord
-from utils import parse_raw_metrics, metrics_to_csv
+from utils import parse_raw_metrics, metrics_to_csv, cmd
 
 from datetime import datetime
+import os
 
 from model_functions import choose_model
 from cifar10_data_prep import CIFAR10_CLASSES as cifar_classes
@@ -201,8 +202,11 @@ def main(grid: Grid, context: Context) -> None:
     state_dict = result.arrays.to_torch_state_dict()
 
     time = datetime.now().strftime("%H:%M-%d/%m/%Y")
-    model_path = f"/root/data/models/{dataset_name}_{model_name}_epochs:{epochs}_batch-size:{batch_size}_aug:{mixer}_{time}.pt"
 
+    model_path = f"/root/data/models/{dataset_name}_{model_name}_epochs:{epochs}_batch-size:{batch_size}_aug:{mixer}_{time}.pt"
+    os.makedirs(os.path.dirname(model_path), exist_ok=True)
+    print(cmd("ls -l ../"))
+    print(cmd("ls -l ../data/"))
     print("\nSaving final model to disk...")
     torch.save(state_dict, model_path)
 
