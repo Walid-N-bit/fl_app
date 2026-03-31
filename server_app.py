@@ -208,16 +208,10 @@ def main(grid: Grid, context: Context) -> None:
     torch.save(state_dict, model_path)
 
     print("\n\nSaving Clients Metrics Data...\n")
-    for t, e in zip(*train_replies, *evaluate_replies):
-        print(f"\nTraining configs:\n{t.content["configs"]}\n")
-        print(f"Training metrics:\n{t.content["metrics"]}\n")
-        print(f"Evaluation configs:\n{e.content["configs"]}\n")
-        print(f"Evaluation metrics:\n{e.content["metrics"]}\n")
-    # t_metrics = parse_raw_metrics(train_replies)
-    # e_metrics = parse_raw_metrics(evaluate_replies)
-    # print("\nparsed train metrics:\n", t_metrics)
-    # print("\nparsed eval metrics:\n", e_metrics)
-
-    metrics_data_path = f"/root/data/metrics/{dataset_name}/{model_name}_epochs:{epochs}_f-lr:{features_lr}_c-lr:{classifier_lr}_batch-size:{batch_size}_aug:{mixer}_{time}.csv"
-
+    # metrics_data_path = f"/root/data/metrics/{dataset_name}/{model_name}_epochs:{epochs}_f-lr:{features_lr}_c-lr:{classifier_lr}_batch-size:{batch_size}_aug:{mixer}_{time}.csv"
+    metrics_data_path = f"/root/data/metrics/{dataset_name}/{model_name}_epochs:{epochs}_f-lr:{features_lr}_c-lr:{classifier_lr}_batch-size:{batch_size}_aug:{mixer}_{time}.txt"
+    import pickle
+    os.makedirs(os.path.dirname("/root/data/metrics/sample.pkl"), exist_ok=True)
+    with open("/root/data/metrics/sample.pkl", "wb") as f:
+        pickle.dump((train_replies, evaluate_replies), f)
     # metrics_to_csv(metrics, path=metrics_data_path)
