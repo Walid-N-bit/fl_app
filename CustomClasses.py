@@ -252,8 +252,8 @@ class CustomStrat(FedAvg):
         """
         round_metrics = []
         for msg in replies:
-            configs = replies.content["configs"]
-            metrics = replies.content["metrics"]
+            configs = msg.content["configs"]
+            metrics = msg.content["metrics"]
             keys = metrics.keys()
             item = {
                 "client-name": configs.get("client-name"),
