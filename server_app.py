@@ -184,7 +184,7 @@ def main(grid: Grid, context: Context) -> None:
         "out-features": out_features,
     }
     # Start strategy, run FedAvg for `num_rounds`
-    train_replies, evaluate_replies, result = strategy.start(
+    train_replies, _, result = strategy.start(
         timeout=1e10,
         grid=grid,
         initial_arrays=arrays,
@@ -213,5 +213,5 @@ def main(grid: Grid, context: Context) -> None:
     import pickle
     os.makedirs(os.path.dirname("/root/data/metrics/sample.pkl"), exist_ok=True)
     with open("/root/data/metrics/sample.pkl", "wb") as f:
-        pickle.dump((train_replies, evaluate_replies), f)
+        pickle.dump(train_replies, f)
     # metrics_to_csv(metrics, path=metrics_data_path)

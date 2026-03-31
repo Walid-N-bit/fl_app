@@ -236,13 +236,13 @@ def train(msg: Message, context: Context):
     # Construct and return reply Message
     model_record = ArrayRecord(model.state_dict())
     metrics = {
-        "classifier_lr": c_lrs,
-        "features_lr": f_lrs,
-        "train_acc": train_acc,
-        "train_loss": train_loss,
-        "val_acc": val_acc,
-        "val_loss": val_loss,
-        "train_times": train_times,
+        "classifier-lr": c_lrs,
+        "features-lr": f_lrs,
+        "train_acc": train_acc_data,
+        "train-loss": train_loss_data,
+        "val-acc": val_acc_data,
+        "val-loss": val_loss_data,
+        "train-times": train_times,
         "epochs": passed_epochs,
         "num-examples": len(trainloader.dataset),
     }

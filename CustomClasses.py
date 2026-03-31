@@ -120,8 +120,10 @@ class CustomStrat(FedAvg):
         arrays = initial_arrays
 
         # added this to capture client metrics #
-        train_replies_all = []
-        eval_replies_all = []
+        # train_replies_all = []
+        # eval_replies_all = []
+        clients_train_metrics = {}
+        clients_eval_metrics = {}
         ########################################
 
         # for current_round in range(0, num_rounds + 1):
@@ -176,9 +178,12 @@ class CustomStrat(FedAvg):
                 timeout=timeout,
             )
 
-            # saving client metrics
-            train_replies_all.append(train_replies)
-            eval_replies_all.append(evaluate_replies)
+            # saving client-side train metrics
+            clients_train_metrics[current_round] = self.compile_clients_metrics(
+                train_replies
+            )
+            # same way you can add client-side eval metrics
+
             ###############################
 
             # Aggregate evaluate
@@ -213,7 +218,7 @@ class CustomStrat(FedAvg):
             log(INFO, "\t%s", line.strip("\n"))
         log(INFO, "")
 
-        return train_replies_all, eval_replies_all, result
+        return clients_train_metrics, clients_eval_metrics, result
 
     # added this method to prepare for building the global model by the server
     # server sends a prep flag to clients, clients reply ith their local classes
@@ -235,6 +240,29 @@ class CustomStrat(FedAvg):
         )
 
         return prep_replies
+
+    def compile_clients_metrics(replies: Iterable[Message]) -> list:
+        """
+        parse replies data and return a dict for metrics and the client that produced them
+
+        :param replies: message replies from clients
+        :type replies: Iterable[Message]
+        :return: data to be returned to server
+        :rtype: dict
+        """
+        round_metrics = []
+        for msg in replies:
+            configs = replies.content["configs"]
+            metrics = replies.content["metrics"]
+            keys = metrics.keys()
+            item = {
+                "client-name": configs.get("client-name"),
+                "local-classes": configs.get("local-classes"),
+            }
+            for k in keys:
+                item[k] = metrics.get(k)
+            round_metrics.append(item)
+        return round_metrics
 
 
 def construct_messages_per_node(
