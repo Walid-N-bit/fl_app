@@ -1,9 +1,8 @@
 import torch
-from flwr.app import ArrayRecord, Context, MetricRecord
+from flwr.app import ArrayRecord, Context, MetricRecord, ConfigRecord
 from flwr.serverapp import Grid, ServerApp
 from flwr.serverapp.strategy import FedAvg, FedAvgM
 from CustomClasses import CustomStrat, GlobalEvaluation
-from flwr.app import ConfigRecord
 from utils import parse_raw_metrics, metrics_to_csv, cmd
 
 from datetime import datetime
@@ -201,23 +200,24 @@ def main(grid: Grid, context: Context) -> None:
     # Save final model to disk
     state_dict = result.arrays.to_torch_state_dict()
 
-    time = datetime.now().strftime("%H:%M-%d/%m/%Y")
+    time = datetime.now().strftime("%H:%M-%d.%m.%Y")
 
-    model_path = f"/root/data/models/{dataset_name}_{model_name}_epochs:{epochs}_batch-size:{batch_size}_aug:{mixer}_{time}.pt"
+    model_path = f"/root/data/models/{dataset_name}_{model_name}_epochs:{epochs}_f-lr:{features_lr}_c-lr:{classifier_lr}_batch-size:{batch_size}_aug:{mixer}_{time}.pt"
     os.makedirs(os.path.dirname(model_path), exist_ok=True)
-    print(cmd("ls -l ../"))
-    print(cmd("ls -l ../data/"))
     print("\nSaving final model to disk...")
     torch.save(state_dict, model_path)
 
     print("\n\nSaving Clients Metrics Data...\n")
-    print(f"\n{train_replies = }\n")
-    print(f"\n{evaluate_replies = }\n")
+    for t, e in zip(train_replies, evaluate_replies):
+        print(f"\nTraining configs:\n{t.content["configs"]}\n")
+        print(f"Training metrics:\n{t.content["metrics"]}\n")
+        print(f"Evaluation configs:\n{e.content["configs"]}\n")
+        print(f"Evaluation metrics:\n{e.content["metrics"]}\n")
     # t_metrics = parse_raw_metrics(train_replies)
     # e_metrics = parse_raw_metrics(evaluate_replies)
     # print("\nparsed train metrics:\n", t_metrics)
     # print("\nparsed eval metrics:\n", e_metrics)
 
-    metrics_data_path = f"/root/data/metrics/{dataset_name}_{model_name}_epochs:{epochs}_batch-size:{batch_size}_aug:{mixer}_{time}.pt"
+    metrics_data_path = f"/root/data/metrics/{dataset_name}/{model_name}_epochs:{epochs}_f-lr:{features_lr}_c-lr:{classifier_lr}_batch-size:{batch_size}_aug:{mixer}_{time}.csv"
 
     # metrics_to_csv(metrics, path=metrics_data_path)

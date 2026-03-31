@@ -244,10 +244,16 @@ def train(msg: Message, context: Context):
         "val_loss": val_loss,
         "train_times": train_times,
         "epochs": passed_epochs,
-        "num-examples": len(trainloader.dataset),
     }
     metric_record = MetricRecord(metrics)
-    content = RecordDict({"arrays": model_record, "metrics": metric_record})
+    config_record = ConfigRecord(
+        {
+            "container-name": node_name,
+            "num-examples": len(trainloader.dataset),
+            "local_classes": local_classes,
+        }
+    )
+    content = RecordDict({"arrays": model_record, "metrics": metric_record, "configs": config_record})
     return Message(content=content, reply_to=msg)
 
 
