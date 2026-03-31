@@ -208,7 +208,7 @@ def main(grid: Grid, context: Context) -> None:
     torch.save(state_dict, model_path)
 
     print("\n\nSaving Clients Metrics Data...\n")
-    for t, e in zip(train_replies, evaluate_replies):
+    for t, e in zip(*train_replies, *evaluate_replies):
         print(f"\nTraining configs:\n{t.content["configs"]}\n")
         print(f"Training metrics:\n{t.content["metrics"]}\n")
         print(f"Evaluation configs:\n{e.content["configs"]}\n")
