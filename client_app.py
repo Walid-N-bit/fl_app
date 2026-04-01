@@ -253,7 +253,15 @@ def train(msg: Message, context: Context):
             "local_classes": local_classes,
         }
     )
-    content = RecordDict({"arrays": model_record, "metrics": metric_record, "configs": config_record})
+    content = RecordDict(
+        {"arrays": model_record, "metrics": metric_record, "configs": config_record}
+    )
+
+    print("\n>>>>>>>>>>>>>>>>>>>>>>>>>>")
+    print("\nSending message:")
+    print(f"{content.get("config") = }")
+    print(f"{node_name = }")
+    print(f"{local_classes = }")
     return Message(content=content, reply_to=msg)
 
 
