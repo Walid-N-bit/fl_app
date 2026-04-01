@@ -179,10 +179,10 @@ class CustomStrat(FedAvg):
             )
 
             # saving client-side train metrics
-            print(f"{len(train_replies) = }")
-            print(f"{type(train_replies) = }")
-            for reply in train_replies:
-                print(f"{type(reply) = }")
+            # print(f"{len(train_replies) = }")
+            # print(f"{type(train_replies) = }")
+            # for reply in train_replies:
+            #     print(f"{type(reply) = }")
             clients_train_metrics[current_round] = self.compile_clients_metrics(
                 train_replies
             )
