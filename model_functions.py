@@ -133,6 +133,7 @@ def test(model: NET, testloader: DataLoader, loss_func):
     """Validate the model on the test set."""
     size = len(testloader.dataset)
     num_batches = len(testloader)
+    print(f"\n{num_batches = }")
     model.eval()
     test_loss, test_acc = 0, 0
     model.eval()
@@ -143,11 +144,13 @@ def test(model: NET, testloader: DataLoader, loss_func):
             predictions = model(images)
             test_loss += loss_func(predictions, labels).item()
             test_acc += (predictions.argmax(1) == labels).type(torch.float).sum().item()
+
             if i % 100 == 0:
                 print(f"\n{labels = }")
                 print(f"{predictions = }")
                 print(f"{test_acc = }")
                 print(f"{test_loss = }")
+            i += 1
 
     test_loss /= num_batches
     test_acc /= size
