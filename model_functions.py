@@ -135,14 +135,20 @@ def test(model: NET, testloader: DataLoader, loss_func):
     num_batches = len(testloader)
     model.eval()
     test_loss, test_acc = 0, 0
-
     model.eval()
     with torch.no_grad():
+        i = 1
         for images, labels in testloader:
             images, labels = images.to(DEVICE), labels.to(DEVICE)
             predictions = model(images)
             test_loss += loss_func(predictions, labels).item()
             test_acc += (predictions.argmax(1) == labels).type(torch.float).sum().item()
+            if i % 100 == 0:
+                print(f"\n{labels = }")
+                print(f"{predictions = }")
+                print(f"{test_acc = }")
+                print(f"{test_loss = }")
+
     test_loss /= num_batches
     test_acc /= size
 
