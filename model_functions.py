@@ -129,17 +129,20 @@ def train(
     return train_acc, train_loss
 
 
-def test(model: NET, testloader: DataLoader, loss_func):
+def test(model: NET, testloader: DataLoader, loss_func, ignore_labels: list = []):
     """Validate the model on the test set."""
     size = len(testloader.dataset)
     num_batches = len(testloader)
-    print(f"\n{num_batches = }")
     model.eval()
     test_loss, test_acc = 0, 0
     model.eval()
     with torch.no_grad():
         for images, labels in testloader:
             images, labels = images.to(DEVICE), labels.to(DEVICE)
+            if ignore_labels:
+                mask = torch.isin(labels, torch.tensor(ignore_labels))
+                labels[mask] = -100
+
             predictions = model(images)
             loss = loss_func(predictions, labels)
             test_loss += loss.item()

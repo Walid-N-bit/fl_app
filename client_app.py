@@ -44,6 +44,12 @@ def zero_out_weights(
     return torch.tensor(new_weights).float()
 
 
+def ignored_labels(out_features: int, selected_labels: list):
+    all_labels = list(range(out_features))
+    ignored = [i for i in all_labels if i not in selected_labels]
+    return ignored
+
+
 @client.train()
 def train(msg: Message, context: Context):
     """Train the model on local data."""
@@ -184,7 +190,7 @@ def train(msg: Message, context: Context):
         )
     scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, "min", patience=sch_patience)
     weights = modified_weights if use_weights else None
-    loss_fn = nn.CrossEntropyLoss(weight=weights)
+    loss_fn = nn.CrossEntropyLoss(weight=weights, ignore_index=-100)
 
     # commence training loop
     mixer = pick_mixer(mixer, out_features)
@@ -205,7 +211,8 @@ def train(msg: Message, context: Context):
             )
 
             print("validation...")
-            val_acc, val_loss = test_fn(model, valloader, loss_fn)
+            ignore_lbls = ignored_labels(out_features, labels)
+            val_acc, val_loss = test_fn(model, valloader, loss_fn, ignore_lbls)
 
             print("Gathering data...")
             train_acc_data.append(train_acc)
