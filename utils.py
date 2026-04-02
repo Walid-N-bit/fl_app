@@ -190,7 +190,7 @@ def metrics_to_csv(data: list[dict], path: str):
 
 
 def save_csv(fields: list, data: list, path: str):
-
+    
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:
         writer = csv.writer(f)

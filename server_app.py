@@ -3,7 +3,7 @@ from flwr.app import ArrayRecord, Context, MetricRecord, ConfigRecord
 from flwr.serverapp import Grid, ServerApp
 from flwr.serverapp.strategy import FedAvg, FedAvgM
 from CustomClasses import CustomStrat, GlobalEvaluation
-from utils import parse_raw_metrics, metrics_to_csv, cmd
+from utils import cmd, save_pkl, parse_raw_metrics
 
 from datetime import datetime
 import os
@@ -211,6 +211,8 @@ def main(grid: Grid, context: Context) -> None:
     data_name = f"{model_name}_epochs:{epochs}_f-lr:{features_lr}_c-lr:{classifier_lr}_batch-size:{batch_size}_aug:{mixer}_{time}"
     raw_data_path = f"/root/data/metrics/{dataset_name}/{data_name}.pkl"
     csv_data_path = f"/root/data/metrics/{dataset_name}/{data_name}.csv"
-    
+    save_pkl(raw_data_path, train_replies)
+    data_df = parse_raw_metrics(train_replies)
+    data_df.to_csv(csv_data_path, index=False)
 
     # metrics_to_csv(metrics, path=metrics_data_path)
