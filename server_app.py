@@ -218,6 +218,7 @@ def main(grid: Grid, context: Context) -> None:
     print("\n\nSaving Server Evaluation Metrics Data...\n")
     raw_eval_data_path = f"/root/data/metrics/{dataset_name}/{data_name}_eval.pkl"
     csv_eval_data_path = f"/root/data/metrics/{dataset_name}/{data_name}_eval.csv"
-    save_pkl(raw_eval_data_path, result)
-    eval_data_df = parse_raw_metrics(result)
+    print(result.evaluate_metrics_serverapp)
+    save_pkl(raw_eval_data_path, result.evaluate_metrics_serverapp)
+    eval_data_df = parse_raw_metrics(result.evaluate_metrics_serverapp)
     eval_data_df.to_csv(csv_eval_data_path, index=False)
