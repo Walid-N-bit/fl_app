@@ -238,12 +238,12 @@ def train(msg: Message, context: Context):
     metrics = {
         "classifier-lr": c_lrs,
         "features-lr": f_lrs,
-        "train_acc": train_acc_data,
+        "train-acc": train_acc_data,
         "train-loss": train_loss_data,
         "val-acc": val_acc_data,
         "val-loss": val_loss_data,
-        "train-times": train_times,
-        "epochs": passed_epochs,
+        "train-time": train_times,
+        "epoch": passed_epochs,
         "num-examples": len(trainloader.dataset),
     }
     metric_record = MetricRecord(metrics)

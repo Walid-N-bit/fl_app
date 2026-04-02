@@ -14,6 +14,17 @@ fds = None  # Cache FederatedDataset
 
 pytorch_transforms = Compose([ToTensor(), Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
+DATA_COLUMNS = [
+    "epoch",
+    "features-lr",
+    "classifier-lr",
+    "train-acc",
+    "val-acc",
+    "train-loss",
+    "val-loss",
+    "train-time",
+]
+
 
 def cmd(input: str | list, passwd: bool = False, shell: bool = False) -> str:
     """
@@ -111,36 +122,60 @@ def image_shape(image: torch.Tensor):
     return channels, height, width
 
 
-def node_metrics(message: Message) -> dict:
-    if message.has_content():
-        node_id = message.metadata.src_node_id
-        metrics = message.content.metric_records["metrics"]
-        metrics.update({"node_id": node_id})
-        return metrics
-    else:
-        return {"metrics": None}
+def extend_dict(dicts: list[dict[str, list]]) -> dict:
+    from copy import deepcopy
 
-
-def round_metrics(replies: list[Message]) -> list[dict]:
-    data = []
-    for reply in replies:
-        reply = node_metrics(reply)
-        data.append(reply)
+    data = deepcopy(dicts)[0]
+    other_dicts = deepcopy(dicts)[1:]
+    for item in other_dicts:
+        for key in item.keys():
+            data[key].extend(item.get(key))
     return data
 
 
-def parse_raw_metrics(raw_metrics: list[list[Message]]) -> list[dict]:
-    data: list[list[dict]] = []
-    final_data = []
-    for item in raw_metrics:
-        dict_item = round_metrics(item)
-        data.append(dict_item)
-    for i, round in enumerate(data, 1):
-        for item in round:
-            item.update({"round": i})
-            final_data.append(item)
+def client_metrics(epochs: int, client_metrics: dict) -> dict:
 
-    return final_data
+    name = client_metrics.get("client-name")
+    client_name = [name for _ in range(epochs)]
+    data = {"client-name": client_name}
+    for key in DATA_COLUMNS:
+        data.update({key: client_metrics.get(key)})
+    return data
+
+
+def round_metrics(epochs: int, round: int, round_metrics: list[dict]) -> dict:
+
+    data = []
+    rounds = [round for _ in range(epochs)]
+    for client in round_metrics:
+        # print("\nclient to be processed: ", client)
+        client_data = client_metrics(epochs, client)
+        client_data.update({"round": rounds})
+        data.append(client_data)
+        # print("\npre-extended data: ", data)
+    data = extend_dict(data)
+    return data
+
+
+def parse_raw_metrics(raw_metrics: dict[list[dict[str, list]]]) -> pd.DataFrame:
+    """
+    transform metrics into a dataframe
+
+    :param raw_metrics: metrics from clients
+    :type raw_metrics: list[dict]
+    :return: Description
+    :rtype: dict
+    """
+    from copy import deepcopy
+
+    data: list = deepcopy(raw_metrics.get(1))
+    epochs = len(raw_metrics.get(1)[0].get("epoch"))
+    # print(f"{epochs = }")
+    for round in raw_metrics:
+        round_data = round_metrics(epochs, round, raw_metrics[round])
+        data.append(round_data)
+    data = extend_dict(data)
+    return pd.DataFrame(data)
 
 
 def metrics_to_csv(data: list[dict], path: str):
@@ -167,6 +202,37 @@ def save_txt(data, path="logs.txt"):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:
         f.write(data)
+
+
+def save_pkl(path: str, data):
+    """
+    save raw data into .pkl files.
+
+    :param path: file path
+    :type path: str
+    :param data: data to be saved
+    """
+    import pickle
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "wb") as f:
+        pickle.dump(data, f)
+
+
+def load_pkl(path: str):
+    """
+    load data from a .pkl file.
+
+    :param path: file path
+    :type path: str
+    :return: raw data
+    :rtype: Any
+    """
+    import pickle
+
+    with open(path, "rb") as f:
+        data = pickle.load(f)
+    return data
 
 
 def readable_time(seconds: float):
