@@ -215,4 +215,9 @@ def main(grid: Grid, context: Context) -> None:
     data_df = parse_raw_metrics(train_replies)
     data_df.to_csv(csv_data_path, index=False)
 
-    # metrics_to_csv(metrics, path=metrics_data_path)
+    print("\n\nSaving Server Evaluation Metrics Data...\n")
+    raw_eval_data_path = f"/root/data/metrics/{dataset_name}/{data_name}_eval.pkl"
+    csv_eval_data_path = f"/root/data/metrics/{dataset_name}/{data_name}_eval.csv"
+    save_pkl(raw_eval_data_path, result)
+    eval_data_df = parse_raw_metrics(result)
+    eval_data_df.to_csv(csv_eval_data_path, index=False)

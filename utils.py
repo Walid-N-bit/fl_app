@@ -128,7 +128,9 @@ def extend_dict(dicts: list[dict[str, list]]) -> dict:
     data = deepcopy(dicts)[0]
     other_dicts = deepcopy(dicts)[1:]
     for item in other_dicts:
+        # print(f"\n{item = }")
         for key in item.keys():
+            # print(f"\n{data[key] = }")
             data[key].extend(item.get(key))
     return data
 
@@ -166,14 +168,15 @@ def parse_raw_metrics(raw_metrics: dict[list[dict[str, list]]]) -> pd.DataFrame:
     :return: Description
     :rtype: dict
     """
-    from copy import deepcopy
 
-    data: list = deepcopy(raw_metrics.get(1))
+    data = []
     epochs = len(raw_metrics.get(1)[0].get("epoch"))
     # print(f"{epochs = }")
     for round in raw_metrics:
         round_data = round_metrics(epochs, round, raw_metrics[round])
         data.append(round_data)
+    # print(f"\n{data = }")
+
     data = extend_dict(data)
     return pd.DataFrame(data)
 
@@ -190,7 +193,7 @@ def metrics_to_csv(data: list[dict], path: str):
 
 
 def save_csv(fields: list, data: list, path: str):
-    
+
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:
         writer = csv.writer(f)

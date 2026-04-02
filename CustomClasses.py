@@ -119,9 +119,8 @@ class CustomStrat(FedAvg):
 
         arrays = initial_arrays
 
+        ########################################
         # added this to capture client metrics #
-        # train_replies_all = []
-        # eval_replies_all = []
         clients_train_metrics = {}
         clients_eval_metrics = {}
         ########################################
@@ -178,6 +177,7 @@ class CustomStrat(FedAvg):
                 timeout=timeout,
             )
 
+            ###################################
             # saving client-side train metrics
             # print(f"{len(train_replies) = }")
             # print(f"{type(train_replies) = }")
@@ -188,7 +188,7 @@ class CustomStrat(FedAvg):
             )
             # same way you can add client-side eval metrics
 
-            ###############################
+            ##################################
 
             # Aggregate evaluate
             agg_evaluate_metrics = self.aggregate_evaluate(
