@@ -140,7 +140,7 @@ def test(model: NET, testloader: DataLoader, loss_func, ignore_labels: list = []
         for images, labels in testloader:
             images, labels = images.to(DEVICE), labels.to(DEVICE)
             if ignore_labels:
-                mask = torch.isin(labels, torch.tensor(ignore_labels))
+                mask = torch.isin(labels, torch.tensor(ignore_labels).to(DEVICE))
                 labels[mask] = -100
 
             predictions = model(images)
