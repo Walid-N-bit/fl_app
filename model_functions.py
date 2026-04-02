@@ -145,7 +145,7 @@ def test(model: NET, testloader: DataLoader, loss_func):
             test_loss += loss_func(predictions, labels).item()
             test_acc += (predictions.argmax(1) == labels).type(torch.float).sum().item()
 
-            if i % 100 == 0:
+            if i % 10 == 0:
                 print(f"\n{labels = }")
                 print(f"{predictions = }")
                 print(f"{test_acc = }")
