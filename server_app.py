@@ -3,7 +3,7 @@ from flwr.app import ArrayRecord, Context, MetricRecord, ConfigRecord
 from flwr.serverapp import Grid, ServerApp
 from flwr.serverapp.strategy import FedAvg, FedAvgM
 from CustomClasses import CustomStrat, GlobalEvaluation
-from utils import cmd, save_pkl, parse_raw_metrics
+from utils import cmd, save_pkl, parse_raw_metrics, parse_server_eval_metrics
 
 from datetime import datetime
 import os
@@ -220,5 +220,5 @@ def main(grid: Grid, context: Context) -> None:
     csv_eval_data_path = f"/root/data/metrics/{dataset_name}/{data_name}_eval.csv"
     print(result.evaluate_metrics_serverapp)
     save_pkl(raw_eval_data_path, result.evaluate_metrics_serverapp)
-    eval_data_df = parse_raw_metrics(result.evaluate_metrics_serverapp)
+    eval_data_df = parse_server_eval_metrics(result.evaluate_metrics_serverapp)
     eval_data_df.to_csv(csv_eval_data_path, index=False)
