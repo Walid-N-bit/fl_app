@@ -181,15 +181,33 @@ def parse_raw_metrics(raw_metrics: dict[list[dict[str, list]]]) -> pd.DataFrame:
     return pd.DataFrame(data)
 
 
-def metrics_to_csv(data: list[dict], path: str):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    fields = []
-    if len(data) > 0:
-        fields = list(data[0].keys())
-    with open(path, "w", newline="") as f:
-        writer = csv.DictWriter(f, fields)
-        writer.writeheader()
-        writer.writerows(data)
+def parse_server_eval_metrics(metrics: dict[int, dict]) -> pd.DataFrame:
+    """
+    transform evaluation metrics from the server to pandas dataframe
+
+    :param metrics: raw metrics data
+    :type metrics: dict[int, dict]
+    :return: metrics dataframe
+    :rtype: DataFrame
+    """
+    keys = metrics.get(0).keys()
+    data = {k: [] for k in keys}
+    for i in metrics:
+        round_metrics = metrics.get(i)
+        for k in keys:
+            data[k].append(round_metrics.get(k))
+    return pd.DataFrame(data)
+
+
+# def metrics_to_csv(data: list[dict], path: str):
+#     os.makedirs(os.path.dirname(path), exist_ok=True)
+#     fields = []
+#     if len(data) > 0:
+#         fields = list(data[0].keys())
+#     with open(path, "w", newline="") as f:
+#         writer = csv.DictWriter(f, fields)
+#         writer.writeheader()
+#         writer.writerows(data)
 
 
 def save_csv(fields: list, data: list, path: str):

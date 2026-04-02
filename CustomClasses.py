@@ -337,7 +337,7 @@ class GlobalEvaluation:
 
         # Return the evaluation metrics
         return MetricRecord(
-            {"accuracy": test_acc, "loss": test_loss, "server-round": server_round}
+            {"accuracy": test_acc, "loss": test_loss, "round": server_round}
         )
 
 
