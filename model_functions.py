@@ -147,20 +147,13 @@ def test(model: NET, testloader: DataLoader, loss_func, ignore_labels: list = []
             loss = loss_func(predictions, labels)
             test_loss += loss.item()
             test_acc += (predictions.argmax(1) == labels).type(torch.float).sum().item()
-            conditions = [
-                (torch.isnan(images).any(), "\nAn image is NaN", images),
-                (
-                    torch.isnan(predictions).any(),
-                    "\nA prediction is NaN",
-                    predictions,
-                ),
-                (torch.isnan(loss).any(), "\nA loss is NaN", predictions),
-                (torch.isinf(predictions).any(), "\nAn image is infinite", predictions),
-            ]
-            for c in conditions:
-                if c[0]:
-                    print(c[1])
-                    print(c[2])
+            c = (torch.isnan(loss).any(), "\nA loss is NaN", predictions)
+
+            if c[0]:
+                print(c[1])
+                print(c[2])
+                print(labels)
+                break
 
     test_loss /= num_batches
     test_acc /= size
