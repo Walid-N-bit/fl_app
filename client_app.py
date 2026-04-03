@@ -149,7 +149,7 @@ def train(msg: Message, context: Context):
 
     if labels:
         print("\n--> Local labels: ", labels)
-        print("--> Weights: ", class_weights, end="\n\n")
+        # print("--> Weights: ", class_weights, end="\n\n")
         test_conf = ConfigRecord({"node-name": node_name})
         content = RecordDict({"config": test_conf})
         with open("assigned_labels.json", "w") as f:
