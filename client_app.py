@@ -102,6 +102,7 @@ def train(msg: Message, context: Context):
             data_loader,
             TRAIN_SAMPLER,
             CLASSES as wheat_classes,
+            LABELS_MAP as wheat_lm,
         )
 
         local_classes = list(wheat_classes)
@@ -164,8 +165,9 @@ def train(msg: Message, context: Context):
     print("\nDevice: ", DEVICE)
     print("\nChosen model: ", model_name)
     print("\nDataset: ", dataset_name.upper())
-    print("\nLocal classes: ", local_classes)
-    print("\nOutput features: ", out_features)
+    # print("\nLocal classes: ", local_classes)
+    print(f"\nLocal labels map: {wheat_lm}")
+    print(f"\nOutput features: {out_features}\n")
 
     model = choose_model(model_name, freeze, out_features).to(DEVICE)
 

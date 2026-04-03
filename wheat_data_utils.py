@@ -46,6 +46,16 @@ def labels_map_from_csv(csv_path: str) -> dict:
 
 
 def img_labels(data_file: str, labels_map: dict = {}):
+    """
+    get a dataframe of each image and its corresponding label
+
+    :param data_file: path of the .csv data file
+    :type data_file: str
+    :param labels_map: dataset's label's map
+    :type labels_map: dict
+    :return: dataframe of each image and its label
+    :rtype: DataFrame
+    """
     img_labels = []
     l_map = labels_map if labels_map else labels_map_from_csv(data_file)
     data = pd.read_csv(data_file)
@@ -59,6 +69,16 @@ def imgs_data_to_csv(
     train_folders: list[str],
     test_folders: list[str],
 ):
+    """
+    scan data folders and generate .csv files for training and testing data.
+
+    :param dataset_path: folder containing all data folders
+    :type dataset_path: str
+    :param train_folders: paths of training data
+    :type train_folders: list[str]
+    :param test_folders: paths of testing (evaluation) folders
+    :type test_folders: list[str]
+    """
 
     def get_dirs(folders):
         dirs = []
@@ -84,6 +104,9 @@ def imgs_data_to_csv(
             class_name = match.group(1)
             data.append(dict(name=name, class_name=class_name, path=path.as_posix()))
         return data
+
+    def add_labels(data: dict):
+        return
 
     def save_data(data: list, name: str):
         data_pd = pd.DataFrame(data)
