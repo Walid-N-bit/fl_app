@@ -161,7 +161,9 @@ def train(msg: Message, context: Context):
 
     if dataset_name == "wheat":
         local_labels_map = generate_local_labels_map(local_classes, labels)
+        print(f"\n{local_labels_map = }\n")
         wheat_dataset.change_class_labels(local_labels_map)
+
         wheat_train, wheat_val = split_data(wheat_dataset)
         trainloader = data_loader(
             wheat_train,
@@ -185,7 +187,7 @@ def train(msg: Message, context: Context):
     print("\nChosen model: ", model_name)
     print("\nDataset: ", dataset_name.upper())
     # print("\nLocal classes: ", local_classes)
-    print(f"\nLocal labels map: {wheat_lm}")
+    print(f"\nLocal labels map: {wheat_dataset.classes}")
     print(f"\nOutput features: {out_features}\n")
 
     model = choose_model(model_name, freeze, out_features).to(DEVICE)
