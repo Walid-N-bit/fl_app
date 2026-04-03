@@ -90,9 +90,12 @@ def train(
 
         (X, y) = pair
         images = X.to(DEVICE)
-        labels = y.to(DEVICE)
+        labels_hard = y.to(DEVICE)
         if mixer:
-            images, labels = mixer(images, labels)
+            images, labels = mixer(images, labels_hard)
+        else:
+            labels = labels_hard
+
         predictions = model(images)
 
         # if (batch % 100 == 0) and disp_log:
@@ -132,7 +135,7 @@ def train(
             disp_window.pop(0)
 
         if batch % 100 == 0 and disp_log:
-            print("a sample of labels: ", labels.unique())
+            print("a sample of labels: ", labels_hard.unique())
             avg_loss = sum(disp_window) / len(disp_window)
             loss, current = loss.item(), (batch + 1) * len(images)
             print(f"current loss: {loss:>7.6f}  [{current:>5d}/{size:>5d}]")
