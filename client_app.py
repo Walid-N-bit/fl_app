@@ -50,6 +50,21 @@ def ignored_labels(out_features: int, selected_labels: list):
     return ignored
 
 
+def generate_local_labels_map(local_classes: list[str], local_labels: list[int]):
+    """
+    create a labels map for the local classes such that the labels are identical to the global model
+
+    :param local_classes: local data classes
+    :type local_classes: list[str]
+    :param local_labels: labels of local classes in the global model
+    :type local_labels: list[int]
+    :return: local labels map
+    :rtype: dict[int, str]
+    """
+    l_m = {i: c for i, c in zip(local_labels, local_classes)}
+    return l_m
+
+
 @client.train()
 def train(msg: Message, context: Context):
     """Train the model on local data."""
@@ -96,9 +111,9 @@ def train(msg: Message, context: Context):
     if dataset_name == "wheat":
         from wheat_data_utils import get_class_weights
         from wheat_data_prep import (
+            DATASET as wheat_dataset,
             TRAIN_DATA_PATH,
-            TRAINING_DATA as wheat_train,
-            VALIDATION_DATA as wheat_val,
+            split_data,
             data_loader,
             TRAIN_SAMPLER,
             CLASSES as wheat_classes,
@@ -106,23 +121,6 @@ def train(msg: Message, context: Context):
         )
 
         local_classes = list(wheat_classes)
-
-        trainloader = data_loader(
-            wheat_train,
-            dev,
-            batch_size,
-            TRAIN_SAMPLER if use_sampler else None,
-            num_workers=num_workers,
-        )
-        valloader = data_loader(
-            wheat_val,
-            dev,
-            batch_size,
-            num_workers=num_workers,
-        )
-        class_weights = get_class_weights(TRAIN_DATA_PATH, wheat_train.indices).to(
-            DEVICE
-        )
 
     elif dataset_name == "cifar10":
         from cifar10_data_prep import (
@@ -150,8 +148,8 @@ def train(msg: Message, context: Context):
         return Message(content=content, reply_to=msg)
 
     if labels:
-        print("\n-->local labels: ", labels)
-        print("-->Weights: ", class_weights, end="\n\n")
+        print("\n--> Local labels: ", labels)
+        print("--> Weights: ", class_weights, end="\n\n")
         test_conf = ConfigRecord({"node-name": node_name})
         content = RecordDict({"config": test_conf})
         with open("assigned_labels.json", "w") as f:
@@ -160,6 +158,27 @@ def train(msg: Message, context: Context):
     else:
         with open("assigned_labels.json", "r") as f:
             labels = json.load(f).get("labels")
+
+    if dataset_name == "wheat":
+        local_labels_map = generate_local_labels_map(local_classes, labels)
+        wheat_dataset.change_class_labels(local_labels_map)
+        wheat_train, wheat_val = split_data(wheat_dataset)
+        trainloader = data_loader(
+            wheat_train,
+            dev,
+            batch_size,
+            TRAIN_SAMPLER if use_sampler else None,
+            num_workers=num_workers,
+        )
+        valloader = data_loader(
+            wheat_val,
+            dev,
+            batch_size,
+            num_workers=num_workers,
+        )
+        class_weights = get_class_weights(TRAIN_DATA_PATH, wheat_train.indices).to(
+            DEVICE
+        )
 
     # Load the model and initialize it with the received weights
     print("\nDevice: ", DEVICE)

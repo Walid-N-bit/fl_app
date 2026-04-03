@@ -199,17 +199,6 @@ def parse_server_eval_metrics(metrics: dict[int, dict]) -> pd.DataFrame:
     return pd.DataFrame(data)
 
 
-# def metrics_to_csv(data: list[dict], path: str):
-#     os.makedirs(os.path.dirname(path), exist_ok=True)
-#     fields = []
-#     if len(data) > 0:
-#         fields = list(data[0].keys())
-#     with open(path, "w", newline="") as f:
-#         writer = csv.DictWriter(f, fields)
-#         writer.writeheader()
-#         writer.writerows(data)
-
-
 def save_csv(fields: list, data: list, path: str):
 
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -285,3 +274,17 @@ def pick_mixer(name: str, num_classes: int):
             return cutmixup
         case _:
             return None
+
+
+def generate_labels_map(class_names: list[str]) -> dict[int, str]:
+    """
+    create a labels map for a list of classes names.
+
+    :param class_names: classes
+    :type class_names: list[str]
+    :return: labels map
+    :rtype: dict[int, str]
+    """
+    class_names = sorted(class_names)
+    lm = {i: c.lower() for i, c in enumerate(class_names)}
+    return lm

@@ -45,12 +45,19 @@ size = len(DATASET)
 
 train_size = int(0.8 * size)
 
-TRAINING_DATA, VALIDATION_DATA = random_split(
-    DATASET,
-    [train_size, (size - train_size)],
-    generator=torch.Generator().manual_seed(33),
-)
 
+def split_data(dataset, train_percentage: float = 0.8):
+    size = len(dataset)
+    train_size = int(train_percentage * size)
+    t, v = random_split(
+        dataset,
+        [train_size, (size - train_size)],
+        generator=torch.Generator().manual_seed(33),
+    )
+    return t, v
+
+
+TRAINING_DATA, _ = split_data(DATASET)
 
 TESTING_DATA = WheatImgDataset(data_file=TEST_DATA_PATH, transform=TRANSFORM)
 

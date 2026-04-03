@@ -11,6 +11,7 @@ import glob
 from PIL import Image
 import torch
 from torch.utils.data import WeightedRandomSampler
+from utils import generate_labels_map
 
 
 def get_label(label_map: dict, class_name: str) -> int:
@@ -101,16 +102,22 @@ def imgs_data_to_csv(
             match = re.search(r"/([^/]+)/segmented_256_lcr_png", path)
             path = Path(path)
             name = path.name
-            class_name = match.group(1)
+            class_name = match.group(1).lower()
             data.append(dict(name=name, class_name=class_name, path=path.as_posix()))
-        return data
+        return pd.DataFrame(data)
 
-    def add_labels(data: dict):
-        return
+    def add_labels(df: pd.DataFrame):
+        classes = sorted(df["class_name"].unique())
+        l_m = generate_labels_map(classes)
+        labels = []
+        for v in df["class_name"]:
+            labels.append(get_label(l_m, v))
+        df["label"] = labels
+        return df
 
-    def save_data(data: list, name: str):
-        data_pd = pd.DataFrame(data)
-        data_pd.to_csv(f"{dataset_path}/{name}.csv")
+    def save_data(dataframe: pd.DataFrame, name: str):
+        path = f"{dataset_path}/{name}.csv"
+        dataframe.to_csv(path, index=False)
 
     all_train_dirs = get_dirs(train_folders)
     all_test_dirs = get_dirs(test_folders)
@@ -118,6 +125,8 @@ def imgs_data_to_csv(
     clean_test_dirs = clean_dirs(all_test_dirs)
     train_data = data_prep(clean_train_dirs)
     test_data = data_prep(clean_test_dirs)
+    # train_data = add_labels(train_data)
+    # test_data = add_labels(test_data)
     save_data(train_data, "train")
     save_data(test_data, "test")
 
@@ -216,6 +225,9 @@ class WheatImgDataset(Dataset):
             label = self.target_transform(label)
         label = torch.tensor(label, dtype=torch.long)
         return image, label
+
+    def change_class_labels(self, labels_map: dict[int, str]):
+        self.classes = labels_map
 
 
 # class CustomCollator:

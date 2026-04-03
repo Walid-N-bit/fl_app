@@ -67,142 +67,81 @@ def choose_model(
     return model
 
 
-# def train(
-#     model: NET,
-#     trainloader: DataLoader,
-#     optimizer,
-#     loss_func,
-#     mixer=None,
-#     disp_log: bool = True,
-#     max_grad_norm: float = 1.0,
-# ):
-#     """Train the model on the training set."""
-
-#     size = len(trainloader.dataset)
-#     num_batches = len(trainloader)
-#     train_acc, train_loss = 0, 0
-#     model.train()
-
-#     for batch, pair in enumerate(trainloader):
-#         (X, y) = pair
-#         images = X.to(DEVICE)
-#         labels = y.to(DEVICE)
-#         if mixer:
-#             images, labels = mixer(images, labels)
-#         predictions = model(images)
-
-#         # if (batch % 100 == 0) and disp_log:
-#         #     print(f"{labels.shape = }\n{predictions.shape = }")
-#         #     print(f"{labels.dtype = }\n{predictions.dtype = }")
-#         #     print(f"{images.dtype = }\n")
-#         #     print("")
-
-#         loss = loss_func(predictions, labels)
-
-#         pred_labels = predictions.argmax(1)
-
-#         if labels.ndim > 1:
-#             target_labels = labels.argmax(1)
-#         else:
-#             target_labels = labels
-
-#         train_acc += (
-#             (pred_labels == target_labels).type(torch.float).sum().item()
-#         )  # here all correct preds are summed
-#         train_loss += loss.item()  # this returns the average loss over the batch
-
-#         # Backpropagation
-#         optimizer.zero_grad(set_to_none=True)
-#         loss.backward()
-
-#         # to prevent gradient explosion
-#         if max_grad_norm > 0:
-#             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=max_grad_norm)
-
-#         optimizer.step()
-#         ########
-
-#         # average loss display
-#         batch_size = labels.size(dim=0)
-
-
-#         if batch % 100 == 0 and disp_log:
-#             loss, current = loss.item(), (batch + 1) * len(images)
-#             print(f"loss: {loss:>7.6f}  [{current:>5d}/{size:>5d}]")
-
-#     train_acc = train_acc / size
-#     train_loss = train_loss / num_batches
-
-#     return train_acc, train_loss
-
-
 def train(
-    model: nn.Module,
+    model: NET,
     trainloader: DataLoader,
-    optimizer: torch.optim.Optimizer,
-    loss_func: nn.Module,
+    optimizer,
+    loss_func,
     mixer=None,
     disp_log: bool = True,
     max_grad_norm: float = 1.0,
 ):
-    model.train()
+    """Train the model on the training set."""
+
     size = len(trainloader.dataset)
     num_batches = len(trainloader)
+    train_acc, train_loss = 0, 0
+    model.train()
 
-    # Running sums for accurate epoch metrics
-    total_correct = 0
-    total_loss_sum = 0.0
-    total_samples_processed = 0
+    disp_window = []
+    disp_window_size = 20
 
-    # For smoothed logging
-    loss_window = []
-    WINDOW_SIZE = 20
+    for batch, pair in enumerate(trainloader):
 
-    for batch, (images, labels) in enumerate(trainloader):
-        images, labels = images.to(DEVICE), labels.to(DEVICE)
-
-        # 🔍 Sanity check: ensure labels match expected class range
-        # If your global model has 8 classes, labels should be in [0, 7]
-        # Uncomment below to catch index mismatches early:
-        # assert labels.min() >= 0 and labels.max() < 8, f"Label range error: {labels.min()}-{labels.max()}"
-
-        if mixer is not None:
+        (X, y) = pair
+        images = X.to(DEVICE)
+        labels = y.to(DEVICE)
+        if mixer:
             images, labels = mixer(images, labels)
-
         predictions = model(images)
+
+        # if (batch % 100 == 0) and disp_log:
+        #     print(f"{labels.shape = }\n{predictions.shape = }")
+        #     print(f"{labels.dtype = }\n{predictions.dtype = }")
+        #     print(f"{images.dtype = }\n")
+        #     print("")
+
         loss = loss_func(predictions, labels)
 
+        pred_labels = predictions.argmax(1)
+
+        if labels.ndim > 1:
+            target_labels = labels.argmax(1)
+        else:
+            target_labels = labels
+
+        train_acc += (
+            (pred_labels == target_labels).type(torch.float).sum().item()
+        )  # here all correct preds are summed
+        train_loss += loss.item()  # this returns the average loss over the batch
+
+        # Backpropagation
         optimizer.zero_grad(set_to_none=True)
         loss.backward()
 
+        # to prevent gradient explosion
         if max_grad_norm > 0:
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=max_grad_norm)
 
         optimizer.step()
+        ########
 
-        # Accuracy tracking (valid for both hard and soft labels)
-        pred_labels = predictions.argmax(1)
-        target_labels = labels.argmax(1) if labels.ndim > 1 else labels
-        batch_correct = (pred_labels == target_labels).type(torch.float).sum().item()
-
-        batch_size = images.size(0)
-        total_correct += batch_correct
-        total_loss_sum += (
-            loss.item() * batch_size
-        )  # Convert mean->sum for proper weighting
-        total_samples_processed += batch_size
-
-        # Smoothed logging
-        loss_window.append(loss.item())
-        if len(loss_window) > WINDOW_SIZE:
-            loss_window.pop(0)
+        # average loss over a certain number of batches
+        disp_window.append(loss.item())
+        if len(disp_window) >= disp_window_size:
+            disp_window.pop(0)
 
         if batch % 100 == 0 and disp_log:
-            avg_loss = sum(loss_window) / len(loss_window)
-            current = (batch + 1) * len(images)
-            print(f"avg_loss: {avg_loss:>7.4f}  [{current:>5d}/{size:>5d}]")
+            print("a sample of labels: ", labels.unique())
+            avg_loss = sum(disp_window) / len(disp_window)
+            loss, current = loss.item(), (batch + 1) * len(images)
+            print(f"current loss: {loss:>7.6f}  [{current:>5d}/{size:>5d}]")
+            print(f"average loss: {avg_loss:>7.6f}  [{current:>5d}/{size:>5d}]")
 
-    return total_correct / size, total_loss_sum / size
+    train_acc = train_acc / size
+    train_loss = train_loss / num_batches
+
+    return train_acc, train_loss
 
 
 def test(model: NET, testloader: DataLoader, loss_func, ignore_labels: list = []):
