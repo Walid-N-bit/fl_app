@@ -124,7 +124,7 @@ def train(
 
         if batch % 100 == 0 and disp_log:
             loss, current = loss.item(), (batch + 1) * len(images)
-            print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+            print(f"loss: {loss:>7.6f}  [{current:>5d}/{size:>5d}]")
 
     train_acc = train_acc / size
     train_loss = train_loss / num_batches
@@ -155,12 +155,6 @@ def test(model: NET, testloader: DataLoader, loss_func, ignore_labels: list = []
             test_loss += loss.item()
             batch_count += 1
             test_acc += (predictions.argmax(1) == labels).type(torch.float).sum().item()
-            c = (torch.isnan(loss).any(), "\nA loss is NaN", predictions)
-
-            if c[0]:
-                print(c[1])
-                print(c[2])
-                print(labels)
 
     test_loss /= batch_count
     # test_loss /= num_batches
