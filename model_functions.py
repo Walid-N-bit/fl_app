@@ -74,10 +74,9 @@ def train(
     loss_func,
     mixer=None,
     disp_log: bool = True,
-    weights=None,
+    max_grad_norm: float = 1.0,
 ):
     """Train the model on the training set."""
-    # loss_func = nn.CrossEntropyLoss(weight=weights)
 
     size = len(trainloader.dataset)
     num_batches = len(trainloader)
@@ -114,8 +113,12 @@ def train(
 
         # Backpropagation
         optimizer.zero_grad(set_to_none=True)
-        # loss = loss_func(model(images), labels)
         loss.backward()
+
+        # to prevent gradient explosion
+        if max_grad_norm > 0:
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=max_grad_norm)
+
         optimizer.step()
         ########
 
@@ -137,15 +140,20 @@ def test(model: NET, testloader: DataLoader, loss_func, ignore_labels: list = []
     test_loss, test_acc = 0, 0
     model.eval()
     with torch.no_grad():
+        batch_count = 0
         for images, labels in testloader:
             images, labels = images.to(DEVICE), labels.to(DEVICE)
+
             if ignore_labels:
                 mask = torch.isin(labels, torch.tensor(ignore_labels).to(DEVICE))
-                labels[mask] = -100
+                # labels[mask] = -100
+                if mask.all():
+                    continue
 
             predictions = model(images)
             loss = loss_func(predictions, labels)
             test_loss += loss.item()
+            batch_count += 1
             test_acc += (predictions.argmax(1) == labels).type(torch.float).sum().item()
             c = (torch.isnan(loss).any(), "\nA loss is NaN", predictions)
 
@@ -153,9 +161,9 @@ def test(model: NET, testloader: DataLoader, loss_func, ignore_labels: list = []
                 print(c[1])
                 print(c[2])
                 print(labels)
-                break
 
-    test_loss /= num_batches
+    test_loss /= batch_count
+    # test_loss /= num_batches
     test_acc /= size
 
     return test_acc, test_loss

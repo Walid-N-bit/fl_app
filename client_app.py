@@ -190,7 +190,7 @@ def train(msg: Message, context: Context):
         )
     scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, "min", patience=sch_patience)
     weights = modified_weights if use_weights else None
-    loss_fn = nn.CrossEntropyLoss(weight=weights, ignore_index=-100)
+    loss_fn = nn.CrossEntropyLoss(weight=weights)
 
     # commence training loop
     mixer = pick_mixer(mixer, out_features)
@@ -212,7 +212,7 @@ def train(msg: Message, context: Context):
 
             print("validation...")
             ignore_lbls = ignored_labels(out_features, labels)
-            val_acc, val_loss = test_fn(model, valloader, loss_fn, ignore_lbls)
+            val_acc, val_loss = test_fn(model, valloader, loss_fn)
 
             print("Gathering data...")
             train_acc_data.append(train_acc)
