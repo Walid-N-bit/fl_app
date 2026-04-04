@@ -201,12 +201,12 @@ class WheatImgDataset(Dataset):
         target_transform=None,
         labels_map: dict = {},
     ):
-        self.img_labels = img_labels(data_file, self.classes)
         self.data_dir = pd.read_csv(data_file, index_col=0)
         # self.data_dir = pd.read_csv(data_file, index_col=0).to_numpy()
         self.transform = transform
         self.target_transform = target_transform
         self.classes = labels_map if labels_map else labels_map_from_csv(data_file)
+        self.img_labels = img_labels(data_file, self.classes)
 
     def __len__(self):
         return len(self.img_labels)
