@@ -201,7 +201,7 @@ class WheatImgDataset(Dataset):
         target_transform=None,
         labels_map: dict = {},
     ):
-        self.img_labels = img_labels(data_file, labels_map)
+        self.img_labels = img_labels(data_file, self.classes)
         self.data_dir = pd.read_csv(data_file, index_col=0)
         # self.data_dir = pd.read_csv(data_file, index_col=0).to_numpy()
         self.transform = transform
