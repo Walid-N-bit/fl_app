@@ -40,10 +40,14 @@ def labels_map_from_csv(csv_path: str) -> dict:
     :return: Description
     :rtype: dict
     """
-    data = pd.read_csv(csv_path)
-    classes_names = sorted(set(data["class_name"]))
-    labels_map = {name: i for name, i in enumerate(classes_names, 0)}
-    return labels_map
+    file_exists = os.path.exists(csv_path)
+    if file_exists:
+        data = pd.read_csv(csv_path)
+        classes_names = sorted(set(data["class_name"]))
+        labels_map = {name: i for name, i in enumerate(classes_names, 0)}
+        return labels_map
+    else:
+        return {}
 
 
 def img_labels(data_file: str, labels_map: dict | None = None):
@@ -58,11 +62,15 @@ def img_labels(data_file: str, labels_map: dict | None = None):
     :rtype: DataFrame
     """
     img_labels = []
-    l_map = labels_map if labels_map else labels_map_from_csv(data_file)
-    data = pd.read_csv(data_file)
-    for row in data.itertuples():
-        img_labels.append((row.name, get_label(l_map, row.class_name)))
-    return pd.DataFrame(img_labels)
+    file_exists = os.path.exists(data_file)
+    if file_exists:
+        l_map = labels_map if labels_map else labels_map_from_csv(data_file)
+        data = pd.read_csv(data_file)
+        for row in data.itertuples():
+            img_labels.append((row.name, get_label(l_map, row.class_name)))
+        return pd.DataFrame(img_labels)
+    else:
+        return {}
 
 
 def imgs_data_to_csv(
