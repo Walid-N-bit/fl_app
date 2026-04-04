@@ -209,7 +209,7 @@ class WheatImgDataset(Dataset):
         self.target_transform = target_transform
         self.classes = labels_map if labels_map else labels_map_from_csv(data_file)
 
-    def change_class_labels(self, labels_map: dict[int, str]):
+    def change_class_labels(self, labels_map: dict):
         self.classes = labels_map
         self.img_labels = img_labels(self.data_file, labels_map)
 

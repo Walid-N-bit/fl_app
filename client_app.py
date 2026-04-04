@@ -189,7 +189,10 @@ def train(msg: Message, context: Context):
     print("\nDataset: ", dataset_name.upper())
     # print("\nLocal classes: ", local_classes)
     print(f"\nLocal labels map: {wheat_dataset.classes}")
-    print(f"\nOutput features: {out_features}\n")
+    print(f"\nOutput features: {out_features}")
+    for _, lbls in trainloader:
+        print(f"\nFirst batch labels: {lbls.unique()}\n")
+        break
 
     model = choose_model(model_name, freeze, out_features).to(DEVICE)
 
