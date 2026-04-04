@@ -46,7 +46,7 @@ def labels_map_from_csv(csv_path: str) -> dict:
     return labels_map
 
 
-def img_labels(data_file: str, labels_map: dict = {}):
+def img_labels(data_file: str, labels_map: dict | None = None):
     """
     get a dataframe of each image and its corresponding label
 
@@ -199,14 +199,19 @@ class WheatImgDataset(Dataset):
         data_file,
         transform=None,
         target_transform=None,
-        labels_map: dict = {},
+        labels_map: dict | None = None,
     ):
+        self.data_file = data_file
+        self.img_labels = img_labels(data_file, labels_map)
         self.data_dir = pd.read_csv(data_file, index_col=0)
         # self.data_dir = pd.read_csv(data_file, index_col=0).to_numpy()
         self.transform = transform
         self.target_transform = target_transform
         self.classes = labels_map if labels_map else labels_map_from_csv(data_file)
-        self.img_labels = img_labels(data_file, self.classes)
+
+    def change_class_labels(self, labels_map: dict[int, str]):
+        self.classes = labels_map
+        self.img_labels = img_labels(self.data_file, labels_map)
 
     def __len__(self):
         return len(self.img_labels)
@@ -225,9 +230,6 @@ class WheatImgDataset(Dataset):
             label = self.target_transform(label)
         label = torch.tensor(label, dtype=torch.long)
         return image, label
-
-    def change_class_labels(self, labels_map: dict[int, str]):
-        self.classes = labels_map
 
 
 # class CustomCollator:

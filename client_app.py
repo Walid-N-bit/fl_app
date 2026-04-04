@@ -11,6 +11,7 @@ import json
 from pprint import pprint
 from utils import end_of_training_msg, pick_mixer, cmd
 from model_functions import train as train_fn, test as test_fn, choose_model
+from wheat_data_utils import WheatImgDataset
 
 
 client = ClientApp()
@@ -162,6 +163,7 @@ def train(msg: Message, context: Context):
         local_labels_map = generate_local_labels_map(local_classes, labels)
         print(f"\n{local_labels_map = }\n")
         wheat_dataset.change_class_labels(local_labels_map)
+        # new_wheat_dataset = WheatImgDataset()
 
         wheat_train, wheat_val = split_data(wheat_dataset)
         trainloader = data_loader(
