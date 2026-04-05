@@ -197,6 +197,7 @@ def main(grid: Grid, context: Context) -> None:
     aggregated_metrics = result.evaluate_metrics_serverapp
     print(f"\nAggregated metrics: {aggregated_metrics}\n")
 
+    final_acc = aggregated_metrics.get(len(aggregated_metrics)-1).get()
     # Save final model to disk
     state_dict = result.arrays.to_torch_state_dict()
 
