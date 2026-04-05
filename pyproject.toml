@@ -40,7 +40,7 @@ weight-decay = 1e-2
 
 batch-size = 32
 use-sampler = 0  # 1 for true, 0 for false
-num-workers = 2
+num-workers = 0
 sch-patience = 10
 mixer = "cutmix"
 use-weights = 1  # 1 for true, 0 for false

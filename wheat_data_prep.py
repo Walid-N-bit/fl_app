@@ -7,6 +7,7 @@ from torch.utils.data import DataLoader, random_split
 import torch
 from pathlib import Path
 from utils import cmd
+import os
 
 # imagenet images are 224x224 so we resize our custom data to 224
 TRANSFORM = transforms.Compose(
@@ -21,20 +22,22 @@ TRANSFORM = transforms.Compose(
 )
 
 client_name = cmd("hostname").strip()
-PATHS = ["/root/data", "/home/wnouicer24/thesis/fl_app/compressed_images_wheat"]
-DATA_PATH = ""
+# PATHS = ["/root/data", "/home/wnouicer24/thesis/fl_app/compressed_images_wheat"]
+DATA_PATH = "/root/data"
 TRAIN_DATA_PATH = ""
 TEST_DATA_PATH = ""
 
 try:
-    if Path(PATHS[0]).exists():
-        DATA_PATH = PATHS[0]
+    if Path(DATA_PATH).exists():
+        # DATA_PATH = PATHS[0]
         TRAIN_DATA_PATH = f"{DATA_PATH}/{client_name}_train.csv"
         TEST_DATA_PATH = f"{DATA_PATH}/{client_name}_test.csv"
-    elif Path(PATHS[1]).exists():
-        DATA_PATH = PATHS[1]
-        TRAIN_DATA_PATH = f"{DATA_PATH}/train.csv"
-        TEST_DATA_PATH = f"{DATA_PATH}/test.csv"
+        SERVER_TEST_DATA_PATH = f"{DATA_PATH}/test.csv"
+
+    # elif Path(PATHS[1]).exists():
+    #     DATA_PATH = PATHS[1]
+    #     TRAIN_DATA_PATH = f"{DATA_PATH}/train.csv"
+    #     TEST_DATA_PATH = f"{DATA_PATH}/test.csv"
 except Exception as e:
     print("\n.csv data files not found: ", e, end="\n\n")
 
@@ -59,7 +62,16 @@ def split_data(dataset, train_percentage: float = 0.8):
 
 TRAINING_DATA, _ = split_data(DATASET)
 
-TESTING_DATA = WheatImgDataset(data_file=TEST_DATA_PATH, transform=TRANSFORM)
+CLASSES = DATASET.classes.values()
+LABELS_MAP = {i: c for i, c in enumerate(CLASSES)}
+
+TRAIN_SAMPLER = oversampler(
+    data_path=TRAIN_DATA_PATH, subset_indices=TRAINING_DATA.indices
+)
+
+
+# TESTING_DATA = WheatImgDataset(data_file=SERVER_TEST_DATA_PATH, transform=TRANSFORM)
+
 
 # #######################################################
 # print(f"Train size: {len(TRAINING_DATA)}")
@@ -68,14 +80,6 @@ TESTING_DATA = WheatImgDataset(data_file=TEST_DATA_PATH, transform=TRANSFORM)
 # print(f"First train index: {TRAINING_DATA.indices[0]}")
 # print(f"First val index: {VALIDATION_DATA.indices[0]}")
 # #######################################################
-
-CLASSES = DATASET.classes.values()
-LABELS_MAP = {i: c for i, c in enumerate(CLASSES)}
-
-
-TRAIN_SAMPLER = oversampler(
-    data_path=TRAIN_DATA_PATH, subset_indices=TRAINING_DATA.indices
-)
 
 
 def data_loader(

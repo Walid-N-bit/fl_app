@@ -304,7 +304,7 @@ class GlobalEvaluation:
     def __call__(self, *args, **kwds):
         from model_functions import test
         from wheat_data_utils import WheatImgDataset
-        from wheat_data_prep import TEST_DATA_PATH, data_loader
+        from wheat_data_prep import SERVER_TEST_DATA_PATH, data_loader
         from torchvision import transforms
 
         for arg in args:
@@ -327,7 +327,7 @@ class GlobalEvaluation:
 
         # Load entire test set (for CIFAR10)
         # test_dataloader = load_centralized_dataset(dataset=DATASET_ID)
-        test_data = WheatImgDataset(TEST_DATA_PATH, pt_transforms)
+        test_data = WheatImgDataset(SERVER_TEST_DATA_PATH, pt_transforms)
         test_dataloader = data_loader(test_data, self.dev, 128)
 
         # Evaluate the global model on the test set
