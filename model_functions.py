@@ -135,7 +135,7 @@ def train(
             disp_window.pop(0)
 
         if batch % 100 == 0 and disp_log:
-            print("a sample of labels: ", labels_hard.unique())
+            # print("a sample of labels: ", labels_hard.unique())
             avg_loss = sum(disp_window) / len(disp_window)
             loss, current = loss.item(), (batch + 1) * len(images)
             print(f"current loss: {loss:>7.6f}  [{current:>5d}/{size:>5d}]")
@@ -159,20 +159,23 @@ def test(model: NET, testloader: DataLoader, loss_func, ignore_labels: list = []
         for images, labels in testloader:
             images, labels = images.to(DEVICE), labels.to(DEVICE)
 
-            if ignore_labels:
-                mask = torch.isin(labels, torch.tensor(ignore_labels).to(DEVICE))
-                # labels[mask] = -100
-                if mask.all():
-                    continue
+            # if ignore_labels:
+            #     mask = torch.isin(labels, torch.tensor(ignore_labels).to(DEVICE))
+            #     # labels[mask] = -100
+            #     if mask.all():
+            #         continue
 
             predictions = model(images)
             loss = loss_func(predictions, labels)
             test_loss += loss.item()
-            batch_count += 1
             test_acc += (predictions.argmax(1) == labels).type(torch.float).sum().item()
+            if batch_count % 50 == 0:
+                print("\nA sample of labels: ", labels.unique())
+                print("")
+            batch_count += 1
 
-    test_loss /= batch_count
-    # test_loss /= num_batches
+    # test_loss /= batch_count
+    test_loss /= num_batches
     test_acc /= size
 
     return test_acc, test_loss

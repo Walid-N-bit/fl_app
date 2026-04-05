@@ -41,33 +41,33 @@ try:
 except Exception as e:
     print("\n.csv data files not found: ", e, end="\n\n")
 
+if Path(TRAIN_DATA_PATH).exists():
+    DATASET = WheatImgDataset(data_file=TRAIN_DATA_PATH, transform=TRANSFORM)
 
-DATASET = WheatImgDataset(data_file=TRAIN_DATA_PATH, transform=TRANSFORM)
+    size = len(DATASET)
 
-size = len(DATASET)
+    train_size = int(0.8 * size)
 
-train_size = int(0.8 * size)
+    def split_data(dataset, train_percentage: float = 0.8):
+        size = len(dataset)
+        train_size = int(train_percentage * size)
+        t, v = random_split(
+            dataset,
+            [train_size, (size - train_size)],
+            generator=torch.Generator().manual_seed(33),
+        )
+        return t, v
 
+    TRAINING_DATA, _ = split_data(DATASET)
 
-def split_data(dataset, train_percentage: float = 0.8):
-    size = len(dataset)
-    train_size = int(train_percentage * size)
-    t, v = random_split(
-        dataset,
-        [train_size, (size - train_size)],
-        generator=torch.Generator().manual_seed(33),
+    CLASSES = DATASET.classes.values()
+    LABELS_MAP = {i: c for i, c in enumerate(CLASSES)}
+
+    TRAIN_SAMPLER = oversampler(
+        data_path=TRAIN_DATA_PATH, subset_indices=TRAINING_DATA.indices
     )
-    return t, v
-
-
-TRAINING_DATA, _ = split_data(DATASET)
-
-CLASSES = DATASET.classes.values()
-LABELS_MAP = {i: c for i, c in enumerate(CLASSES)}
-
-TRAIN_SAMPLER = oversampler(
-    data_path=TRAIN_DATA_PATH, subset_indices=TRAINING_DATA.indices
-)
+else:
+    pass
 
 
 # TESTING_DATA = WheatImgDataset(data_file=SERVER_TEST_DATA_PATH, transform=TRANSFORM)

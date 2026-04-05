@@ -239,8 +239,8 @@ def train(msg: Message, context: Context):
 
             print("validation...")
             ignore_lbls = ignored_labels(out_features, labels)
-            # val_acc, val_loss = test_fn(model, valloader, loss_fn, ignore_lbls)
-            val_acc, val_loss = 0, 0
+            # val_acc, val_loss = 0, 0
+            val_acc, val_loss = test_fn(model, valloader, loss_fn, ignore_lbls)
 
             print("Gathering data...")
             train_acc_data.append(train_acc)
