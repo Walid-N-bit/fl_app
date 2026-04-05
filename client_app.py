@@ -8,10 +8,10 @@ from ast import literal_eval
 import time
 import numpy as np
 import json
-from pprint import pprint
 from utils import end_of_training_msg, pick_mixer, cmd
 from model_functions import train as train_fn, test as test_fn, choose_model
-from wheat_data_utils import WheatImgDataset
+
+# from wheat_data_utils import WheatImgDataset
 
 
 client = ClientApp()
@@ -222,9 +222,12 @@ def train(msg: Message, context: Context):
     # commence training loop
     mixer = pick_mixer(mixer, out_features)
 
+    current_round = server_config.get("current-round")
     try:
         for e in range(epochs):
-            print(f"\nEpoch {e+1}\n-------------------------------")
+            print(
+                f"\nEpoch {e+1} | Round {current_round}\n-------------------------------"
+            )
 
             f_lr = optimizer.param_groups[0]["lr"]
             c_lr = optimizer.param_groups[1]["lr"]

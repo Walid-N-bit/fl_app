@@ -128,6 +128,11 @@ class CustomStrat(FedAvg):
         # for current_round in range(0, num_rounds + 1):
         for current_round in range(1, num_rounds + 1):
 
+            ################################################
+            # adding current-round to train_config for logging
+            train_config.update({"current-round": current_round})
+            ################################################
+
             log(INFO, "")
             log(INFO, "[ROUND %s/%s]", current_round, num_rounds)
 

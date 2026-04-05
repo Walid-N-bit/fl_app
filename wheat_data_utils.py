@@ -200,6 +200,9 @@ def update_csv(file_path: str, new_row: pd.DataFrame):
     df.to_csv(file_path)
 
 
+
+
+
 class WheatImgDataset(Dataset):
 
     def __init__(
@@ -238,46 +241,3 @@ class WheatImgDataset(Dataset):
             label = self.target_transform(label)
         label = torch.tensor(label, dtype=torch.long)
         return image, label
-
-
-# class CustomCollator:
-#     def __init__(self, selected_labels, out_features, mixer):
-#         self.selected_labels = selected_labels
-#         self.out_features = out_features
-#         self.mixer = mixer
-
-#     def __call__(self, batch):
-
-#         images, labels = self.auto_batch(batch)
-#         print(f"{self.selected_labels = }")
-#         print(f"{labels = }")
-
-#         if self.mixer:
-#             images, labels = self.mixer(torch.tensor(images), torch.tensor(labels))
-
-
-# new_labels = []
-# for y in labels:
-#     if type(y) == int:
-#         pass
-#     elif type(y) == list:
-#         new_label = np.zeros(
-#             self.out_features
-#         )  # has length of global nmr of classes
-#         for i, v in zip(self.selected_labels, y):
-#             new_label[i] = v
-
-#         print(f"{y = }")
-#         print(f"{new_label = }")
-
-#         new_labels.append(new_label)
-
-# return torch.tensor(images), torch.tensor(new_labels)
-
-# def auto_batch(self, batch):
-#     images = []
-#     labels = []
-#     for image, label in batch:
-#         images.append(image.tolist())
-#         labels.append(label.item())
-#     return images, labels
