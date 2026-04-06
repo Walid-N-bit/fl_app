@@ -240,7 +240,7 @@ def train(msg: Message, context: Context):
     try:
         for e in range(epochs):
             print(
-                f"\nEpoch {e+1} | Round {current_round}\n-------------------------------"
+                f"\nEpoch {e+1} / {epochs} | Round {current_round}\n-------------------------------"
             )
 
             f_lr = optimizer.param_groups[0]["lr"]
