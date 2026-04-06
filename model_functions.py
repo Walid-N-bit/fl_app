@@ -179,3 +179,38 @@ def test(model: NET, testloader: DataLoader, loss_func, ignore_labels: list = []
     test_acc /= size
 
     return test_acc, test_loss
+
+
+def eval_per_class(testloader, model, classes: list):
+
+    actual_values = []
+    pred_values = []
+    # prepare to count predictions for each class
+    correct_pred = {classname: 0 for classname in classes}
+    total_pred = {classname: 0 for classname in classes}
+
+    model.eval()
+    with torch.no_grad():
+        for data in testloader:
+            images, labels = data
+            images = images.to(DEVICE)
+            labels = labels.to(DEVICE)
+            outputs = model(images)
+            _, predictions = torch.max(outputs, 1)
+            # collect the correct predictions for each class
+            for label, prediction in zip(labels, predictions):
+                if label == prediction:
+                    correct_pred[classes[label]] += 1
+                total_pred[classes[label]] += 1
+
+            actual_values.extend(labels)
+            pred_values.extend(predictions)
+    # print accuracy for each class
+    for classname, correct_count in correct_pred.items():
+        if total_pred[classname] == 0:
+            print(f"Total predictions for {classname} = {total_pred[classname]}")
+        else:
+            accuracy = 100 * float(correct_count) / total_pred[classname]
+            print(f"Accuracy for class: {classname:5s} is {accuracy:.1f} %")
+
+    return actual_values, pred_values

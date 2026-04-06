@@ -4,14 +4,18 @@ from torch.optim import lr_scheduler
 from flwr.app import ArrayRecord, Context, Message, MetricRecord, RecordDict
 from flwr.clientapp import ClientApp
 from flwr.app import ConfigRecord
-from ast import literal_eval
 import time
 import numpy as np
 import json
 from utils import end_of_training_msg, pick_mixer, cmd
-from model_functions import train as train_fn, test as test_fn, choose_model
+from model_functions import (
+    train as train_fn,
+    test as test_fn,
+    choose_model,
+    eval_per_class,
+)
 
-# from wheat_data_utils import WheatImgDataset
+from wheat_data_utils import WheatImgDataset
 
 
 client = ClientApp()
@@ -114,6 +118,7 @@ def train(msg: Message, context: Context):
         from wheat_data_prep import (
             DATASET as wheat_dataset,
             TRAIN_DATA_PATH,
+            TEST_DATA_PATH,
             split_data,
             data_loader,
             TRAIN_SAMPLER,
@@ -179,6 +184,12 @@ def train(msg: Message, context: Context):
             batch_size,
             num_workers=num_workers,
         )
+
+        test_dataset = WheatImgDataset(
+            data_file=TEST_DATA_PATH, labels_map=local_labels_map
+        )
+        testloader = data_loader(test_dataset, dev, 128)
+
         class_weights = get_class_weights(TRAIN_DATA_PATH, wheat_train.indices).to(
             DEVICE
         )
@@ -271,6 +282,10 @@ def train(msg: Message, context: Context):
 
     end_of_training_msg(sum(train_times))
 
+    print("\n---------------------------------------------------------------")
+    print("\nPer-class local evaluation:\n")
+    eval_per_class(testloader, model, local_classes)
+
     # Construct and return reply Message
     model_record = ArrayRecord(model.state_dict())
     metrics = {
@@ -295,11 +310,6 @@ def train(msg: Message, context: Context):
         {"arrays": model_record, "metrics": metric_record, "configs": config_record}
     )
 
-    # print("\n>>>>>>>>>>>>>>>>>>>>>>>>>>")
-    # print("\nSending message:")
-    # print(f"{content.get("config") = }")
-    # print(f"{node_name = }")
-    # print(f"{local_classes = }")
     return Message(content=content, reply_to=msg)
 
 
