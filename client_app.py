@@ -119,6 +119,7 @@ def train(msg: Message, context: Context):
             DATASET as wheat_dataset,
             TRAIN_DATA_PATH,
             TEST_DATA_PATH,
+            TESTING_TRANSFORM,
             split_data,
             data_loader,
             TRAIN_SAMPLER,
@@ -186,7 +187,9 @@ def train(msg: Message, context: Context):
         )
 
         test_dataset = WheatImgDataset(
-            data_file=TEST_DATA_PATH, labels_map=local_labels_map
+            data_file=TEST_DATA_PATH,
+            labels_map=local_labels_map,
+            transform=TESTING_TRANSFORM,
         )
         testloader = data_loader(test_dataset, dev, 128)
 
