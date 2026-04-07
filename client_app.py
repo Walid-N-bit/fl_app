@@ -287,7 +287,7 @@ def train(msg: Message, context: Context):
 
     print("\n---------------------------------------------------------------")
     print("\nPer-class local evaluation:\n")
-    eval_per_class(testloader, model, local_classes)
+    eval_per_class(testloader, model, out_features, local_labels_map)
 
     # Construct and return reply Message
     model_record = ArrayRecord(model.state_dict())
