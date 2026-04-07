@@ -192,7 +192,7 @@ def eval_per_class(testloader, model, out_features: int, labels_map: dict):
     print(f"\nLocal labels map: {labels_map}")
     print(f"\nTemplate labels map: {global_labels_map}")
 
-    if len(global_labels_map) == out_features:
+    if len(labels_map) == out_features:
         global_labels_map = labels_map
     else:
         for i in global_labels_map:
