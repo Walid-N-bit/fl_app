@@ -198,7 +198,8 @@ def eval_per_class(testloader, model, out_features: int, labels_map: dict):
                 global_labels_map[i] = class_name
 
     classes = list(global_labels_map.values())
-
+    print(f"\nGlobal labels map: {global_labels_map}")
+    print(f"\nClasses: {classes}\n")
     correct_pred = {classname: 0 for classname in classes}
     total_pred = {classname: 0 for classname in classes}
 
