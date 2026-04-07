@@ -181,11 +181,24 @@ def test(model: NET, testloader: DataLoader, loss_func, ignore_labels: list = []
     return test_acc, test_loss
 
 
-def eval_per_class(testloader, model, classes: list):
+def eval_per_class(testloader, model, out_features: int, labels_map: dict):
 
     actual_values = []
     pred_values = []
     # prepare to count predictions for each class
+    global_labels_map = {
+        i: c for i, c in enumerate(["Unknown-Class" for _ in range(out_features)])
+    }
+    if len(global_labels_map) == out_features:
+        global_labels_map = labels_map
+    else:
+        for i in global_labels_map:
+            if i in labels_map:
+                class_name = labels_map.get(i)
+                global_labels_map[i] = class_name
+
+    classes = global_labels_map.values()
+
     correct_pred = {classname: 0 for classname in classes}
     total_pred = {classname: 0 for classname in classes}
 
