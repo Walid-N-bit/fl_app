@@ -131,6 +131,7 @@ def train(msg: Message, context: Context):
     elif dataset_name == "cifar10":
         from cifar10_data_prep import (
             CIFAR10_CLASSES,
+            CIFAR10_LABELS_MAP,
             CIFAR10_TRAIN,
             CIFAR10_VAL,
             CIFAR10_TEST,
@@ -138,6 +139,7 @@ def train(msg: Message, context: Context):
         )
 
         local_classes = CIFAR10_CLASSES
+        local_labels_map = CIFAR10_LABELS_MAP
         trainloader = cifar_loader(CIFAR10_TRAIN, batch_size)
         valloader = cifar_loader(CIFAR10_VAL, batch_size)
         testloader = cifar_loader(CIFAR10_TEST, 128)
