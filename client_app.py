@@ -268,7 +268,7 @@ def train(msg: Message, context: Context):
             stopper.record(e + 1, train_loss, val_loss)
             print(f"\n{stopper.values = }")
             print(f"{stopper.current_delta = }")
-            print(f"{stopper.delta_slope(e+1) = }")
+            print(f"{stopper.delta_slope() = }")
             print(f"{stopper.early_stopper() = }")
             print(f"{stopper.counter = }\n")
 
