@@ -265,13 +265,11 @@ def train(msg: Message, context: Context):
             # val_acc, val_loss = 0, 0
             val_acc, val_loss = test_fn(model, valloader, loss_fn, ignore_lbls)
 
-            stopper.delta(train_loss, val_loss)
-            stopper.record(e+1)
-
-            print(f"\n{stopper.current_delta = }")
-            print(f"{stopper.delta_slope() = }")
-            print(f"{stopper.counter = }")
-            print(f"{stopper.values = }\n")
+            print(f"\n{stopper.early_stopper(train_loss, val_loss) = }")
+            print(f"{stopper.current_delta = }")
+            print(f"{stopper.delta_slope(e+1) = }")
+            print(f"{stopper.values = }")
+            print(f"{stopper.counter = }\n")
 
             print("Gathering data...")
             train_acc_data.append(train_acc)

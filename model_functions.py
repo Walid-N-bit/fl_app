@@ -245,11 +245,12 @@ class EarlyStop:
         self.current_delta = (validation_loss - training_loss) / (validation_loss)
 
     def record(self, current_epoch):
-        if len(self.values) > 2:
+        if len(self.values) >= 2:
             self.values.pop(0)
         self.values.append((current_epoch, self.current_delta))
 
-    def delta_slope(self):
+    def delta_slope(self, epoch):
+        self.record(epoch)
         if len(self.values) == 2:
             e1, d1 = self.values[0]
             e2, d2 = self.values[1]
@@ -258,7 +259,7 @@ class EarlyStop:
             return 0
 
     def early_stopper(self, training_loss, validation_loss) -> bool:
-        d = self.delta(validation_loss, training_loss)
+        self.delta(validation_loss, training_loss)
         if self.delta_slope() > 0:
             self.counter += 1
         else:
