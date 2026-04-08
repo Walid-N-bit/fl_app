@@ -247,7 +247,7 @@ class EarlyStop:
         return self.current_delta
 
     def record(self, current_epoch, training_loss, validation_loss):
-        if len(self.values) > 2:
+        if len(self.values) >= 2:
             self.values.pop(0)
         self.values.append((current_epoch, self.delta(training_loss, validation_loss)))
 
