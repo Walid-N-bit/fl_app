@@ -309,9 +309,6 @@ class GlobalEvaluation:
 
     def __call__(self, *args, **kwds):
         from model_functions import test
-        from wheat_data_utils import WheatImgDataset
-        from wheat_data_prep import SERVER_TEST_DATA_PATH, data_loader
-        from torchvision import transforms
 
         for arg in args:
             if isinstance(arg, int):
@@ -320,21 +317,13 @@ class GlobalEvaluation:
                 arrays = arg
 
         device = torch.device(self.dev)
-        pt_transforms = transforms.Compose(
-            [
-                transforms.ToTensor(),
-                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5)),
-            ]
-        )
 
         self.model.load_state_dict(arrays.to_torch_state_dict())
         self.model.to(device)
 
-        
-
         # Evaluate the global model on the test set
         test_acc, test_loss = test(
-            self.model, test_dataloader, torch.nn.CrossEntropyLoss()
+            self.model, self.test_dataloader, torch.nn.CrossEntropyLoss()
         )
 
         # Return the evaluation metrics
