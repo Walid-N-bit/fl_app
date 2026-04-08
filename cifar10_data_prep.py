@@ -31,7 +31,8 @@ def apply_transforms(batch):
 partition = partition.with_transform(apply_transforms)
 # Now, you can check if you didn't make any mistakes by calling partition_torch[0]
 
-CIFAR10_CLASSES = partition.features["label"].names
+CIFAR10_LABELS_MAP = partition.features["label"]
+CIFAR10_CLASSES = CIFAR10_LABELS_MAP.names
 
 train, valid, test = divide_dataset(partition, [0.6, 0.2, 0.2])
 
