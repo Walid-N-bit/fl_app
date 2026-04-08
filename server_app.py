@@ -7,6 +7,7 @@ from utils import cmd, save_pkl, parse_raw_metrics, parse_server_eval_metrics
 
 from datetime import datetime
 import os
+from typing import Literal
 
 from model_functions import choose_model
 from cifar10_data_prep import CIFAR10_CLASSES as cifar_classes
@@ -67,33 +68,16 @@ def labels_map_per_client(global_classes: list, configs: list[dict]):
     return contents
 
 
-# def global_evaluate(server_round: int, arrays: ArrayRecord, model=None) -> MetricRecord:
-#     """Evaluate model on central data."""
-#     from model_functions import test
-#     from wheat_data_utils import WheatImgDataset
-#     from wheat_data_prep import TEST_DATA_PATH, data_loader
-#     from torchvision import transforms
+def pick_test_dataloader(dataset_name: Literal["cifar10", "wheat"]):
+    from wheat_data_prep import TESTING_DATA, data_loader as wheat_loader
+    from cifar10_data_prep import CIFAR10_TEST, loader as cifar_loader
 
-#     pt_transforms = transforms.Compose(
-#         [transforms.ToTensor(), transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
-#     )
+    if dataset_name == "wheat":
+        test_dataloader = wheat_loader(TESTING_DATA, DEV, 128)
+    elif dataset_name == "cifar10":
+        test_dataloader = cifar_loader(CIFAR10_TEST, 128)
 
-#     model.load_state_dict(arrays.to_torch_state_dict())
-#     # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-#     model.to(DEVICE)
-
-#     # Load entire test set (for CIFAR10)
-#     # test_dataloader = load_centralized_dataset(dataset=DATASET_ID)
-#     test_data = WheatImgDataset(TEST_DATA_PATH, pt_transforms)
-#     test_dataloader = data_loader(test_data, DEV, 128)
-
-#     # Evaluate the global model on the test set
-#     test_loss, test_acc = test(model, test_dataloader, torch.nn.CrossEntropyLoss())
-
-#     # Return the evaluation metrics
-#     return MetricRecord(
-#         {"accuracy": test_acc, "loss": test_loss, "server-round": server_round}
-#     )
+    return test_dataloader
 
 
 @server.main()
@@ -184,13 +168,14 @@ def main(grid: Grid, context: Context) -> None:
         "out-features": out_features,
     }
     # Start strategy, run FedAvg for `num_rounds`
+    test_dataloader = pick_test_dataloader(dataset_name)
     train_replies, _, result = strategy.start(
         timeout=1e10,
         grid=grid,
         initial_arrays=arrays,
         train_config=ConfigRecord(train_configs),
         num_rounds=num_rounds,
-        evaluate_fn=GlobalEvaluation(global_model, DEV),
+        evaluate_fn=GlobalEvaluation(global_model, DEV, test_dataloader),
     )
 
     # final_metrics = global_evaluate(global_model, num_rounds, result.arrays)
@@ -206,7 +191,7 @@ def main(grid: Grid, context: Context) -> None:
     os.makedirs(os.path.dirname(model_path), exist_ok=True)
     print("\nSaving final model to disk...")
     torch.save(state_dict, model_path)
- 
+
     print("\n\nSaving Clients Metrics Data...\n")
     data_name = f"{model_name}_epochs:{epochs}_f-lr:{features_lr}_c-lr:{classifier_lr}_batch-size:{batch_size}_aug:{mixer}_{time}"
     raw_data_path = f"/root/data/metrics/{dataset_name}/{data_name}.pkl"

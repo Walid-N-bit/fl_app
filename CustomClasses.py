@@ -302,9 +302,10 @@ def send_to_node(grid: Grid, messages: Iterable[Message]):
 
 
 class GlobalEvaluation:
-    def __init__(self, model, dev):
+    def __init__(self, model, dev, test_dataloader):
         self.model = model
         self.dev = dev
+        self.test_dataloader = test_dataloader
 
     def __call__(self, *args, **kwds):
         from model_functions import test
@@ -327,13 +328,9 @@ class GlobalEvaluation:
         )
 
         self.model.load_state_dict(arrays.to_torch_state_dict())
-        # device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.model.to(device)
 
-        # Load entire test set (for CIFAR10)
-        # test_dataloader = load_centralized_dataset(dataset=DATASET_ID)
-        test_data = WheatImgDataset(SERVER_TEST_DATA_PATH, pt_transforms)
-        test_dataloader = data_loader(test_data, self.dev, 128)
+        
 
         # Evaluate the global model on the test set
         test_acc, test_loss = test(

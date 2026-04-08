@@ -78,7 +78,7 @@ else:
     pass
 
 
-# TESTING_DATA = WheatImgDataset(data_file=SERVER_TEST_DATA_PATH, transform=TRANSFORM)
+TESTING_DATA = WheatImgDataset(data_file=SERVER_TEST_DATA_PATH, transform=TRANSFORM)
 
 
 # #######################################################
