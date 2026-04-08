@@ -240,9 +240,11 @@ class EarlyStop:
         self.min_delta = min_delta
         self.counter = 0
         self.values = []
+        self.current_delta = 0
 
     def delta(self, training_loss, validation_loss) -> float:
         self.current_delta = (validation_loss - training_loss) / (validation_loss)
+        return self.current_delta
 
     def record(self, current_epoch, training_loss, validation_loss):
         if len(self.values) > 2:
