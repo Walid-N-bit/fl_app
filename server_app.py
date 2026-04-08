@@ -206,7 +206,7 @@ def main(grid: Grid, context: Context) -> None:
     os.makedirs(os.path.dirname(model_path), exist_ok=True)
     print("\nSaving final model to disk...")
     torch.save(state_dict, model_path)
-
+ 
     print("\n\nSaving Clients Metrics Data...\n")
     data_name = f"{model_name}_epochs:{epochs}_f-lr:{features_lr}_c-lr:{classifier_lr}_batch-size:{batch_size}_aug:{mixer}_{time}"
     raw_data_path = f"/root/data/metrics/{dataset_name}/{data_name}.pkl"

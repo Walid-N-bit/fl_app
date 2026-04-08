@@ -20,7 +20,8 @@ from wheat_data_utils import WheatImgDataset
 
 client = ClientApp()
 
-DEVICE = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+DEV = "cuda:0" if torch.cuda.is_available() else "cpu"
+DEVICE = torch.device(DEV)
 
 
 def zero_out_weights(
@@ -84,7 +85,6 @@ def train(msg: Message, context: Context):
     passed_epochs = []
     f_lrs = []
     c_lrs = []
-    dev = "cuda:0" if torch.cuda.is_available() else "cpu"
     # model params
     print(f"######################################################")
     print(f"\n Loading Params \n")
@@ -98,7 +98,7 @@ def train(msg: Message, context: Context):
     batch_size = server_config.get("batch-size", context.run_config["batch-size"])
     use_sampler = server_config.get("use-sampler", context.run_config["use-sampler"])
     num_workers = server_config.get("num-workers", context.run_config["num-workers"])
-    if dev == "cpu":
+    if DEV == "cpu":
         num_workers = 0
     features_lr = server_config.get("features-lr", context.run_config["features-lr"])
     classifier_lr = server_config.get(
@@ -134,12 +134,13 @@ def train(msg: Message, context: Context):
             CIFAR10_TRAIN,
             CIFAR10_VAL,
             CIFAR10_TEST,
-            loader,
+            loader as cifar_loader,
         )
 
         local_classes = CIFAR10_CLASSES
-        trainloader = loader(CIFAR10_TRAIN, batch_size)
-        valloader = loader(CIFAR10_VAL, batch_size)
+        trainloader = cifar_loader(CIFAR10_TRAIN, batch_size)
+        valloader = cifar_loader(CIFAR10_VAL, batch_size)
+        testloader = cifar_loader(CIFAR10_TEST, 128)
         mixer = ""
 
     # check if this is a prep phase, return classes if True
@@ -169,19 +170,18 @@ def train(msg: Message, context: Context):
         local_labels_map = generate_local_labels_map(local_classes, labels)
         print(f"\n{local_labels_map = }\n")
         wheat_dataset.change_class_labels(local_labels_map)
-        # new_wheat_dataset = WheatImgDataset()
 
         wheat_train, wheat_val = split_data(wheat_dataset)
         trainloader = data_loader(
             wheat_train,
-            dev,
+            DEV,
             batch_size,
             TRAIN_SAMPLER if use_sampler else None,
             num_workers=num_workers,
         )
         valloader = data_loader(
             wheat_val,
-            dev,
+            DEV,
             batch_size,
             num_workers=num_workers,
         )
@@ -191,7 +191,7 @@ def train(msg: Message, context: Context):
             labels_map=local_labels_map,
             transform=TESTING_TRANSFORM,
         )
-        testloader = data_loader(test_dataset, dev, 128)
+        testloader = data_loader(test_dataset, DEV, 128)
 
         class_weights = get_class_weights(TRAIN_DATA_PATH, wheat_train.indices).to(
             DEVICE
@@ -240,7 +240,7 @@ def train(msg: Message, context: Context):
     try:
         for e in range(epochs):
             print(
-                f"\nEpoch {e+1} / {epochs} | Round {current_round}\n-------------------------------"
+                f"\nEpoch {e+1}/{epochs} | Round {current_round}\n-------------------------------"
             )
 
             f_lr = optimizer.param_groups[0]["lr"]

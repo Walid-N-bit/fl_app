@@ -169,10 +169,10 @@ def test(model: NET, testloader: DataLoader, loss_func, ignore_labels: list = []
             loss = loss_func(predictions, labels)
             test_loss += loss.item()
             test_acc += (predictions.argmax(1) == labels).type(torch.float).sum().item()
-            if batch_count % 50 == 0:
-                print("\nA sample of labels: ", labels.unique())
-                print("")
-            batch_count += 1
+            # if batch_count % 50 == 0:
+            #     print("\nA sample of labels: ", labels.unique())
+            #     print("")
+            # batch_count += 1
 
     # test_loss /= batch_count
     test_loss /= num_batches
@@ -203,8 +203,8 @@ def eval_per_class(testloader, model, out_features: int, labels_map: dict):
     classes = list(global_labels_map.values())
     print(f"\nGlobal labels map: {global_labels_map}")
     print(f"\nClasses: {classes}\n")
-    correct_pred = {classname: 0 for classname in classes}
-    total_pred = {classname: 0 for classname in classes}
+    correct_pred = {classname: 0.0 for classname in classes}
+    total_pred = {classname: 0.0 for classname in classes}
 
     model.eval()
     with torch.no_grad():
