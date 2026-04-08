@@ -13,6 +13,7 @@ from model_functions import (
     test as test_fn,
     choose_model,
     eval_per_class,
+    EarlyStop,
 )
 
 from wheat_data_utils import WheatImgDataset
@@ -240,6 +241,8 @@ def train(msg: Message, context: Context):
     mixer = pick_mixer(mixer, out_features)
 
     current_round = server_config.get("current-round")
+
+    stopper = EarlyStop(3, 0.5)
     try:
         for e in range(epochs):
             print(
@@ -261,6 +264,14 @@ def train(msg: Message, context: Context):
             ignore_lbls = ignored_labels(out_features, labels)
             # val_acc, val_loss = 0, 0
             val_acc, val_loss = test_fn(model, valloader, loss_fn, ignore_lbls)
+
+            stopper.delta(train_loss, val_loss)
+            stopper.record(e)
+
+            print(f"\n{stopper.current_delta = }")
+            print(f"{stopper.delta_slope() = }")
+            print(f"{stopper.counter = }")
+            print(f"{stopper.values = }\n")
 
             print("Gathering data...")
             train_acc_data.append(train_acc)

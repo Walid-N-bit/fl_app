@@ -231,3 +231,39 @@ def eval_per_class(testloader, model, out_features: int, labels_map: dict):
             print(f"Accuracy for class: {classname:5s} is {accuracy:.1f} %")
 
     return actual_values, pred_values
+
+
+class EarlyStop:
+
+    def __init__(self, tolerance: int = 1, min_delta: float = 0):
+        self.tolerance = tolerance
+        self.min_delta = min_delta
+        self.counter = 0
+        self.values = []
+
+    def delta(self, training_loss, validation_loss) -> float:
+        self.current_delta = (validation_loss - training_loss) / (validation_loss)
+
+    def record(self, current_epoch):
+        if len(self.values) > 2:
+            self.values.pop(0)
+        self.values.append((current_epoch, self.current_delta))
+
+    def delta_slope(self):
+        if len(self.values) == 2:
+            e1, d1 = self.values[0]
+            e2, d2 = self.values[1]
+            return (d2 - d1) / (e2 - e1)
+        else:
+            return 0
+
+    def early_stopper(self, training_loss, validation_loss) -> bool:
+        d = self.delta(validation_loss, training_loss)
+        if self.delta_slope() > 0:
+            self.counter += 1
+        else:
+            self.counter = 0
+        if self.counter >= self.tolerance:
+            return True
+        else:
+            return False
