@@ -144,6 +144,7 @@ def train(msg: Message, context: Context):
         valloader = cifar_loader(CIFAR10_VAL, batch_size)
         testloader = cifar_loader(CIFAR10_TEST, 128)
         mixer = ""
+        weights = None
 
     # check if this is a prep phase, return classes if True
     prep_phase = server_config.get("prep-phase")
@@ -197,6 +198,12 @@ def train(msg: Message, context: Context):
         class_weights = get_class_weights(TRAIN_DATA_PATH, wheat_train.indices).to(
             DEVICE
         )
+        modified_weights = zero_out_weights(out_features, labels, class_weights).to(
+            DEVICE
+        )
+        print("--> Modified Weights: ", modified_weights)
+        print(" ")
+        weights = modified_weights if use_weights else None
 
     # Load the model and initialize it with the received weights
     print("\nDevice: ", DEVICE)
@@ -213,10 +220,6 @@ def train(msg: Message, context: Context):
 
     model.load_state_dict(msg.content["arrays"].to_torch_state_dict())
 
-    modified_weights = zero_out_weights(out_features, labels, class_weights).to(DEVICE)
-    print("--> Modified Weights: ", modified_weights)
-    print(" ")
-
     # optimizer and loss_fn
 
     opt_algo = torch.optim.AdamW
@@ -231,7 +234,6 @@ def train(msg: Message, context: Context):
             weight_decay=weight_decay,
         )
     scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, "min", patience=sch_patience)
-    weights = modified_weights if use_weights else None
     loss_fn = nn.CrossEntropyLoss(weight=weights)
 
     # commence training loop
