@@ -170,7 +170,6 @@ def train(msg: Message, context: Context):
         local_labels_map = generate_local_labels_map(local_classes, labels)
         print(f"\n{local_labels_map = }\n")
         wheat_dataset.change_class_labels(local_labels_map)
-
         wheat_train, wheat_val = split_data(wheat_dataset)
         trainloader = data_loader(
             wheat_train,
@@ -202,7 +201,7 @@ def train(msg: Message, context: Context):
     print("\nChosen model: ", model_name)
     print("\nDataset: ", dataset_name.upper())
     # print("\nLocal classes: ", local_classes)
-    print(f"\nLocal labels map: {wheat_dataset.classes}")
+    print(f"\nLocal labels map: {local_labels_map}")
     print(f"\nOutput features: {out_features}")
     for _, lbls in trainloader:
         print(f"\nFirst batch labels: {lbls.unique()}\n")
