@@ -1,14 +1,41 @@
 import torch
 from flwr_datasets import FederatedDataset
+from flwr_datasets.partitioner import ShardPartitioner
+from flwr_datasets.utils import divide_dataset
 
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
-from flwr_datasets.utils import divide_dataset
 
-fds = FederatedDataset(dataset="cifar10", partitioners={"train": 2})
-partition = fds.load_partition(0, "train")
-centralized_dataset = fds.load_split("test")
+from utils import cmd
 
+CLIENT_NAME = cmd("hostname").strip()
+ID = int(CLIENT_NAME[-1])
+
+
+# partition = fds.load_partition(0, "train")
+
+
+def cifar10_partitioner(num_clients, num_classes):
+    return ShardPartitioner(
+        num_partitions=num_clients,
+        partition_by="label",
+        num_shards_per_partition=num_classes,
+    )
+
+
+NUM_CLIENTS = 2
+NUM_CLASSES_PER_CLIENT = 5
+
+partitioner = cifar10_partitioner(NUM_CLIENTS, NUM_CLASSES_PER_CLIENT)
+
+
+def cifar10_fds(partitioner):
+    fds = FederatedDataset(dataset="cifar10", partitioners={"train": partitioner})
+    return fds
+
+
+fds = cifar10_fds(partitioner)
+local_dataset = fds.load_partition(ID - 1, "train")
 
 # transforms = ToTensor()
 TRANSFORM = transforms.Compose(
@@ -28,14 +55,20 @@ def apply_transforms(batch):
     return batch
 
 
-partition = partition.with_transform(apply_transforms)
+local_dataset = local_dataset.with_transform(apply_transforms)
 # Now, you can check if you didn't make any mistakes by calling partition_torch[0]
 
-CIFAR10_CLASSES = partition.features["label"].names
-CIFAR10_LABELS_MAP = {i: c for i, c in enumerate(CIFAR10_CLASSES)}
+
+def classes_list(partition):
+    unique_labels = sorted(set(partition["label"]))
+    all_names = partition.features["label"].names
+    return [all_names[i] for i in unique_labels]
 
 
-train, valid, test = divide_dataset(partition, [0.6, 0.2, 0.2])
+CIFAR10_CLASSES = classes_list(local_dataset)
+unique_labels = sorted(set(local_dataset["label"]))
+all_names = local_dataset.features["label"].names
+CIFAR10_LABELS_MAP = {i: all_names[i] for i in unique_labels}
 
 
 class DSWrapper(Dataset):
@@ -50,6 +83,7 @@ class DSWrapper(Dataset):
         return (item["img"], item["label"])
 
 
+train, valid, test = divide_dataset(local_dataset, [0.6, 0.2, 0.2])
 CIFAR10_TRAIN = DSWrapper(train)
 CIFAR10_VAL = DSWrapper(valid)
 CIFAR10_TEST = DSWrapper(test)
@@ -59,8 +93,3 @@ def loader(dataset, batch_size: int):
     dev = "cuda:0" if torch.cuda.is_available() else "cpu"
     pin_mem = False if dev == "cpu" else True
     return DataLoader(dataset, pin_memory=pin_mem, batch_size=batch_size)
-
-
-# TRAIN_LOADER = DataLoader(train, pin_memory=pin_mem, batch_size=32)
-# VAL_LOADER = DataLoader(valid, pin_memory=pin_mem, batch_size=32)
-# TEST_LOADER = DataLoader(test, pin_memory=pin_mem, batch_size=32)

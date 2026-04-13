@@ -86,6 +86,7 @@ def train(
     disp_window = []
     disp_window_size = 20
 
+
     for batch, pair in enumerate(trainloader):
 
         (X, y) = pair

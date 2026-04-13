@@ -144,6 +144,7 @@ def train(msg: Message, context: Context):
         trainloader = cifar_loader(CIFAR10_TRAIN, batch_size)
         valloader = cifar_loader(CIFAR10_VAL, batch_size)
         testloader = cifar_loader(CIFAR10_TEST, 128)
+
         mixer = ""
         weights = None
 
@@ -297,6 +298,9 @@ def train(msg: Message, context: Context):
         raise e
 
     end_of_training_msg(sum(train_times))
+    local_model_path = f"/root/data/models/{node_name}_{dataset_name}_last_model.pt"
+    print(f"\nSaving local model...")
+    torch.save(model.state_dict(), local_model_path)
 
     print("\n---------------------------------------------------------------")
     print("\nPer-class local evaluation:\n")
