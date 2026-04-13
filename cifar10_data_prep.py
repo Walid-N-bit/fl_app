@@ -35,7 +35,10 @@ def cifar10_fds(partitioner):
 
 
 fds = cifar10_fds(partitioner)
-local_dataset = fds.load_partition(ID - 1, "train")
+if ID > 0:
+    local_dataset = fds.load_partition(ID - 1, "train")
+else:
+    local_dataset = fds.load_partition(ID, "train")
 
 # transforms = ToTensor()
 TRANSFORM = transforms.Compose(
