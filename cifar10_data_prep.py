@@ -53,15 +53,6 @@ TRANSFORM = transforms.Compose(
 )
 
 
-def apply_transforms(batch):
-    batch["img"] = [TRANSFORM(img) for img in batch["img"]]
-    return batch
-
-
-local_dataset = local_dataset.with_transform(apply_transforms)
-# Now, you can check if you didn't make any mistakes by calling partition_torch[0]
-
-
 def classes_list(partition):
     unique_labels = sorted(set(partition["label"]))
     all_names = partition.features["label"].names
@@ -72,6 +63,14 @@ CIFAR10_CLASSES = classes_list(local_dataset)
 unique_labels = sorted(set(local_dataset["label"]))
 all_names = local_dataset.features["label"].names
 CIFAR10_LABELS_MAP = {i: all_names[i] for i in unique_labels}
+
+
+def apply_transforms(batch):
+    batch["img"] = [TRANSFORM(img) for img in batch["img"]]
+    return batch
+
+
+local_dataset = local_dataset.with_transform(apply_transforms)
 
 
 class DSWrapper(Dataset):
