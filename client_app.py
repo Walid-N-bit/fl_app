@@ -7,6 +7,7 @@ from flwr.app import ConfigRecord
 import time
 import numpy as np
 import json
+import os
 from utils import end_of_training_msg, pick_mixer, cmd
 from model_functions import (
     train as train_fn,
@@ -300,6 +301,7 @@ def train(msg: Message, context: Context):
     end_of_training_msg(sum(train_times))
     local_model_path = f"/root/data/models/{node_name}_{dataset_name}_last_model.pt"
     print(f"\nSaving local model...")
+    os.makedirs(os.path.dirname(local_model_path), exist_ok=True)
     torch.save(model.state_dict(), local_model_path)
 
     print("\n---------------------------------------------------------------")
