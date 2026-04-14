@@ -305,6 +305,12 @@ def train(msg: Message, context: Context):
     torch.save(model.state_dict(), local_model_path)
 
     print("\n---------------------------------------------------------------")
+    print("\nGeneral evaluation:\n")
+    test_acc, test_loss = test_fn(model, testloader, loss_fn)
+    print(
+        f"Testing metrics:\n Accuracy: {(100*test_acc):>0.1f}%, Avg loss: {test_loss:>8f} \n"
+    )
+
     print("\nPer-class local evaluation:\n")
     eval_per_class(testloader, model, out_features, local_labels_map)
 
