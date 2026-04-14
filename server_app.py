@@ -3,14 +3,20 @@ from flwr.app import ArrayRecord, Context, MetricRecord, ConfigRecord
 from flwr.serverapp import Grid, ServerApp
 from flwr.serverapp.strategy import FedAvg, FedAvgM
 from CustomClasses import CustomStrat, GlobalEvaluation
-from utils import cmd, save_pkl, parse_raw_metrics, parse_server_eval_metrics
+from utils import (
+    cmd,
+    save_pkl,
+    parse_raw_metrics,
+    parse_server_eval_metrics,
+    generate_labels_map,
+)
 
 from datetime import datetime
 import os
 from typing import Literal
 
-from model_functions import choose_model
-from cifar10_data_prep import CIFAR10_CLASSES as cifar_classes
+from model_functions import choose_model, eval_per_class
+from cifar10_data_prep import CIFAR10_CLASSES
 
 server = ServerApp()
 
@@ -189,6 +195,9 @@ def main(grid: Grid, context: Context) -> None:
 
     # Save final model to disk
     state_dict = result.arrays.to_torch_state_dict()
+    global_model.load_state_dict(state_dict)
+    g_labels_map = generate_labels_map(global_classes)
+    eval_per_class(test_dataloader, global_model, out_features, g_labels_map)
 
     time = datetime.now().strftime("%H:%M-%d.%m.%Y")
 
