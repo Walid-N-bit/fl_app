@@ -16,6 +16,8 @@ dev = "cuda" if torch.cuda.is_available() else "cpu"
 DEVICE = torch.device(dev)
 print(f"\n{DEVICE}\n")
 
+MODELS_DIR = "/root/data/models"
+
 
 def find_model_paths(models_dir, keyword, count=2):
     matches = sorted(glob(f"{models_dir}/cont-*_{keyword}_last_model.pt"))
@@ -55,7 +57,7 @@ loss_fn = torch.nn.CrossEntropyLoss()
 
 experiments = []
 
-cifar_paths = find_model_paths("models", "cifar10")
+cifar_paths = find_model_paths(MODELS_DIR, "cifar10")
 if len(cifar_paths) >= 2 and all(os.path.exists(p) for p in cifar_paths[:2]):
     experiments.append(
         {
@@ -68,7 +70,7 @@ if len(cifar_paths) >= 2 and all(os.path.exists(p) for p in cifar_paths[:2]):
 else:
     print("Skipping CIFAR10: not enough model files found in models/")
 
-wheat_paths = find_model_paths("models", "wheat")
+wheat_paths = find_model_paths(MODELS_DIR, "wheat")
 if len(wheat_paths) >= 2 and all(os.path.exists(p) for p in wheat_paths[:2]):
     experiments.append(
         {
