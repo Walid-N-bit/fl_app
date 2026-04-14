@@ -104,6 +104,7 @@ def main(grid: Grid, context: Context) -> None:
     epochs = context.run_config["local-epochs"]
     dataset_name = context.run_config["dataset-name"]
     mixer = context.run_config["mixer"]
+    proximal_mu = context.run_config["proximal-mu"]
 
     start_time = datetime.now()
 
@@ -140,7 +141,7 @@ def main(grid: Grid, context: Context) -> None:
     # strategy = CustomStrat(fraction_evaluate=fraction_evaluate)
 
     # for the custom strat based on FedProx
-    strategy = CustomStrat(fraction_evaluate=fraction_evaluate, proximal_mu=0.2)
+    strategy = CustomStrat(fraction_evaluate=fraction_evaluate, proximal_mu=proximal_mu)
 
     # prepare for training by receiving client arrays
     global_classes, all_metrics = prep_phase(strategy, grid, temp_arrays)
@@ -177,6 +178,7 @@ def main(grid: Grid, context: Context) -> None:
         "dataset-name": dataset_name,
         "mixer": mixer,
         "out-features": out_features,
+        # "proximal-mu": proximal_mu,
     }
     # Start strategy, run FedAvg for `num_rounds`
     test_dataloader = pick_test_dataloader(dataset_name)

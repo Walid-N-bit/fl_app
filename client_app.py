@@ -114,6 +114,7 @@ def train(msg: Message, context: Context):
     mixer = server_config.get("mixer", context.run_config["mixer"])
     out_features = server_config.get("out-features")
     labels = server_config.get("labels")
+    proximal_mu = server_config.get("proximal-mu")
 
     if dataset_name == "wheat":
         from wheat_data_utils import get_class_weights
@@ -215,6 +216,7 @@ def train(msg: Message, context: Context):
     # print("\nLocal classes: ", local_classes)
     print(f"\nLocal labels map: {local_labels_map}")
     print(f"\nOutput features: {out_features}")
+    print(f"\nProximal mu: {proximal_mu}")
     for _, lbls in trainloader:
         print(f"\nFirst batch labels: {lbls.unique()}\n")
         break
@@ -222,6 +224,9 @@ def train(msg: Message, context: Context):
     model = choose_model(model_name, freeze, out_features).to(DEVICE)
 
     model.load_state_dict(msg.content["arrays"].to_torch_state_dict())
+
+    # necessary for FedProx
+    global_params = [p.clone().detach().to(DEVICE) for p in model.parameters()]
 
     # optimizer and loss_fn
 
@@ -259,13 +264,13 @@ def train(msg: Message, context: Context):
             t0 = time.perf_counter()
             print("Training commencing...")
             train_acc, train_loss = train_fn(
-                model, trainloader, optimizer, loss_fn, mixer
+                model, trainloader, optimizer, loss_fn, global_params, mixer
             )
 
             print("validation...")
-            ignore_lbls = ignored_labels(out_features, labels)
+            # ignore_lbls = ignored_labels(out_features, labels)
             # val_acc, val_loss = 0, 0
-            val_acc, val_loss = test_fn(model, valloader, loss_fn, ignore_lbls)
+            val_acc, val_loss = test_fn(model, valloader, loss_fn)
 
             stopper.record(e + 1, train_loss, val_loss)
             print(f"\n{stopper.values = }")

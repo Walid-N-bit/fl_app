@@ -72,9 +72,11 @@ def train(
     trainloader: DataLoader,
     optimizer,
     loss_func,
+    global_params: list,
     mixer=None,
     disp_log: bool = True,
     max_grad_norm: float = 1.0,
+    mu: float = 0.0,
 ):
     """Train the model on the training set."""
 
@@ -105,6 +107,10 @@ def train(
         #     print("")
 
         loss = loss_func(predictions, labels)
+        if mu > 0:
+            for p, gp in zip(model.parameters(), global_params):
+                prox_term += (p - gp).pow(2).sum()
+            loss += (mu / 2) * prox_term
 
         pred_labels = predictions.argmax(1)
 
@@ -149,7 +155,7 @@ def train(
 
 def test(model: NET, testloader: DataLoader, loss_func, ignore_labels: list = []):
     """Validate the model on the test set."""
-    
+
     size = len(testloader.dataset)
     num_batches = len(testloader)
     model.eval()

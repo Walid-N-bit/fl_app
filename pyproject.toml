@@ -44,6 +44,7 @@ num-workers = 0
 sch-patience = 10
 mixer = "cutmix"
 use-weights = 1  # 1 for true, 0 for false
+proximal-mu = 0.1 # setting this to 0 will make FedProx behave like FedAvg
 
 # currently usable datasets: "wheat", "cifar10"
 dataset-name = "wheat"
