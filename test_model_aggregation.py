@@ -22,22 +22,6 @@ def find_model_paths(models_dir, keyword, count=2):
     return matches[:count]
 
 
-EXPERIMENTS = [
-    {
-        "model_paths": find_model_paths("models", "cifar10"),
-        "dataset": "cifar10",
-        "out_features": 10,
-        "labels_map": CIFAR10_LABELS_MAP,
-    },
-    {
-        "model_paths": find_model_paths("models", "wheat"),
-        "dataset": "wheat",
-        "out_features": 8,
-        "labels_map": WHEAT_LABELS_MAP,
-    },
-]
-
-
 def state_dict_to_array_record(state_dict):
     return ArrayRecord({key: Array(val.cpu()) for key, val in state_dict.items()})
 
@@ -69,27 +53,50 @@ def fedavg_aggregate(model_1, model_2):
 
 loss_fn = torch.nn.CrossEntropyLoss()
 
-for exp in EXPERIMENTS:
+experiments = []
+
+cifar_paths = find_model_paths("models", "cifar10")
+if len(cifar_paths) >= 2 and all(os.path.exists(p) for p in cifar_paths[:2]):
+    experiments.append(
+        {
+            "model_paths": cifar_paths[:2],
+            "dataset": "cifar10",
+            "out_features": 10,
+            "labels_map": CIFAR10_LABELS_MAP,
+        }
+    )
+else:
+    print("Skipping CIFAR10: not enough model files found in models/")
+
+wheat_paths = find_model_paths("models", "wheat")
+if len(wheat_paths) >= 2 and all(os.path.exists(p) for p in wheat_paths[:2]):
+    experiments.append(
+        {
+            "model_paths": wheat_paths[:2],
+            "dataset": "wheat",
+            "out_features": 8,
+            "labels_map": WHEAT_LABELS_MAP,
+        }
+    )
+else:
+    print("Skipping WHEAT: not enough model files found in models/")
+
+if not experiments:
+    raise FileNotFoundError("No valid CIFAR10 or wheat model pairs found in models/")
+
+for exp in experiments:
     dataset = exp["dataset"]
     out_features = exp["out_features"]
     labels_map = exp["labels_map"]
     model_paths = exp["model_paths"]
 
-    missing = [p for p in model_paths if not os.path.exists(p)]
-    if missing or len(model_paths) < 2:
-        print(f"\nSkipping {dataset.upper()}: not enough model files found in models/")
-        for p in missing:
-            print(f"  - {p}")
-        continue
-
     print(f"\n{'='*50}")
-    print(f"  Dataset: {dataset.upper()}")
-    print(f"  Models:  {[os.path.basename(p) for p in model_paths]}")
+    print(f" Dataset: {dataset.upper()}")
+    print(f" Models: {[os.path.basename(p) for p in model_paths]}")
     print(f"{'='*50}")
 
     model_1 = torch.load(model_paths[0], weights_only=True)
     model_2 = torch.load(model_paths[1], weights_only=True)
-
     agg_state_dict = fedavg_aggregate(model_1, model_2)
 
     agg_model = choose_model("mobilenet_v3_large", 0, out_features).to(DEVICE)
@@ -98,7 +105,7 @@ for exp in EXPERIMENTS:
 
     if dataset == "cifar10":
         test_loader = cifar_loader(CIFAR10_TEST, 128)
-    else:
+    elif dataset == "wheat":
         test_loader = wheat_loader(WHEAT_TEST, dev, 128)
 
     eval_per_class(test_loader, agg_model, out_features, labels_map)
