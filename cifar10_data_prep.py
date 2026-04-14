@@ -38,7 +38,7 @@ def cifar10_fds(partitioner):
 
 
 fds = cifar10_fds(partitioner)
-if ID is not None:
+if ID is not None and ID > 0:
     local_dataset = fds.load_partition(ID - 1, "train")
 else:
     from datasets import load_dataset
