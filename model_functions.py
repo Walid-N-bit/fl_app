@@ -86,7 +86,6 @@ def train(
     disp_window = []
     disp_window_size = 20
 
-
     for batch, pair in enumerate(trainloader):
 
         (X, y) = pair
@@ -150,6 +149,7 @@ def train(
 
 def test(model: NET, testloader: DataLoader, loss_func, ignore_labels: list = []):
     """Validate the model on the test set."""
+    
     size = len(testloader.dataset)
     num_batches = len(testloader)
     model.eval()

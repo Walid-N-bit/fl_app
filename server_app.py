@@ -129,7 +129,12 @@ def main(grid: Grid, context: Context) -> None:
     # strategy = CustomStrat(
     #     fraction_evaluate=fraction_evaluate, server_momentum=momentum
     # )
-    strategy = CustomStrat(fraction_evaluate=fraction_evaluate)
+
+    # for the custom strat based on FedAvg
+    # strategy = CustomStrat(fraction_evaluate=fraction_evaluate)
+
+    # for the custom strat based on FedProx
+    strategy = CustomStrat(fraction_evaluate=fraction_evaluate, proximal_mu=0.2)
 
     # prepare for training by receiving client arrays
     global_classes, all_metrics = prep_phase(strategy, grid, temp_arrays)
@@ -179,8 +184,8 @@ def main(grid: Grid, context: Context) -> None:
     )
 
     # final_metrics = global_evaluate(global_model, num_rounds, result.arrays)
-    aggregated_metrics = result.evaluate_metrics_serverapp
-    print(f"\nAggregated metrics: {aggregated_metrics}\n")
+    # aggregated_metrics = result.evaluate_metrics_serverapp
+    # print(f"\nAggregated metrics:\n{aggregated_metrics}\n")
 
     # Save final model to disk
     state_dict = result.arrays.to_torch_state_dict()

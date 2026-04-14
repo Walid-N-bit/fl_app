@@ -9,7 +9,10 @@ from torchvision import transforms
 from utils import cmd
 
 CLIENT_NAME = cmd("hostname").strip()
-ID = int(CLIENT_NAME[-1])
+if "cont" in CLIENT_NAME:
+    ID = int(CLIENT_NAME[-1])
+else:
+    ID = None
 
 
 # partition = fds.load_partition(0, "train")
@@ -35,10 +38,12 @@ def cifar10_fds(partitioner):
 
 
 fds = cifar10_fds(partitioner)
-if ID > 0:
+if ID is not None:
     local_dataset = fds.load_partition(ID - 1, "train")
 else:
-    local_dataset = fds.load_partition(ID, "train")
+    from datasets import load_dataset
+
+    local_dataset = load_dataset("cifar10", split="train")
 
 # transforms = ToTensor()
 TRANSFORM = transforms.Compose(
