@@ -100,11 +100,12 @@ def train(
 
         predictions = model(images)
 
-        # if (batch % 100 == 0) and disp_log:
-        #     print(f"{labels.shape = }\n{predictions.shape = }")
-        #     print(f"{labels.dtype = }\n{predictions.dtype = }")
-        #     print(f"{images.dtype = }\n")
-        #     print("")
+        if (batch % 100 == 0) and disp_log:
+            print(f"\n {labels = }\n{labels.shape = }\n{labels.dtype = }")
+            print(
+                f"\n {predictions = }\n{predictions.shape = }\n{predictions.dtype = }"
+            )
+            print("")
 
         loss = loss_func(predictions, labels)
         if mu > 0:

@@ -217,6 +217,7 @@ def train(msg: Message, context: Context):
     print(f"\nLocal labels map: {local_labels_map}")
     print(f"\nOutput features: {out_features}")
     print(f"\nProximal mu: {proximal_mu}")
+    print(f"\nMixer used: {mixer}")
     for _, lbls in trainloader:
         print(f"\nFirst batch labels: {lbls.unique()}\n")
         break
