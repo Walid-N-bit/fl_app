@@ -9,7 +9,6 @@ from flwr.serverapp.strategy import FedAvg, FedAvgM, FedProx
 from collections.abc import Iterable
 from flwr.app import Message, MetricRecord, RecordDict
 
-# from model_params import FLTRS_NBR, IMG_H, IMG_W
 import time, io
 from collections.abc import Callable
 from logging import INFO
