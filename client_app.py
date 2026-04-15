@@ -51,6 +51,7 @@ def modify_weights(
 
     return torch.tensor(new_weights).float()
 
+
 def generate_local_labels_map(local_classes: list[str], local_labels: list[int]):
     """
     create a labels map for the local classes such that the labels are identical to the global model
@@ -227,15 +228,15 @@ def train(msg: Message, context: Context):
     opt_algo = torch.optim.AdamW
     optimizer = opt_algo(model.parameters(), classifier_lr, weight_decay=weight_decay)
     # for unfrozen backbone
-    if not freeze:
-        optimizer = opt_algo(
-            [
-                {"params": model.features.parameters(), "lr": features_lr},
-                {"params": model.classifier.parameters(), "lr": classifier_lr},
-            ],
-            weight_decay=weight_decay,
-        )
-    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, "min", patience=sch_patience)
+    # if not freeze:
+    #     optimizer = opt_algo(
+    #         [
+    #             {"params": model.features.parameters(), "lr": features_lr},
+    #             {"params": model.classifier.parameters(), "lr": classifier_lr},
+    #         ],
+    #         weight_decay=weight_decay,
+    #     )
+    # scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, "min", patience=sch_patience)
     loss_fn = nn.CrossEntropyLoss(weight=weights)
 
     # commence training loop
@@ -284,7 +285,7 @@ def train(msg: Message, context: Context):
             f_lrs.append(f_lr)
             c_lrs.append(c_lr)
 
-            scheduler.step(val_loss)
+            # scheduler.step(val_loss)
 
             print(
                 f"Training metrics:\n Accuracy: {(100*train_acc):>0.1f}%, Avg loss: {train_loss:>8f} \n"
