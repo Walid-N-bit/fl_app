@@ -2,6 +2,7 @@ import torch
 from flwr_datasets import FederatedDataset
 from flwr_datasets.partitioner import ShardPartitioner
 from flwr_datasets.utils import divide_dataset
+from datasets import load_dataset
 
 from torch.utils.data import DataLoader, Dataset
 from torchvision import transforms
@@ -37,13 +38,14 @@ def cifar10_fds(partitioner):
     return fds
 
 
-fds = cifar10_fds(partitioner)
-if ID is not None and ID > 0:
-    local_dataset = fds.load_partition(ID - 1, "train")
-else:
-    from datasets import load_dataset
+# fds = cifar10_fds(partitioner)
+# if ID is not None and ID > 0:
+#     local_dataset = fds.load_partition(ID - 1, "train")
+# else:
 
-    local_dataset = load_dataset("cifar10", split="train")
+#     local_dataset = load_dataset("cifar10", split="train")
+
+local_dataset = load_dataset("cifar10", split="train")
 
 # transforms = ToTensor()
 TRANSFORM = transforms.Compose(
