@@ -178,7 +178,6 @@ def main(grid: Grid, context: Context) -> None:
         "dataset-name": dataset_name,
         "mixer": mixer,
         "out-features": out_features,
-        # "proximal-mu": proximal_mu,
     }
     # Start strategy, run FedAvg for `num_rounds`
     test_dataloader = pick_test_dataloader(dataset_name)

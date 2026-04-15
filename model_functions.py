@@ -101,11 +101,10 @@ def train(
         predictions = model(images)
 
         if (batch % 100 == 0) and disp_log:
-            print(f"\n {labels = }\n{labels.shape = }\n{labels.dtype = }")
+            print(f"\n {labels = }\n {labels.shape = }\n {labels.dtype = }")
             print(
-                f"\n {predictions = }\n{predictions.shape = }\n{predictions.dtype = }"
+                f"\n {predictions = }\n {predictions.shape = }\n {predictions.dtype = }\n"
             )
-            print("")
 
         loss = loss_func(predictions, labels)
         if mu > 0:
@@ -197,8 +196,8 @@ def eval_per_class(testloader, model, out_features: int, labels_map: dict):
     global_labels_map = {
         i: c for i, c in enumerate(["Unknown-Class" for _ in range(out_features)])
     }
-    print(f"\nLocal labels map: {labels_map}")
-    print(f"\nTemplate labels map: {global_labels_map}")
+    # print(f"\nLocal labels map: {labels_map}")
+    # print(f"\nTemplate labels map: {global_labels_map}")
 
     if len(labels_map) == out_features:
         global_labels_map = labels_map
@@ -209,8 +208,8 @@ def eval_per_class(testloader, model, out_features: int, labels_map: dict):
                 global_labels_map[i] = class_name
 
     classes = list(global_labels_map.values())
-    print(f"\nGlobal labels map: {global_labels_map}")
-    print(f"\nClasses: {classes}\n")
+    # print(f"\nGlobal labels map: {global_labels_map}")
+    # print(f"\nClasses: {classes}\n")
     correct_pred = {classname: 0.0 for classname in classes}
     total_pred = {classname: 0.0 for classname in classes}
 

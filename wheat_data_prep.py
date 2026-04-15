@@ -30,7 +30,7 @@ TESTING_TRANSFORM = transforms.Compose(
 )
 
 client_name = cmd("hostname").strip()
-# PATHS = ["/root/data", "/home/wnouicer24/thesis/fl_app/compressed_images_wheat"]
+
 DATA_PATH = "/root/data"
 TRAIN_DATA_PATH = ""
 TEST_DATA_PATH = ""

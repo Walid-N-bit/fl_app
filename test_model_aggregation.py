@@ -8,7 +8,6 @@ from cifar10_data_prep import CIFAR10_TEST, loader as cifar_loader, CIFAR10_LABE
 from wheat_data_prep import (
     TESTING_DATA as WHEAT_TEST,
     data_loader as wheat_loader,
-    LABELS_MAP as WHEAT_LABELS_MAP,
 )
 from model_functions import test, eval_per_class, choose_model
 
@@ -71,6 +70,7 @@ else:
     print("Skipping CIFAR10: not enough model files found in models/")
 
 wheat_paths = find_model_paths(MODELS_DIR, "wheat")
+WHEAT_LABELS_MAP = WHEAT_TEST.classes
 if len(wheat_paths) >= 2 and all(os.path.exists(p) for p in wheat_paths[:2]):
     experiments.append(
         {
