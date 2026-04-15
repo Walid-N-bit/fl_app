@@ -138,10 +138,10 @@ def main(grid: Grid, context: Context) -> None:
     # )
 
     # for the custom strat based on FedAvg
-    # strategy = CustomStrat(fraction_evaluate=fraction_evaluate)
+    strategy = CustomStrat(fraction_evaluate=fraction_evaluate)
 
-    # for the custom strat based on FedProx
-    strategy = CustomStrat(fraction_evaluate=fraction_evaluate, proximal_mu=proximal_mu)
+    # # for the custom strat based on FedProx
+    # strategy = CustomStrat(fraction_evaluate=fraction_evaluate, proximal_mu=proximal_mu)
 
     # prepare for training by receiving client arrays
     global_classes, all_metrics = prep_phase(strategy, grid, temp_arrays)
