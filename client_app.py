@@ -251,10 +251,10 @@ def train(msg: Message, context: Context):
                 f"\nEpoch {e+1}/{epochs} | Round {current_round}\n-------------------------------"
             )
 
-            f_lr = optimizer.param_groups[0]["lr"]
-            c_lr = optimizer.param_groups[1]["lr"]
-            print(f"Features learning rate: {f_lr}")
-            print(f"Classifier learning rate: {c_lr}\n")
+            # f_lr = optimizer.param_groups[0]["lr"]
+            # c_lr = optimizer.param_groups[1]["lr"]
+            # print(f"Features learning rate: {f_lr}")
+            # print(f"Classifier learning rate: {c_lr}\n")
 
             t0 = time.perf_counter()
             print("Training commencing...")
@@ -282,8 +282,8 @@ def train(msg: Message, context: Context):
             t1 = time.perf_counter() - t0
             train_times.append(t1)
             passed_epochs.append(e + 1)
-            f_lrs.append(f_lr)
-            c_lrs.append(c_lr)
+            # f_lrs.append(f_lr)
+            # c_lrs.append(c_lr)
 
             # scheduler.step(val_loss)
 
