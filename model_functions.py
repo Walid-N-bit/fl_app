@@ -100,11 +100,11 @@ def train(
 
         predictions = model(images)
 
-        if (batch % 100 == 0) and disp_log:
-            print(f"\n {labels = }\n {labels.shape = }\n {labels.dtype = }")
-            print(
-                f"\n {predictions = }\n {predictions.shape = }\n {predictions.dtype = }\n"
-            )
+        # if (batch % 100 == 0) and disp_log:
+        #     print(f"\n {labels = }\n {labels.shape = }\n {labels.dtype = }")
+        #     print(
+        #         f"\n {predictions = }\n {predictions.shape = }\n {predictions.dtype = }\n"
+        #     )
 
         loss = loss_func(predictions, labels)
         if mu > 0:
@@ -153,7 +153,7 @@ def train(
     return train_acc, train_loss
 
 
-def test(model: NET, testloader: DataLoader, loss_func, ignore_labels: list = []):
+def test(model: NET, testloader: DataLoader, loss_func):
     """Validate the model on the test set."""
 
     size = len(testloader.dataset)
@@ -165,12 +165,6 @@ def test(model: NET, testloader: DataLoader, loss_func, ignore_labels: list = []
         batch_count = 0
         for images, labels in testloader:
             images, labels = images.to(DEVICE), labels.to(DEVICE)
-
-            # if ignore_labels:
-            #     mask = torch.isin(labels, torch.tensor(ignore_labels).to(DEVICE))
-            #     # labels[mask] = -100
-            #     if mask.all():
-            #         continue
 
             predictions = model(images)
             loss = loss_func(predictions, labels)

@@ -26,7 +26,7 @@ DEV = "cuda:0" if torch.cuda.is_available() else "cpu"
 DEVICE = torch.device(DEV)
 
 
-def zero_out_weights(
+def modify_weights(
     out_features: int, selected_labels: list, weights: torch.Tensor
 ) -> torch.Tensor:
     """
@@ -42,7 +42,7 @@ def zero_out_weights(
     :rtype: Tensor
     """
 
-    new_weights = np.zeros(out_features)
+    new_weights = np.ones(out_features)
     c = 0
     for i, _ in enumerate(new_weights):
         if i in selected_labels:
@@ -50,13 +50,6 @@ def zero_out_weights(
             c += 1
 
     return torch.tensor(new_weights).float()
-
-
-def ignored_labels(out_features: int, selected_labels: list):
-    all_labels = list(range(out_features))
-    ignored = [i for i in all_labels if i not in selected_labels]
-    return ignored
-
 
 def generate_local_labels_map(local_classes: list[str], local_labels: list[int]):
     """
@@ -202,7 +195,7 @@ def train(msg: Message, context: Context):
         class_weights = get_class_weights(TRAIN_DATA_PATH, wheat_train.indices).to(
             DEVICE
         )
-        modified_weights = zero_out_weights(out_features, labels, class_weights).to(
+        modified_weights = modify_weights(out_features, labels, class_weights).to(
             DEVICE
         )
         print("--> Modified Weights: ", modified_weights)
