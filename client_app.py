@@ -236,7 +236,7 @@ def train(msg: Message, context: Context):
     #         ],
     #         weight_decay=weight_decay,
     #     )
-    # scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, "min", patience=sch_patience)
+    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, "min", patience=sch_patience)
     loss_fn = nn.CrossEntropyLoss(weight=weights)
 
     # commence training loop
@@ -294,7 +294,7 @@ def train(msg: Message, context: Context):
             f_lrs.append(c_lr)
             c_lrs.append(c_lr)
 
-            # scheduler.step(val_loss)
+            scheduler.step(val_loss)
 
             print(
                 f"Training metrics:\n Accuracy: {(100*train_acc):>0.1f}%, Avg loss: {train_loss:>8f} \n"
