@@ -239,7 +239,7 @@ def train(
             loss += (mu / 2) * prox_term
 
         # Predictions (still global)
-        pred_labels = predictions.argmax(1)
+        pred_labels = logits.argmax(1)
 
         # Accuracy (compare with global labels!)
         train_acc += (pred_labels == target_labels).type(torch.float).sum().item()
