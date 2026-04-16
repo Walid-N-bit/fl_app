@@ -253,6 +253,7 @@ def train(msg: Message, context: Context):
 
             # f_lr = optimizer.param_groups[0]["lr"]
             # c_lr = optimizer.param_groups[1]["lr"]
+            c_lr = optimizer.param_groups[0]["lr"]
             # print(f"Features learning rate: {f_lr}")
             # print(f"Classifier learning rate: {c_lr}\n")
 
@@ -290,6 +291,8 @@ def train(msg: Message, context: Context):
             passed_epochs.append(e + 1)
             # f_lrs.append(f_lr)
             # c_lrs.append(c_lr)
+            f_lrs.append(c_lr)
+            c_lrs.append(c_lr)
 
             # scheduler.step(val_loss)
 
