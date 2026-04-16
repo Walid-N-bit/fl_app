@@ -255,6 +255,7 @@ def train(msg: Message, context: Context):
             # c_lr = optimizer.param_groups[1]["lr"]
             c_lr = optimizer.param_groups[0]["lr"]
             # print(f"Features learning rate: {f_lr}")
+            print(f"learning rate: {c_lr}\n")
             # print(f"Classifier learning rate: {c_lr}\n")
 
             t0 = time.perf_counter()
