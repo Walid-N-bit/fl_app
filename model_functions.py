@@ -70,6 +70,7 @@ def choose_model(
 def train(
     model: NET,
     trainloader: DataLoader,
+    valid_labels: list,
     optimizer,
     loss_func,
     global_params: list,
@@ -107,6 +108,8 @@ def train(
         #     )
 
         loss = loss_func(predictions, labels)
+
+        prox_term = 0.0
         if mu > 0:
             for p, gp in zip(model.parameters(), global_params):
                 prox_term += (p - gp).pow(2).sum()

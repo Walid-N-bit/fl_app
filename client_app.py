@@ -259,7 +259,13 @@ def train(msg: Message, context: Context):
             t0 = time.perf_counter()
             print("Training commencing...")
             train_acc, train_loss = train_fn(
-                model, trainloader, optimizer, loss_fn, global_params, mixer
+                model,
+                trainloader,
+                labels,
+                optimizer,
+                loss_fn,
+                global_params,
+                mixer,
             )
 
             print("validation...")

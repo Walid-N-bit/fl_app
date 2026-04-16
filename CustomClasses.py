@@ -20,8 +20,8 @@ from flwr.serverapp.strategy.result import Result
 from flwr.serverapp.strategy.strategy_utils import log_strategy_start_info
 
 
-class CustomStrat(FedAvg):
-# class CustomStrat(FedProx):
+# class CustomStrat(FedAvg):
+class CustomStrat(FedProx):
     # pylint: disable=too-many-arguments, too-many-positional-arguments, too-many-locals
     def start(
         self,
