@@ -232,6 +232,7 @@ def train(
         # # -----------------------------
         logits = predictions
         target_labels = labels
+        loss = loss_func(logits, target_labels)
 
         # FedProx term
         prox_term = 0.0
