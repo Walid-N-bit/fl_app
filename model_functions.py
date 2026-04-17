@@ -194,42 +194,44 @@ def train(
 
         predictions = model(images)  # shape: [B, num_global_classes]
 
-        # -----------------------------
-        # MASKING LOGIC STARTS HERE
-        # -----------------------------
+        # # -----------------------------
+        # # MASKING LOGIC STARTS HERE
+        # # -----------------------------
 
-        # Keep only logits of valid classes
-        logits = predictions[:, valid_labels]  # shape: [B, num_valid_classes]
+        # # Keep only logits of valid classes
+        # logits = predictions[:, valid_labels]  # shape: [B, num_valid_classes]
 
-        if labels.ndim > 1:
-            # ---- SOFT LABELS (MixUp / CutMix) ----
+        # if labels.ndim > 1:
+        #     # ---- SOFT LABELS (MixUp / CutMix) ----
 
-            # Keep only valid class columns
-            labels = labels[:, valid_labels]
+        #     # Keep only valid class columns
+        #     labels = labels[:, valid_labels]
 
-            # Renormalize so probabilities sum to 1
-            labels = labels / labels.sum(dim=1, keepdim=True).clamp(min=1e-12)
+        #     # Renormalize so probabilities sum to 1
+        #     labels = labels / labels.sum(dim=1, keepdim=True).clamp(min=1e-12)
 
-            loss = loss_func(logits, labels)
+        #     loss = loss_func(logits, labels)
 
-            # For accuracy: convert soft → hard
-            target_labels = labels.argmax(1)
+        #     # For accuracy: convert soft → hard
+        #     target_labels = labels.argmax(1)
 
-        else:
-            # ---- HARD LABELS ----
+        # else:
+        #     # ---- HARD LABELS ----
 
-            # Map global labels → local indices
-            targets = torch.tensor(
-                [class_to_local[int(lbl)] for lbl in labels], device=DEVICE
-            )
+        #     # Map global labels → local indices
+        #     targets = torch.tensor(
+        #         [class_to_local[int(lbl)] for lbl in labels], device=DEVICE
+        #     )
 
-            loss = loss_func(logits, targets)
+        #     loss = loss_func(logits, targets)
 
-            target_labels = targets
+        #     target_labels = targets
 
-        # -----------------------------
-        # MASKING LOGIC ENDS HERE
-        # -----------------------------
+        # # -----------------------------
+        # # MASKING LOGIC ENDS HERE
+        # # -----------------------------
+        logits = predictions
+        target_labels = labels
 
         # FedProx term
         prox_term = 0.0

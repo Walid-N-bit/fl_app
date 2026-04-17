@@ -344,6 +344,24 @@ def train(msg: Message, context: Context):
             "local-classes": local_classes,
         }
     )
+
+    # =====================================================
+    # split classifier experiment
+    # =====================================================
+
+    # if True:
+    #     classifier_arrays = ArrayRecord(model.classifier.state_dict())
+    #     features_arrays = ArrayRecord(model.features.state_dict())
+    #     content = RecordDict(
+    #     {"classifier-arrays": classifier_arrays, features_arrays, "metrics": metric_record, "configs": config_record}
+    # )
+
+    #     return Message(content=content, reply_to=msg)
+
+    # =====================================================
+    # end of split classifier experiment
+    # =====================================================
+
     content = RecordDict(
         {"arrays": model_record, "metrics": metric_record, "configs": config_record}
     )

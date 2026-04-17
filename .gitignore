@@ -10,3 +10,4 @@ launch_nodes.sh
 .flwr/
 compressed_images_wheat/
 !test_model_aggregation.py
+!test_split_layer_agg.py

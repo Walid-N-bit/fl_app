@@ -16,6 +16,7 @@ DEVICE = torch.device(dev)
 print(f"\n{DEVICE}\n")
 
 MODELS_DIR = "/root/data/models"
+# MODELS_DIR = "models"
 
 
 def find_model_paths(models_dir, keyword, count=2):
@@ -105,23 +106,6 @@ for exp in experiments:
     model_1 = torch.load(model_paths[0], weights_only=True)
     model_2 = torch.load(model_paths[1], weights_only=True)
     agg_state_dict = fedavg_aggregate(model_1, model_2)
-
-    #### state dict arrays mismatch test #####
-    #### state dict arrays mismatch test #####
-    # original_keys = list(model_1.keys())
-    # aggregated_keys = list(agg_state_dict.keys())
-
-    # for i, (ok, ak) in enumerate(zip(original_keys, aggregated_keys)):
-    #     print(f"[{i}] original: {ok} | aggregated: {ak}")
-
-    # # Also check shapes match
-    # for key in original_keys:
-    #     o_shape = model_1[key].shape
-    #     a_shape = agg_state_dict[key].shape
-    #     match = "✓" if o_shape == a_shape else "✗ MISMATCH"
-    #     print(f"{match} {key}: {o_shape} vs {a_shape}")
-    ##################################################
-    ##################################################
 
     agg_model = choose_model("mobilenet_v3_large", 0, out_features).to(DEVICE)
     agg_model.load_state_dict(agg_state_dict)

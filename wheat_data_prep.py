@@ -32,6 +32,7 @@ TESTING_TRANSFORM = transforms.Compose(
 client_name = cmd("hostname").strip()
 
 DATA_PATH = "/root/data"
+# DATA_PATH = "compressed_images_wheat"
 TRAIN_DATA_PATH = ""
 TEST_DATA_PATH = ""
 
