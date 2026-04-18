@@ -163,6 +163,7 @@ def train(
     loss_func,
     global_params: list,
     mixer=None,
+    use_masking: bool = False,
     disp_log: bool = True,
     max_grad_norm: float = 1.0,
     mu: float = 0.0,
@@ -177,12 +178,11 @@ def train(
     disp_window = []
     disp_window_size = 20
 
-    # Map global label → local index
+    # map global to local index (used only if masking)
     class_to_local = {c: i for i, c in enumerate(valid_labels)}
 
-    for batch, pair in enumerate(trainloader):
+    for batch, (X, y) in enumerate(trainloader):
 
-        (X, y) = pair
         images = X.to(DEVICE)
         labels_hard = y.to(DEVICE)
 
@@ -192,66 +192,75 @@ def train(
         else:
             labels = labels_hard  # hard labels
 
-        predictions = model(images)  # shape: [B, num_global_classes]
+        predictions = model(images)  # [B, num_global_classes]
 
-        # # -----------------------------
-        # # MASKING LOGIC STARTS HERE
-        # # -----------------------------
+        # ==================================================
+        # SWITCH: MASKED vs NORMAL TRAINING
+        # ==================================================
 
-        # # Keep only logits of valid classes
-        # logits = predictions[:, valid_labels]  # shape: [B, num_valid_classes]
+        if use_masking:
+            # ---- MASKED TRAINING ----
+            logits = predictions[:, valid_labels]  # [B, num_valid]
 
-        # if labels.ndim > 1:
-        #     # ---- SOFT LABELS (MixUp / CutMix) ----
+            if labels.ndim > 1:
+                # Soft labels (MixUp / CutMix)
 
-        #     # Keep only valid class columns
-        #     labels = labels[:, valid_labels]
+                labels_local = labels[:, valid_labels]
 
-        #     # Renormalize so probabilities sum to 1
-        #     labels = labels / labels.sum(dim=1, keepdim=True).clamp(min=1e-12)
+                # renormalize probabilities
+                labels_local = labels_local / labels_local.sum(
+                    dim=1, keepdim=True
+                ).clamp(min=1e-12)
 
-        #     loss = loss_func(logits, labels)
+                loss = loss_func(logits, labels_local)
 
-        #     # For accuracy: convert soft → hard
-        #     target_labels = labels.argmax(1)
+                target_labels = labels_local.argmax(1)
 
-        # else:
-        #     # ---- HARD LABELS ----
+            else:
+                # Hard labels to remap to local indices
+                targets = torch.tensor(
+                    [class_to_local[int(lbl)] for lbl in labels], device=DEVICE
+                )
 
-        #     # Map global labels → local indices
-        #     targets = torch.tensor(
-        #         [class_to_local[int(lbl)] for lbl in labels], device=DEVICE
-        #     )
+                loss = loss_func(logits, targets)
+                target_labels = targets
 
-        #     loss = loss_func(logits, targets)
-
-        #     target_labels = targets
-
-        # # -----------------------------
-        # # MASKING LOGIC ENDS HERE
-        # # -----------------------------
-        logits = predictions
-
-        loss = loss_func(logits, labels)
-
-        # convert soft labels to hard for acc calculation
-        if labels.ndim > 1:
-            target_labels = labels.argmax(1)
         else:
-            target_labels = labels
+            logits = predictions
+            loss = loss_func(logits, labels)
+
+            # convert soft to hard for accuracy
+            if labels.ndim > 1:
+                target_labels = labels.argmax(1)
+            else:
+                target_labels = labels
+
+        # ==================================================
 
         # FedProx term
-        prox_term = 0.0
         if mu > 0:
+            prox_term = 0.0
             for p, gp in zip(model.parameters(), global_params):
                 prox_term += (p - gp).pow(2).sum()
             loss += (mu / 2) * prox_term
 
-        # Predictions (still global)
-        pred_labels = logits.argmax(1)
+        # predictions (always global)
+        pred_labels = predictions.argmax(1)
 
-        # Accuracy (compare with global labels!)
-        train_acc += (pred_labels == target_labels).type(torch.float).sum().item()
+        # when masking, target_labels are LOCAL → must convert back to global
+        if use_masking:
+            # map local index → global label
+            local_to_class = {i: c for i, c in enumerate(valid_labels)}
+            target_labels_global = torch.tensor(
+                [local_to_class[int(t)] for t in target_labels], device=DEVICE
+            )
+        else:
+            target_labels_global = target_labels
+
+        # wccuracy
+        train_acc += (
+            (pred_labels == target_labels_global).type(torch.float).sum().item()
+        )
 
         train_loss += loss.item()
 
@@ -264,7 +273,7 @@ def train(
 
         optimizer.step()
 
-        # Logging window
+        # logging window
         disp_window.append(loss.item())
         if len(disp_window) >= disp_window_size:
             disp_window.pop(0)
