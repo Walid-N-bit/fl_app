@@ -231,8 +231,14 @@ def train(
         # # MASKING LOGIC ENDS HERE
         # # -----------------------------
         logits = predictions
-        target_labels = labels
-        loss = loss_func(logits, target_labels)
+
+        loss = loss_func(logits, labels)
+
+        # convert soft labels to hard for acc calculation
+        if labels.ndim > 1:
+            target_labels = labels.argmax(1)
+        else:
+            target_labels = labels
 
         # FedProx term
         prox_term = 0.0
