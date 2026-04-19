@@ -105,6 +105,7 @@ def main(grid: Grid, context: Context) -> None:
     dataset_name = context.run_config["dataset-name"]
     mixer = context.run_config["mixer"]
     proximal_mu = context.run_config["proximal-mu"]
+    use_custom_agg = context.run_config["use-custom-agg"]
 
     start_time = datetime.now()
 
@@ -188,6 +189,7 @@ def main(grid: Grid, context: Context) -> None:
         train_config=ConfigRecord(train_configs),
         num_rounds=num_rounds,
         evaluate_fn=GlobalEvaluation(global_model, DEV, test_dataloader),
+        use_custom_agg=use_custom_agg,
     )
 
     # final_metrics = global_evaluate(global_model, num_rounds, result.arrays)

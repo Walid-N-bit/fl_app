@@ -19,6 +19,8 @@ from flwr.server import Grid
 from flwr.serverapp.strategy.result import Result
 from flwr.serverapp.strategy.strategy_utils import log_strategy_start_info
 
+from custom_aggregation import perform_custom_aggregation
+
 
 # class CustomStrat(FedAvg):
 class CustomStrat(FedProx):
@@ -32,6 +34,7 @@ class CustomStrat(FedProx):
         train_config: ConfigRecord | None = None,
         evaluate_config: ConfigRecord | None = None,
         evaluate_fn: Callable[[int, ArrayRecord], MetricRecord | None] | None = None,
+        use_custom_agg: int = 0,
     ) -> tuple[list[Iterable[Message]], list[Iterable[Message]], Result]:
         """
         Override start() method to return both replies and the result
@@ -134,6 +137,14 @@ class CustomStrat(FedProx):
                 current_round,
                 train_replies,
             )
+
+            #######################################################
+            #######################################################
+            # using custom aggregation method
+            if use_custom_agg:
+                agg_arrays = perform_custom_aggregation(train_replies, agg_arrays)
+            #######################################################
+            #######################################################
 
             # Log training metrics and append to history
             if agg_arrays is not None:

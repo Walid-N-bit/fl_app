@@ -342,6 +342,7 @@ def train(msg: Message, context: Context):
         {
             "client-name": node_name,
             "local-classes": local_classes,
+            "local-labels": labels,
         }
     )
 

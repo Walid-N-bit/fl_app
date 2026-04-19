@@ -184,9 +184,6 @@ def custom_aggregation(exp_items: list[dict]):
 
     unique_labels, shared_labels = analyze_elements(cont_labels)
 
-    # print(f"\n{unique_labels = }")
-    # print(f"\n{shared_labels = }")
-
     for i in global_labels:
         if i in unique_labels:
             index= unique_labels.get(i).pop()
