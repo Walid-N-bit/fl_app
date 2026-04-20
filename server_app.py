@@ -26,8 +26,8 @@ DEVICE = torch.device(DEV)
 
 
 def prep_phase(
-    strategy: CustomStrat, grid: Grid, arrays: ArrayRecord
-) -> tuple[list, list]:
+    strategy: CustomStrat, grid: Grid, arrays: ArrayRecord, use_global_weights
+) -> tuple:
     """
     send flag to clients to signify preparation phase of the training.
     receive and compile local classes from each client into a list of global classes.
@@ -41,22 +41,45 @@ def prep_phase(
     :return: Description
     :rtype: set
     """
+    from wheat_data_utils import compute_class_weights
+
+    def aggregate_data_summaries(data_info: list[dict] = None):
+        if data_info:
+            data_summary = data_info[0]
+            for item in data_info[1:]:
+                summary_keys = data_summary.keys()
+                for key in item:
+                    if key in summary_keys:
+                        data_summary.update({key: data_summary[key] + item[key]})
+                    else:
+                        data_summary.update({key: item[key]})
+            return dict(sorted(data_summary.items())).values()
+        else:
+            return None
+
     # prep_conf = MetricRecord({"prep-phase": 1})
-    prep_conf = ConfigRecord({"prep-phase": 1})
+    prep_conf = ConfigRecord(
+        {"prep-phase": 1, "use-global-weights": use_global_weights}
+    )
     prep_replies = strategy.prepare(grid, arrays, prep_config=prep_conf)
     global_classes = set()
     clients_configs = []
+    global_data_info = []
     for item in prep_replies:
-
-        # print("\nsource ", item.metadata.src_node_id)
-        # print("\ndestination ", item.metadata.dst_node_id)
-        # print("\ncontent ", item.content)
         client_conf = item.content.get("config")
         client_classes = client_conf.get("local-classes")
+        client_data_info = client_conf.get("local-data-info")
         clients_configs.append(client_conf)
         global_classes.update(set(client_classes))
+        global_data_info.append(client_data_info)
 
-    return sorted(list(global_classes)), clients_configs
+    data_summary = aggregate_data_summaries(global_data_info)
+    if data_summary:
+        global_weights = compute_class_weights(data_summary).tolist()
+    else:
+        global_weights = None
+
+    return sorted(list(global_classes)), clients_configs, global_weights
 
 
 def labels_map_per_client(global_classes: list, configs: list[dict]):
@@ -107,6 +130,7 @@ def main(grid: Grid, context: Context) -> None:
     mixer = context.run_config["mixer"]
     proximal_mu = context.run_config["proximal-mu"]
     use_custom_agg = context.run_config["use-custom-agg"]
+    use_global_weights = context.run_config["use-global-weights"]
 
     start_time = time.perf_counter()
 
@@ -145,8 +169,13 @@ def main(grid: Grid, context: Context) -> None:
     # for the custom strat based on FedProx
     strategy = CustomStrat(fraction_evaluate=fraction_evaluate, proximal_mu=proximal_mu)
 
+    # ====================================================================
     # prepare for training by receiving client arrays
-    global_classes, all_metrics = prep_phase(strategy, grid, temp_arrays)
+    # ====================================================================
+
+    global_classes, all_metrics, global_weights = prep_phase(
+        strategy, grid, temp_arrays, use_global_weights
+    )
     labels_maps = labels_map_per_client(global_classes, all_metrics)
     messages_to_clients = construct_messages_per_node(labels_maps)
     labels_msg_replies = send_to_node(grid, messages_to_clients)
@@ -158,11 +187,15 @@ def main(grid: Grid, context: Context) -> None:
         )
     print("")
 
+    # ====================================================================
+    # ====================================================================
+
     out_features = len(global_classes)
     global_model = choose_model(model_name, freeze, out_features).to(DEVICE)
     arrays = ArrayRecord(global_model.state_dict())
 
     print("\n### global classes: ", global_classes)
+    print("\n### global classes: ", global_weights)
 
     # compile training configs
     train_configs = {
@@ -180,6 +213,7 @@ def main(grid: Grid, context: Context) -> None:
         "dataset-name": dataset_name,
         "mixer": mixer,
         "out-features": out_features,
+        "global-weights": global_weights if global_weights else [],
     }
     # Start strategy, run FedAvg for `num_rounds`
     test_dataloader = pick_test_dataloader(dataset_name)

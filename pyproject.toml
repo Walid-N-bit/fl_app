@@ -25,9 +25,9 @@ serverapp = "server_app:server"
 clientapp = "client_app:client"
 
 [tool.flwr.app.config]
-num-server-rounds = 3
+num-server-rounds = 10
 fraction-evaluate = 0  # fraction of clients selected for evaluation. set to 0 to skip eval
-local-epochs = 10
+local-epochs = 5
 
 momentum = 0.9
 
@@ -35,21 +35,22 @@ model-name = "mobilenet_v3_large"
 # model-name = "cnn"
 freeze = 0    # 1 for true, 0 for false
 features-lr = 0.001
-classifier-lr = 0.01
+classifier-lr = 0.001
 weight-decay = 1e-2
 
 batch-size = 32
 use-sampler = 0  # 1 for true, 0 for false
 num-workers = 0
-sch-patience = 10
-mixer = "cutmix"
-use-weights = 1  # 1 for true, 0 for false
-proximal-mu = 0.1 # setting this to 0 will make FedProx behave like FedAvg
-use-custom-agg = 0  # 1 or 0 for using custom aggregation method
+sch-patience = 3
+mixer = ""
+use-weights = 0  # 1 for true, 0 for false
+use-global-weights = 0
+proximal-mu = 0.5 # setting this to 0 will make FedProx behave like FedAvg
+use-custom-agg = 1  # 1 or 0 for using custom aggregation method
 
 # currently usable datasets: "wheat", "cifar10"
-dataset-name = "wheat"
-# dataset-name = "cifar10"
+#dataset-name = "wheat"
+dataset-name = "cifar10"
 
 
 [tool.flwr.federations]

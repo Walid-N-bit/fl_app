@@ -1,4 +1,4 @@
-from wheat_data_utils import WheatImgDataset, oversampler
+from wheat_data_utils import WheatImgDataset, oversampler, data_summary
 from torchvision import datasets
 from torchvision import transforms
 from torchvision.transforms import v2
@@ -75,6 +75,9 @@ if Path(TRAIN_DATA_PATH).exists():
     TRAIN_SAMPLER = oversampler(
         data_path=TRAIN_DATA_PATH, subset_indices=TRAINING_DATA.indices
     )
+
+    DATA_SUMMARY = data_summary(TRAIN_DATA_PATH).get("size_per_class")
+
 else:
     pass
 

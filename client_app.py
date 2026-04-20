@@ -67,6 +67,13 @@ def generate_local_labels_map(local_classes: list[str], local_labels: list[int])
     return l_m
 
 
+def data_info(data_summary: dict, local_classes: list) -> list:
+    info = []
+    for c in local_classes:
+        info.append(data_summary.get(c))
+    return info
+
+
 @client.train()
 def train(msg: Message, context: Context):
     """Train the model on local data."""
@@ -109,6 +116,7 @@ def train(msg: Message, context: Context):
     out_features = server_config.get("out-features")
     labels = server_config.get("labels")
     proximal_mu = server_config.get("proximal-mu")
+    global_weights = server_config.get("global-weights")
 
     if dataset_name == "wheat":
         from wheat_data_utils import get_class_weights
@@ -121,9 +129,12 @@ def train(msg: Message, context: Context):
             data_loader,
             TRAIN_SAMPLER,
             CLASSES as wheat_classes,
+            DATA_SUMMARY,
         )
 
         local_classes = list(wheat_classes)
+        local_data_info = data_info(DATA_SUMMARY, local_classes)
+        print(f"\n{local_data_info = }\n")
 
     elif dataset_name == "cifar10":
         from cifar10_data_prep import (
@@ -142,15 +153,18 @@ def train(msg: Message, context: Context):
         testloader = cifar_loader(CIFAR10_TEST, 128)
 
         mixer = ""
-        weights = None
+        weights = global_weights if global_weights else None
 
     # check if this is a prep phase, return classes if True
     prep_phase = server_config.get("prep-phase")
+    use_global_weights = server_config.get("use-global-weights")
     if prep_phase:
         node_id = context.node_id
         prep_conf = ConfigRecord(
             {"local-classes": local_classes, "node-name": node_name, "node-id": node_id}
         )
+        if use_global_weights:
+            prep_conf.update({"local-data-info": local_data_info})
         content = RecordDict({"config": prep_conf})
         print("\nPreparation Phase complete\n")
         return Message(content=content, reply_to=msg)
@@ -202,6 +216,7 @@ def train(msg: Message, context: Context):
         print("--> Modified Weights: ", modified_weights)
         print(" ")
         weights = modified_weights if use_weights else None
+        weights = global_weights if global_weights else weights
 
     # Load the model and initialize it with the received weights
     print("\nDevice: ", DEVICE)
