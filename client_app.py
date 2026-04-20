@@ -260,6 +260,9 @@ def train(msg: Message, context: Context):
     current_round = server_config.get("current-round")
 
     stopper = EarlyStop(3, 0.5)
+
+    print(f"\nUsed weights: {weights = }\n")
+
     try:
         for e in range(epochs):
             print(f"\nEpoch {e+1}/{epochs} | Round {current_round}\n{'-'*50}")
