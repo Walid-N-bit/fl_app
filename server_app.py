@@ -75,7 +75,10 @@ def prep_phase(
         global_data_info_lists.append(client_data_info)
         client_classes_list.append(client_classes)
 
-    global_data_info_dict = dict(zip(client_classes_list, global_data_info_lists))
+    global_data_info_dict = [
+        dict(zip(keys, values))
+        for keys, values in zip(client_classes_list, global_data_info_lists)
+    ]
     data_summary = aggregate_data_summaries(global_data_info_dict)
     if data_summary:
         global_weights = compute_class_weights(data_summary).tolist()
