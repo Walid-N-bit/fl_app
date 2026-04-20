@@ -153,7 +153,7 @@ def train(msg: Message, context: Context):
         testloader = cifar_loader(CIFAR10_TEST, 128)
 
         mixer = ""
-        weights = global_weights if global_weights else None
+        weights = torch.tensor(global_weights) if global_weights else None
 
     # check if this is a prep phase, return classes if True
     prep_phase = server_config.get("prep-phase")
@@ -216,7 +216,7 @@ def train(msg: Message, context: Context):
         print("--> Modified Weights: ", modified_weights)
         print(" ")
         weights = modified_weights if use_weights else None
-        weights = global_weights if global_weights else weights
+        weights = torch.tensor(global_weights )if global_weights else weights
 
     # Load the model and initialize it with the received weights
     print("\nDevice: ", DEVICE)
