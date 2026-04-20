@@ -54,9 +54,7 @@ def prep_phase(
                     else:
                         data_summary.update({key: item[key]})
             data_summary_list = dict(sorted(data_summary.items())).values()
-            print(f"\n{data_summary_list = }\n")
-
-            return data_summary_list
+            return list(data_summary_list)
         else:
             return None
 
@@ -82,14 +80,14 @@ def prep_phase(
         dict(zip(keys, values))
         for keys, values in zip(client_classes_list, global_data_info_lists)
     ]
-    print(f"\n{global_data_info_dict = }\n")
+    # print(f"\n{global_data_info_dict = }\n")
     data_summary = aggregate_data_summaries(global_data_info_dict)
     if data_summary:
         global_weights = compute_class_weights(data_summary).tolist()
     else:
         global_weights = None
 
-    print(f"\n{global_weights = }\n")
+    # print(f"\n{global_weights = }\n")
 
     return sorted(list(global_classes)), clients_configs, global_weights
 
