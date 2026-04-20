@@ -247,9 +247,7 @@ def train(msg: Message, context: Context):
     stopper = EarlyStop(3, 0.5)
     try:
         for e in range(epochs):
-            print(
-                f"\nEpoch {e+1}/{epochs} | Round {current_round}\n-------------------------------"
-            )
+            print(f"\nEpoch {e+1}/{epochs} | Round {current_round}\n{'-'*50}")
 
             # f_lr = optimizer.param_groups[0]["lr"]
             # c_lr = optimizer.param_groups[1]["lr"]
@@ -314,7 +312,7 @@ def train(msg: Message, context: Context):
     os.makedirs(os.path.dirname(local_model_path), exist_ok=True)
     torch.save(model.state_dict(), local_model_path)
 
-    print("\n---------------------------------------------------------------")
+    print(f"\n{'-'*50}")
     print("\nGeneral evaluation:\n")
     test_acc, test_loss = test_fn(model, testloader, loss_fn)
     print(

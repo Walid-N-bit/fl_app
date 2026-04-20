@@ -9,10 +9,11 @@ from utils import (
     parse_raw_metrics,
     parse_server_eval_metrics,
     generate_labels_map,
+    readable_time,
 )
 
 from datetime import datetime
-import os
+import os, time
 from typing import Literal
 
 from model_functions import choose_model, eval_per_class
@@ -107,7 +108,7 @@ def main(grid: Grid, context: Context) -> None:
     proximal_mu = context.run_config["proximal-mu"]
     use_custom_agg = context.run_config["use-custom-agg"]
 
-    start_time = datetime.now()
+    start_time = time.perf_counter()
 
     # Read run config
     fraction_evaluate: float = context.run_config["fraction-evaluate"]
@@ -196,13 +197,23 @@ def main(grid: Grid, context: Context) -> None:
     # aggregated_metrics = result.evaluate_metrics_serverapp
     # print(f"\nAggregated metrics:\n{aggregated_metrics}\n")
 
+    train_end = time.perf_counter()
+    print(f"\n{'='*50}")
+    print(f" Total training time: {readable_time(train_end - start_time)}")
+    print(f"{'='*50}\n")
+
     # Save final model to disk
     state_dict = result.arrays.to_torch_state_dict()
     global_model.load_state_dict(state_dict)
     g_labels_map = generate_labels_map(global_classes)
     eval_per_class(test_dataloader, global_model, out_features, g_labels_map)
 
-    time = datetime.now().strftime("%H:%M-%d.%m.%Y")
+    eval_end = time.perf_counter()
+    print(f"\n{'='*50}")
+    print(f" Total evaluation time: {readable_time(eval_end - train_end)}")
+    print(f"{'='*50}")
+    print(f" Total experiment time: {readable_time(eval_end - start_time)}")
+    print(f"{'='*50}\n")
 
     model_path = f"/root/data/models/{dataset_name}_{model_name}_epochs:{epochs}_f-lr:{features_lr}_c-lr:{classifier_lr}_batch-size:{batch_size}_aug:{mixer}_{time}.pt"
     os.makedirs(os.path.dirname(model_path), exist_ok=True)
