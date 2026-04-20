@@ -71,13 +71,16 @@ def prep_phase(
         client_conf = item.content.get("config")
         client_classes = client_conf.get("local-classes")
         client_data_info = client_conf.get("local-data-info")
+        if client_data_info:
+            global_data_info_lists.append(client_data_info)
+        else:
+            global_data_info_lists = None
         clients_configs.append(client_conf)
         global_classes.update(set(client_classes))
-        global_data_info_lists.append(client_data_info)
+
         client_classes_list.append(client_classes)
 
     if global_data_info_lists:
-
         global_data_info_dict = [
             dict(zip(keys, values))
             for keys, values in zip(client_classes_list, global_data_info_lists)
