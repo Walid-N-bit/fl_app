@@ -53,6 +53,8 @@ def prep_phase(
                         data_summary.update({key: data_summary[key] + item[key]})
                     else:
                         data_summary.update({key: item[key]})
+            print(f"\n{data_summary = }\n")
+
             return dict(sorted(data_summary.items())).values()
         else:
             return None
