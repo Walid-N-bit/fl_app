@@ -63,17 +63,20 @@ def prep_phase(
     )
     prep_replies = strategy.prepare(grid, arrays, prep_config=prep_conf)
     global_classes = set()
+    client_classes_list = []
     clients_configs = []
-    global_data_info = []
+    global_data_info_lists = []
     for item in prep_replies:
         client_conf = item.content.get("config")
         client_classes = client_conf.get("local-classes")
         client_data_info = client_conf.get("local-data-info")
         clients_configs.append(client_conf)
         global_classes.update(set(client_classes))
-        global_data_info.append(client_data_info)
+        global_data_info_lists.append(client_data_info)
+        client_classes_list.append(client_classes)
 
-    data_summary = aggregate_data_summaries(global_data_info)
+    global_data_info_dict = dict(zip(client_classes_list, global_data_info_lists))
+    data_summary = aggregate_data_summaries(global_data_info_dict)
     if data_summary:
         global_weights = compute_class_weights(data_summary).tolist()
     else:
