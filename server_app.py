@@ -58,7 +58,6 @@ def prep_phase(
         else:
             return None
 
-    # prep_conf = MetricRecord({"prep-phase": 1})
     prep_conf = ConfigRecord(
         {"prep-phase": 1, "use-global-weights": use_global_weights}
     )

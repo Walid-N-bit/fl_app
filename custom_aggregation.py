@@ -21,41 +21,9 @@ def state_dict_to_array_record(state_dict) -> ArrayRecord:
     return ArrayRecord({key: Array(val.cpu()) for key, val in state_dict.items()})
 
 
-# def make_train_reply(arrays: ArrayRecord, num_examples: int):
-#     content = RecordDict(
-#         records={
-#             "parameters": arrays,
-#             "metrics": MetricRecord({"num-examples": num_examples}),
-#         }
-#     )
-#     return Message(content=content, dst_node_id=0, message_type=MessageType.TRAIN)
-
-
-# def fedavg_aggregate(*models):
-#     """
-#     the standard FedAvg aggregation method
-
-#     :param models: client model state dicts to be aggregated
-#     :return: aggregated global model state dict
-#     :rtype: dict[Any, Tensor]
-#     """
-#     # Convert each model state dict to a reply message
-#     replies = [
-#         make_train_reply(state_dict_to_array_record(m), num_examples=100)
-#         for m in models
-#     ]
-
-#     strategy = FedAvg()
-#     aggregated_arrays, _ = strategy.aggregate_train(server_round=1, replies=replies)
-#     if aggregated_arrays is None:
-#         raise RuntimeError("FedAvg aggregation returned None")
-
-#     # Use the keys from the first model (assumes all models share the same architecture)
-#     keys = list(models[0].keys())
-#     return {key: torch.from_numpy(aggregated_arrays[key].numpy()) for key in keys}
-
-
-def analyze_elements(list_of_lists: list[list]) -> tuple[dict[dict], dict[list]]:
+def analyze_elements(
+    list_of_lists: list[list],
+) -> tuple[dict[int, set[int]], dict[int, list[int]]]:
     """
     look for unique and shared elements in a list of lists.
     return dict of elements and the indices of lists where they occur
@@ -124,44 +92,45 @@ def custom_classifier_aggregation(clients_data: list[dict], global_labels: list)
         classifiers.append(c)
         cont_labels.append(l)
 
-    new_classifier = OrderedDict(
-        {
-            "classifier.0.weight": torch.stack(
-                [c.get("classifier.0.weight") for c in classifiers]
-            ).mean(dim=0),
-            "classifier.0.bias": torch.stack(
-                [c.get("classifier.0.bias") for c in classifiers]
-            ).mean(dim=0),
-            "classifier.3.weight": torch.zeros_like(
-                classifiers[0].get("classifier.3.weight")
-            ),
-            "classifier.3.bias": torch.zeros_like(
-                classifiers[0].get("classifier.3.bias")
-            ),
-        }
-    )
+    w0 = torch.stack([c.get("classifier.0.weight") for c in classifiers]).mean(dim=0)
+    b0 = torch.stack([c.get("classifier.0.bias") for c in classifiers]).mean(dim=0)
+    w3 = torch.zeros_like(
+        classifiers[0].get("classifier.3.weight")
+    )  # shape: tensor([out_features, in_features])
+    b3 = torch.zeros_like(
+        classifiers[0].get("classifier.3.bias")
+    )  # shape: tensor([out_features])
 
     unique_labels, shared_labels = analyze_elements(cont_labels)
 
-    for i in global_labels:
-        if i in unique_labels:
-            index = unique_labels.get(i).pop()
-            target_bias = classifiers[index].get("classifier.3.bias")
-            target_weight = classifiers[index].get("classifier.3.weight")
-            new_classifier["classifier.3.bias"] = target_bias
-            new_classifier["classifier.3.weight"] = target_weight
-        if i in shared_labels:
-            indecies = shared_labels.get(i)
+    for label in global_labels:
+        if label in unique_labels:
+            client_idx = next(iter(unique_labels.get(label)))
+            target_bias = classifiers[client_idx].get("classifier.3.bias")
+            target_weight = classifiers[client_idx].get("classifier.3.weight")
+            b3[label] = target_bias[label]
+            w3[label] = target_weight[label]
+
+        if label in shared_labels:
+            client_indices = shared_labels.get(label)
             target_biases = [
-                classifiers[idx].get("classifier.3.bias") for idx in indecies
+                classifiers[idx].get("classifier.3.bias")[label]
+                for idx in client_indices
             ]
             target_weights = [
-                classifiers[idx].get("classifier.3.weight") for idx in indecies
+                classifiers[idx].get("classifier.3.weight")[label]
+                for idx in client_indices
             ]
-            new_classifier["classifier.3.bias"] = torch.stack(target_biases).mean(dim=0)
-            new_classifier["classifier.3.weight"] = torch.stack(target_weights).mean(
-                dim=0
-            )
+            b3[label] = torch.stack(target_biases).mean(dim=0)
+            w3[label] = torch.stack(target_weights).mean(dim=0)
+    new_classifier = OrderedDict(
+        {
+            "classifier.0.weight": w0,
+            "classifier.0.bias": b0,
+            "classifier.3.weight": w3,
+            "classifier.3.bias": b3,
+        }
+    )
     return new_classifier
 
 
