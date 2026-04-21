@@ -275,14 +275,14 @@ def train(
 
         # logging window
         disp_window.append(loss.item())
-        if len(disp_window) >= disp_window_size:
-            disp_window.pop(0)
+        # if len(disp_window) >= disp_window_size:
+        #     disp_window.pop(0)
 
         if batch % 100 == 0 and disp_log:
-            avg_loss = sum(disp_window) / len(disp_window)
+            # avg_loss = sum(disp_window) / len(disp_window)
             current = (batch + 1) * len(images)
             print(f"current loss: {loss.item():>7.6f}  [{current:>5d}/{size:>5d}]")
-            print(f"average loss: {avg_loss:>7.6f}  [{current:>5d}/{size:>5d}]")
+            # print(f"average loss: {avg_loss:>7.6f}  [{current:>5d}/{size:>5d}]")
 
     train_acc = train_acc / size
     train_loss = train_loss / num_batches
