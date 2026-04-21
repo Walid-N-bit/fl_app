@@ -1,6 +1,4 @@
-import os
-import csv
-
+import os, csv, json
 import torch
 import pandas as pd
 from torch.utils.data import Dataset
@@ -288,3 +286,14 @@ def generate_labels_map(class_names: list[str]) -> dict[int, str]:
     class_names = sorted(class_names)
     lm = {i: c.lower() for i, c in enumerate(class_names)}
     return lm
+
+
+def save_arbitrary_json(path: str, **kwargs):
+    data = {}
+    for k, v in kwargs:
+        data.update({k: v})
+
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(data, f)
+

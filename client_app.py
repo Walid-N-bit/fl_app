@@ -152,6 +152,7 @@ def train(msg: Message, context: Context):
         valloader = cifar_loader(CIFAR10_VAL, batch_size)
         testloader = cifar_loader(CIFAR10_TEST, 128)
 
+        local_data_info = []
         mixer = ""
         weights = torch.tensor(global_weights).to(DEVICE) if global_weights else None
 
