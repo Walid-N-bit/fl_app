@@ -148,6 +148,8 @@ def perform_custom_aggregation(
     clients_data = []
     global_labels = set()
     for msg in train_replies:
+        if not msg.has_content():
+            continue
         labels = msg.content.get("configs").get("local-labels")
         local_state_dict = msg.content.get("arrays").to_torch_state_dict()
         _, classifier = split_state_dict(local_state_dict)
