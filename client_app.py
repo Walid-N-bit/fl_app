@@ -117,6 +117,7 @@ def train(msg: Message, context: Context):
     labels = server_config.get("labels")
     proximal_mu = server_config.get("proximal-mu")
     global_weights = server_config.get("global-weights")
+    use_loss_masking = server_config.get("use-loss-masking")
 
     if dataset_name == "wheat":
         from wheat_data_utils import get_class_weights
@@ -278,13 +279,15 @@ def train(msg: Message, context: Context):
             t0 = time.perf_counter()
             print("Training commencing...")
             train_acc, train_loss = train_fn(
-                model,
-                trainloader,
-                labels,
-                optimizer,
-                loss_fn,
-                global_params,
-                mixer,
+                model=model,
+                trainloader=trainloader,
+                valid_labels=labels,
+                optimizer=optimizer,
+                loss_func=loss_fn,
+                global_params=global_params,
+                mixer=mixer,
+                mu=proximal_mu,
+                use_masking=True if use_loss_masking else False,
             )
 
             print("validation...")
@@ -362,23 +365,6 @@ def train(msg: Message, context: Context):
             "local-labels": labels,
         }
     )
-
-    # =====================================================
-    # split classifier experiment
-    # =====================================================
-
-    # if True:
-    #     classifier_arrays = ArrayRecord(model.classifier.state_dict())
-    #     features_arrays = ArrayRecord(model.features.state_dict())
-    #     content = RecordDict(
-    #     {"classifier-arrays": classifier_arrays, features_arrays, "metrics": metric_record, "configs": config_record}
-    # )
-
-    #     return Message(content=content, reply_to=msg)
-
-    # =====================================================
-    # end of split classifier experiment
-    # =====================================================
 
     content = RecordDict(
         {"arrays": model_record, "metrics": metric_record, "configs": config_record}
