@@ -327,5 +327,5 @@ def main(grid: Grid, context: Context) -> None:
         use_global_weights=True if use_global_weights else False,
         use_loss_masking=True if use_loss_masking else False,
         agg_metrics={i: m["metrics"] for i, m in result.evaluate_metrics_serverapp},
-        accuracy_per_class=eval_results,
+        accuracy_per_class=eval_results
     )
