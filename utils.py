@@ -289,11 +289,9 @@ def generate_labels_map(class_names: list[str]) -> dict[int, str]:
 
 
 def save_arbitrary_json(path: str, **kwargs):
-    data = {}
-    for k, v in kwargs:
-        data.update({k: v})
+    dir_path = os.path.dirname(path)
+    if dir_path:
+        os.makedirs(dir_path, exist_ok=True)
 
-    os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:
-        json.dump(data, f)
-
+        json.dump(kwargs, f, indent=4)
