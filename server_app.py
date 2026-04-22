@@ -326,7 +326,7 @@ def main(grid: Grid, context: Context) -> None:
         use_custom_agg=True if use_custom_agg else False,
         use_global_weights=True if use_global_weights else False,
         use_loss_masking=True if use_loss_masking else False,
-        clients_metrics=train_replies,
-        agg_metrics=result.evaluate_metrics_serverapp,
+        clients_metrics=[reply.content["config"] for reply in train_replies],
+        agg_metrics={i: m["metrics"] for i, m in result.evaluate_metrics_serverapp},
         accuracy_per_class=eval_results,
     )
