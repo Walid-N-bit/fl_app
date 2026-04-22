@@ -67,94 +67,6 @@ def choose_model(
     return model
 
 
-# def train(
-#     model: NET,
-#     trainloader: DataLoader,
-#     valid_labels: list,
-#     optimizer,
-#     loss_func,
-#     global_params: list,
-#     mixer=None,
-#     disp_log: bool = True,
-#     max_grad_norm: float = 1.0,
-#     mu: float = 0.0,
-# ):
-#     """Train the model on the training set."""
-
-#     size = len(trainloader.dataset)
-#     num_batches = len(trainloader)
-#     train_acc, train_loss = 0, 0
-#     model.train()
-
-#     disp_window = []
-#     disp_window_size = 20
-
-#     for batch, pair in enumerate(trainloader):
-
-#         (X, y) = pair
-#         images = X.to(DEVICE)
-#         labels_hard = y.to(DEVICE)
-#         if mixer:
-#             images, labels = mixer(images, labels_hard)
-#         else:
-#             labels = labels_hard
-
-#         predictions = model(images)
-
-#         # if (batch % 100 == 0) and disp_log:
-#         #     print(f"\n {labels = }\n {labels.shape = }\n {labels.dtype = }")
-#         #     print(
-#         #         f"\n {predictions = }\n {predictions.shape = }\n {predictions.dtype = }\n"
-#         #     )
-
-#         loss = loss_func(predictions, labels)
-
-#         prox_term = 0.0
-#         if mu > 0:
-#             for p, gp in zip(model.parameters(), global_params):
-#                 prox_term += (p - gp).pow(2).sum()
-#             loss += (mu / 2) * prox_term
-
-#         pred_labels = predictions.argmax(1)
-
-#         if labels.ndim > 1:
-#             target_labels = labels.argmax(1)
-#         else:
-#             target_labels = labels
-
-#         train_acc += (
-#             (pred_labels == target_labels).type(torch.float).sum().item()
-#         )  # here all correct preds are summed
-#         train_loss += loss.item()  # this returns the average loss over the batch
-
-#         # Backpropagation
-#         optimizer.zero_grad(set_to_none=True)
-#         loss.backward()
-
-#         # to prevent gradient explosion
-#         if max_grad_norm > 0:
-#             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=max_grad_norm)
-
-#         optimizer.step()
-#         ########
-
-#         # average loss over a certain number of batches
-#         disp_window.append(loss.item())
-#         if len(disp_window) >= disp_window_size:
-#             disp_window.pop(0)
-
-#         if batch % 100 == 0 and disp_log:
-#             # print("a sample of labels: ", labels_hard.unique())
-#             avg_loss = sum(disp_window) / len(disp_window)
-#             loss, current = loss.item(), (batch + 1) * len(images)
-#             print(f"current loss: {loss:>7.6f}  [{current:>5d}/{size:>5d}]")
-#             print(f"average loss: {avg_loss:>7.6f}  [{current:>5d}/{size:>5d}]")
-
-#     train_acc = train_acc / size
-#     train_loss = train_loss / num_batches
-
-
-#     return train_acc, train_loss
 def train(
     model: NET,
     trainloader: DataLoader,
@@ -319,31 +231,12 @@ def test(model: NET, testloader: DataLoader, loss_func):
     return test_acc, test_loss
 
 
-def eval_per_class(testloader, model, out_features: int, labels_map: dict):
-
+def get_true_and_pred_values(
+    testloader,
+    model,
+):
     actual_values = []
     pred_values = []
-    # prepare to count predictions for each class
-    global_labels_map = {
-        i: c for i, c in enumerate(["Unknown-Class" for _ in range(out_features)])
-    }
-    # print(f"\nLocal labels map: {labels_map}")
-    # print(f"\nTemplate labels map: {global_labels_map}")
-
-    if len(labels_map) == out_features:
-        global_labels_map = labels_map
-    else:
-        for i in global_labels_map:
-            if i in labels_map:
-                class_name = labels_map.get(i)
-                global_labels_map[i] = class_name
-
-    classes = list(global_labels_map.values())
-    # print(f"\nGlobal labels map: {global_labels_map}")
-    # print(f"\nClasses: {classes}\n")
-    correct_pred = {classname: 0.0 for classname in classes}
-    total_pred = {classname: 0.0 for classname in classes}
-
     model.eval()
     with torch.no_grad():
         for data in testloader:
@@ -352,23 +245,51 @@ def eval_per_class(testloader, model, out_features: int, labels_map: dict):
             labels = labels.to(DEVICE)
             outputs = model(images)
             _, predictions = torch.max(outputs, 1)
-            # collect the correct predictions for each class
-            for label, prediction in zip(labels, predictions):
-                if label == prediction:
-                    correct_pred[classes[label]] += 1
-                total_pred[classes[label]] += 1
 
-            actual_values.extend(labels)
-            pred_values.extend(predictions)
-    # print accuracy for each class
-    for classname, correct_count in correct_pred.items():
-        if total_pred[classname] == 0:
-            print(f"Total predictions for {classname} = {total_pred[classname]}")
-        else:
-            accuracy = 100 * float(correct_count) / total_pred[classname]
-            print(f"Accuracy for class: {classname:5s} is {accuracy:.1f} %")
+            actual_values.extend(labels.cpu().tolist())
+            pred_values.extend(predictions.cpu().tolist())
 
     return actual_values, pred_values
+
+
+def acc_per_class(
+    actual_values: list[int],
+    pred_values: list[int],
+    out_features: int,
+    labels_map: dict[int, str],
+) -> dict:
+    global_labels_map = {
+        i: c for i, c in enumerate(["Unknown-Class" for _ in range(out_features)])
+    }
+    global_labels_map.update(labels_map)
+
+    classes = list(global_labels_map.values())
+    correct_pred = {classname: 0.0 for classname in classes}
+    total_pred = {classname: 0.0 for classname in classes}
+    for label, prediction in zip(actual_values, pred_values):
+        if label == prediction:
+            correct_pred[classes[label]] += 1
+        total_pred[classes[label]] += 1
+    for classname, correct_count in correct_pred.items():
+        if total_pred[classname] == 0:
+            accuracy = 0.0
+        else:
+            accuracy = 100 * float(correct_count) / total_pred[classname]
+
+        correct_pred[classname] = accuracy
+
+    return correct_pred
+
+
+def display_acc_logs(eval_metrics: dict):
+    for classname, accuracy in eval_metrics.items():
+        print(f"Accuracy for class: {classname:5s} is {accuracy:.1f}%")
+
+
+def eval_per_class(testloader, model, out_features: int, labels_map: dict):
+    true_values, pred_values = get_true_and_pred_values(testloader, model)
+    eval_results = acc_per_class(true_values, pred_values, out_features, labels_map)
+    display_acc_logs(eval_results)
 
 
 class EarlyStop:
