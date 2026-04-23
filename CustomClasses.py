@@ -219,7 +219,7 @@ class CustomStrat(FedProx):
             sch_patience = train_config.get("sch-patience")
             current_lr = train_config.get("classifier-lr")
 
-            scheduler = CustomScheduler(current_lr, sch_patience)
+            scheduler = CustomScheduler(current_lr, sch_patience, threshold=0.01)
             new_lr = scheduler.step(current_loss)
 
             train_config["classifier-lr"] = new_lr
@@ -345,6 +345,7 @@ class CustomScheduler:
 
     def is_improved(self, current: float):
         delta = self.best - current
+        print(f"\n scheduler delta: {delta}\n")
         if self.mode == "min":
             return delta > self.threshold
         else:
