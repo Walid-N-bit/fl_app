@@ -89,10 +89,10 @@ def train(msg: Message, context: Context):
     f_lrs = []
     c_lrs = []
     # model params
-    print(f"######################################################")
+    print(f"{'='*50}")
     print(f"\n Loading Params \n")
     print(f"{msg.content.get("config") = }\n")
-    print(f"######################################################")
+    print(f"{'='*50}")
 
     server_config = msg.content["config"]
 
@@ -215,8 +215,7 @@ def train(msg: Message, context: Context):
         modified_weights = modify_weights(out_features, labels, class_weights).to(
             DEVICE
         )
-        print("--> Modified Weights: ", modified_weights)
-        print(" ")
+        print(f"--> Modified Weights: {modified_weights}\n")
         weights = modified_weights if use_weights else None
         weights = torch.tensor(global_weights).to(DEVICE) if global_weights else weights
 
@@ -253,8 +252,10 @@ def train(msg: Message, context: Context):
     #         ],
     #         weight_decay=weight_decay,
     #     )
-    scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, "min", patience=sch_patience)
+    # scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, "min", patience=sch_patience)
     loss_fn = nn.CrossEntropyLoss(weight=weights)
+
+    optimizer.param_groups
 
     # commence training loop
     mixer = pick_mixer(mixer, out_features)
@@ -315,7 +316,7 @@ def train(msg: Message, context: Context):
             f_lrs.append(c_lr)
             c_lrs.append(c_lr)
 
-            scheduler.step(val_loss)
+            # scheduler.step(val_loss)
 
             print(
                 f"Training metrics:\n Accuracy: {(100*train_acc):>0.1f}%, Avg loss: {train_loss:>8f} \n"

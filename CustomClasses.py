@@ -11,6 +11,8 @@ from flwr.app import Message, MetricRecord, RecordDict
 
 import time, io
 from collections.abc import Callable
+from typing import Literal
+
 from logging import INFO
 
 from flwr.common import ArrayRecord, ConfigRecord, MetricRecord, log, MessageType
@@ -100,17 +102,21 @@ class CustomStrat(FedProx):
         arrays = initial_arrays
 
         ########################################
+        ########################################
         # added this to capture client metrics #
         clients_train_metrics = {}
         clients_eval_metrics = {}
+        ########################################
         ########################################
 
         # for current_round in range(0, num_rounds + 1):
         for current_round in range(1, num_rounds + 1):
 
             ################################################
+            ################################################
             # adding current-round to train_config for logging
             train_config.update({"current-round": current_round})
+            ################################################
             ################################################
 
             log(INFO, "")
@@ -171,12 +177,14 @@ class CustomStrat(FedProx):
             )
 
             ###################################
+            ###################################
             # saving client-side train metrics
             clients_train_metrics[current_round] = self.compile_clients_metrics(
                 train_replies
             )
             # same way you can add client-side eval metrics
 
+            ##################################
             ##################################
 
             # Aggregate evaluate
@@ -201,6 +209,23 @@ class CustomStrat(FedProx):
                 log(INFO, "\t└──> MetricRecord: %s", res)
                 if res is not None:
                     result.evaluate_metrics_serverapp[current_round] = res
+
+            #################################################################
+            #################################################################
+            # learning-rate scheduler logic
+            current_round_metrics = result.evaluate_metrics_serverapp.get(current_round)
+
+            current_loss = current_round_metrics.get("loss")
+            sch_patience = train_config.get("sch-patience")
+            current_lr = train_config.get("classifier-lr")
+
+            scheduler = CustomScheduler(current_lr, sch_patience)
+            new_lr = scheduler.step(current_loss)
+
+            train_config["classifier-lr"] = new_lr
+
+            #################################################################
+            #################################################################
 
         log(INFO, "")
         log(INFO, "Strategy execution finished in %.2fs", time.time() - t_start)
@@ -280,6 +305,50 @@ def construct_messages_per_node(
 def send_to_node(grid: Grid, messages: Iterable[Message]):
     replies = grid.send_and_receive(messages)
     return replies
+
+
+###############################################################################
+
+
+class CustomScheduler:
+    def __init__(
+        self,
+        lr: float,
+        patience: int,
+        mode: Literal["min", "max"] = "min",
+        threshold: float = 1e-4,
+        factor: float = 0.1,
+    ):
+        self.lr = lr
+        self.patience = patience
+        self.mode = mode
+        self.factor = factor
+        self.threshold = threshold
+        self.best = None
+        self.counter = 0
+
+    def step(self, loss: float):
+        if self.best is None:
+            self.best = loss
+            return self.lr
+        else:
+            if self.is_improved(loss):
+                self.counter = 0
+                self.best = loss
+            else:
+                self.counter += 1
+
+        if self.counter >= self.patience:
+            self.lr *= self.factor
+            self.counter = 0
+            return self.lr
+
+    def is_improved(self, current: float):
+        delta = self.best - current
+        if self.mode == "min":
+            return delta > self.threshold
+        else:
+            return (-delta) > self.threshold
 
 
 ###############################################################################
