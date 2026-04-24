@@ -46,8 +46,8 @@ sch-patience = 3
 mixer = ""
 use-weights = 0  # 1 for true, 0 for false
 use-global-weights = 0
-proximal-mu = 0.5 # setting this to 0 will make FedProx behave like FedAvg
-use-custom-agg = 1  # 1 or 0 for using custom aggregation method
+proximal-mu = 0 # setting this to 0 will make FedProx behave like FedAvg
+use-custom-agg = 0  # 1 or 0 for using custom aggregation method
 use-loss-masking = 0
 
 # currently usable datasets: "wheat", "cifar10"
