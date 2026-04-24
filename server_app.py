@@ -159,6 +159,7 @@ def main(grid: Grid, context: Context) -> None:
 
     # Read run config
     fraction_evaluate: float = context.run_config["fraction-evaluate"]
+    fraction_train = context.run_config["fraction-train"]
     num_rounds: int = context.run_config["num-server-rounds"]
     momentum = context.run_config["momentum"]
 
@@ -189,7 +190,11 @@ def main(grid: Grid, context: Context) -> None:
     # strategy = CustomStrat(fraction_evaluate=fraction_evaluate)
 
     # for the custom strat based on FedProx
-    strategy = CustomStrat(fraction_evaluate=fraction_evaluate, proximal_mu=proximal_mu)
+    strategy = CustomStrat(
+        fraction_train=fraction_train,
+        fraction_evaluate=fraction_evaluate,
+        proximal_mu=proximal_mu,
+    )
 
     # ====================================================================
     # prepare for training by receiving client arrays

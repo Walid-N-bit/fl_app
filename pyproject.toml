@@ -26,6 +26,7 @@ clientapp = "client_app:client"
 
 [tool.flwr.app.config]
 num-server-rounds = 10
+fraction-train = 0.3  # fraction of clients selected for evaluation. set to 0 to skip eval
 fraction-evaluate = 0  # fraction of clients selected for evaluation. set to 0 to skip eval
 local-epochs = 5
 
