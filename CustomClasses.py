@@ -270,6 +270,8 @@ class CustomStrat(FedProx):
         """
         round_metrics = []
         for msg in replies:
+            if not msg.has_content():
+                continue
             configs = msg.content["configs"]
             metrics = msg.content["metrics"]
             keys = metrics.keys()
@@ -280,6 +282,7 @@ class CustomStrat(FedProx):
             for k in keys:
                 item[k] = metrics.get(k)
             round_metrics.append(item)
+
         return round_metrics
 
 
