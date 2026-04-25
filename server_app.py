@@ -73,6 +73,8 @@ def prep_phase(
     clients_configs = []
     global_data_info_lists = []
     for item in prep_replies:
+        if not item.has_content():
+            continue
         client_conf = item.content.get("config")
         client_classes = client_conf.get("local-classes")
         client_data_info = client_conf.get("local-data-info")
