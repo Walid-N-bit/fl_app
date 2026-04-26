@@ -28,6 +28,8 @@ def get_label(label_map: dict, class_name: str) -> int:
     label = [
         key for key, value in label_map.items() if value.lower() == class_name.lower()
     ]
+    if not label:
+        raise ValueError(f"Class '{class_name}' not found in label_map: {label_map}")
     return label[0]
 
 
