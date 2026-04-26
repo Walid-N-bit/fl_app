@@ -27,8 +27,8 @@ def cifar10_partitioner(num_clients, num_classes):
     )
 
 
-NUM_CLIENTS = 3
-NUM_SHARDS_PER_CLIENT = 4
+NUM_CLIENTS = 2
+NUM_SHARDS_PER_CLIENT = 5
 
 partitioner = cifar10_partitioner(NUM_CLIENTS, NUM_SHARDS_PER_CLIENT)
 
