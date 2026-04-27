@@ -29,7 +29,11 @@ def get_label(label_map: dict, class_name: str) -> int:
         key for key, value in label_map.items() if value.lower() == class_name.lower()
     ]
     if not label:
-        raise ValueError(f"Class '{class_name}' not found in label_map: {label_map}")
+        raise ValueError(
+            f"Class '{class_name}' not found in label_map.\n"
+            f"label_map: {label_map}\n"
+            f"Available classes: {list(label_map.values())}"
+        )
     return label[0]
 
 

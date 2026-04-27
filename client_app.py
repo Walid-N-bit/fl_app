@@ -25,6 +25,8 @@ client = ClientApp()
 DEV = "cuda:0" if torch.cuda.is_available() else "cpu"
 DEVICE = torch.device(DEV)
 
+LABELS_FILE = "/root/fl_app/assigned_labels.json"
+
 
 def modify_weights(
     out_features: int, selected_labels: list, weights: torch.Tensor
@@ -173,15 +175,22 @@ def train(msg: Message, context: Context):
 
     if labels:
         print("\n--> Local labels: ", labels)
-        # print("--> Weights: ", class_weights, end="\n\n")
         test_conf = ConfigRecord({"node-name": node_name})
         content = RecordDict({"config": test_conf})
-        with open("assigned_labels.json", "w") as f:
+        os.makedirs(os.path.dirname(LABELS_FILE), exist_ok=True)
+        with open(LABELS_FILE, "w") as f:
             json.dump({"labels": labels}, f)
         return Message(content=content, reply_to=msg)
     else:
-        with open("assigned_labels.json", "r") as f:
+        if not os.path.exists(LABELS_FILE):
+            raise FileNotFoundError(f"\nLabels file not found at {LABELS_FILE}.\n")
+        with open(LABELS_FILE, "r") as f:
             labels = json.load(f).get("labels")
+        if not labels:
+            raise ValueError(
+                f"\nLabels file exists at {LABELS_FILE} but contains no labels. "
+                f"File contents: {open(LABELS_FILE).read()}\n"
+            )
 
     if dataset_name == "wheat":
         local_labels_map = generate_local_labels_map(local_classes, labels)
