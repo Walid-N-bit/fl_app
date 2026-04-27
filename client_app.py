@@ -162,6 +162,7 @@ def train(msg: Message, context: Context):
     # check if this is a prep phase, return classes if True
     prep_phase = server_config.get("prep-phase")
     use_global_weights = server_config.get("use-global-weights")
+
     if prep_phase:
         node_id = context.node_id
         prep_conf = ConfigRecord(
@@ -174,7 +175,7 @@ def train(msg: Message, context: Context):
         return Message(content=content, reply_to=msg)
 
     if labels:
-        print("\n--> Local labels: ", labels)
+        print(f"\n--> Local labels: {labels}\n")
         test_conf = ConfigRecord({"node-name": node_name})
         content = RecordDict({"config": test_conf})
         os.makedirs(os.path.dirname(LABELS_FILE), exist_ok=True)
