@@ -12,7 +12,7 @@ cryptography==44.0.3
 cycler==0.12.1
 datasets==3.1.0
 dill==0.3.8
--e git+https://github.com/Walid-N-bit/fl_app.git@ac3b3874eacf55091dbb0dd2316b794e9721a6c9#egg=federated_learning_app
+-e git+https://github.com/Walid-N-bit/fl_app.git@4b7906b8495bb6fcd0759a687abdc74182eb929f#egg=federated_learning_app
 filelock==3.20.3
 flwr==1.25.0
 flwr-datasets==0.5.0
@@ -32,6 +32,7 @@ Jinja2==3.1.6
 jsonschema==4.26.0
 jsonschema-specifications==2025.9.1
 kiwisolver==1.4.9
+lightning-utilities==0.15.3
 markdown-it-py==4.0.0
 MarkupSafe==3.0.3
 matplotlib==3.10.8
@@ -83,6 +84,7 @@ sympy==1.14.0
 tomli==2.4.0
 tomli_w==1.2.0
 torch==2.8.0
+torchmetrics==1.9.0
 torchvision==0.23.0
 tqdm==4.67.1
 triton==3.4.0
