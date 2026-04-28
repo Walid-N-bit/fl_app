@@ -20,8 +20,9 @@ from typing import Literal
 from model_functions import (
     choose_model,
     get_true_and_pred_values,
-    acc_per_class,
-    display_acc_logs,
+    eval_per_class,
+    # acc_per_class,
+    # display_acc_logs,
 )
 from cifar10_data_prep import CIFAR10_CLASSES
 
@@ -272,11 +273,12 @@ def main(grid: Grid, context: Context) -> None:
     # evaluate accuracy per class
     global_model.load_state_dict(state_dict)
     global_labels_map = generate_labels_map(global_classes)
-    true_values, pred_values = get_true_and_pred_values(test_dataloader, global_model)
-    eval_results = acc_per_class(
-        true_values, pred_values, out_features, global_labels_map
-    )
-    display_acc_logs(eval_results)
+    # true_values, pred_values = get_true_and_pred_values(test_dataloader, global_model)
+    # eval_results = acc_per_class(
+    #     true_values, pred_values, out_features, global_labels_map
+    # )
+    # display_acc_logs(eval_results)
+    eval_per_class(test_dataloader, global_model, out_features, global_labels_map)
 
     # end time messages
     eval_end = time.perf_counter()
@@ -334,5 +336,4 @@ def main(grid: Grid, context: Context) -> None:
         use_global_weights=True if use_global_weights else False,
         use_loss_masking=True if use_loss_masking else False,
         agg_metrics={i: dict(m) for i, m in result.evaluate_metrics_serverapp.items()},
-        accuracy_per_class=eval_results,
     )

@@ -286,26 +286,6 @@ def acc_per_class(
     return correct_pred
 
 
-# def display_acc_logs(eval_metrics: dict):
-#     for classname, accuracy in eval_metrics.items():
-#         print(f"Accuracy for class: {classname:5s} is {accuracy:.1f}%")
-def display_metrics(metrics: dict, class_names: list[str]):
-    """Pretty prints the metrics dictionary."""
-
-    print("\n--- Global Metrics ---")
-    print(f"Overall Accuracy:  {metrics['global_accuracy']:.4f}")
-    print(f"Macro Precision:   {metrics['global_precision']:.4f}")
-    print(f"Macro Recall:      {metrics['global_recall']:.4f}")
-    print(f"Macro F1-Score:    {metrics['global_f1']:.4f}")
-
-    print("\n--- Per-Class Accuracy ---")
-    per_class_acc = metrics["per_class_accuracy"]
-    for i, name in enumerate(class_names):
-        print(
-            f"Accuracy for class: {name:10s} is {per_class_acc[i]:.1%}"
-        )  # Using .1% for percentage format
-
-
 # def eval_per_class(testloader, model, out_features: int, labels_map: dict):
 #     true_values, pred_values = get_true_and_pred_values(testloader, model)
 #     eval_results = acc_per_class(true_values, pred_values, out_features, labels_map)
@@ -394,6 +374,26 @@ def get_metrics(
     }
 
     return metrics
+
+
+# def display_acc_logs(eval_metrics: dict):
+#     for classname, accuracy in eval_metrics.items():
+#         print(f"Accuracy for class: {classname:5s} is {accuracy:.1f}%")
+def display_metrics(metrics: dict, class_names: list[str]):
+    """Pretty prints the metrics dictionary."""
+
+    print("\n--- Global Metrics ---")
+    print(f"Overall Accuracy:  {metrics['global_accuracy']:.4f}")
+    print(f"Macro Precision:   {metrics['global_precision']:.4f}")
+    print(f"Macro Recall:      {metrics['global_recall']:.4f}")
+    print(f"Macro F1-Score:    {metrics['global_f1']:.4f}")
+
+    print("\n--- Per-Class Accuracy ---")
+    per_class_acc = metrics["per_class_accuracy"]
+    for i, name in enumerate(class_names):
+        print(
+            f"Accuracy for class: {name:10s} is {per_class_acc[i]:.1%}"
+        )  # Using .1% for percentage format
 
 
 class EarlyStop:
