@@ -296,7 +296,8 @@ def eval_per_class(testloader, model, out_features: int, labels_map: dict):
 
     # Prepare class names list from dict
     # Assuming labels_map is {0: 'Cat', 1: 'Dog', ...}
-    class_names = [labels_map[i] for i in range(out_features)]
+
+    class_names = [labels_map.get(i, "Unknown-Class") for i in range(out_features)]
 
     # 2. Calculate Metrics
     metrics = get_metrics(pred_tensor, true_tensor, out_features, class_names)
