@@ -251,8 +251,8 @@ def get_true_and_pred_values(
 
             # actual_values.extend(labels.cpu().tolist())
             # pred_values.extend(predictions.cpu().tolist())
-            actual_values.extend(labels)
-            pred_values.extend(predictions)
+            actual_values.append(labels)
+            pred_values.append(predictions)
 
     return torch.cat(actual_values), torch.cat(pred_values)
 
