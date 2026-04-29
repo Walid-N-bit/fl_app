@@ -5,14 +5,16 @@ from flwr.serverapp.strategy import FedAvg, FedAvgM
 from CustomClasses import CustomStrat, GlobalEvaluation
 from utils import (
     cmd,
-    save_pkl,
-    parse_raw_metrics,
-    parse_server_eval_metrics,
     generate_labels_map,
     readable_time,
-    save_arbitrary_json,
-    split_df_by_type,
     get_model_size,
+)
+
+from data_utils import (
+    save_experiment_data,
+    parse_raw_metrics,
+    parse_server_eval_metrics,
+    split_df_by_type,
 )
 
 from datetime import datetime
@@ -268,14 +270,9 @@ def main(grid: Grid, context: Context) -> None:
     # Save final model to disk
     state_dict = result.arrays.to_torch_state_dict()
 
-    # evaluate accuracy per class
+    # calculate global metrics
     global_model.load_state_dict(state_dict)
     global_labels_map = generate_labels_map(global_classes)
-    # true_values, pred_values = get_true_and_pred_values(test_dataloader, global_model)
-    # eval_results = acc_per_class(
-    #     true_values, pred_values, out_features, global_labels_map
-    # )
-    # display_acc_logs(eval_results)
     global_metrics = eval_per_class(
         test_dataloader, global_model, out_features, global_labels_map
     )
@@ -291,6 +288,43 @@ def main(grid: Grid, context: Context) -> None:
     print(f"{'='*50}\n")
 
     the_time = datetime.strftime(datetime.now(), "%d.%m.26-%H:%M:%S")
+
+    # saving data
+    print(f"\n{'='*50}")
+    print("\nSaving Experiment Data...\n")
+
+    experiment_config = {
+        "dataset-name": dataset_name,
+        "model-name": model_name,
+        "num-rounds": num_rounds,
+        "epochs": epochs,
+        "batch-size": batch_size,
+        "features-lr": features_lr,
+        "classifier-lr": classifier_lr,
+        "weight-decay": weight_decay,
+        "mixer": mixer,
+        "proximal-mu": proximal_mu,
+        "use-custom-agg": use_custom_agg,
+        "use-global-weights": use_global_weights,
+        "use-loss-masking": use_loss_masking,
+        "total-training-time": readable_time(train_end - start_time),
+    }
+    save_experiment_data(
+        save_dir="/root/data/experiments",
+        dataset_name=dataset_name,
+        model_name=model_name,
+        train_replies=train_replies,
+        result=result,
+        state_dict=state_dict,
+        config_dict=experiment_config,
+        global_metrics=global_metrics,
+    )
+    eval_end = time.perf_counter()
+    print(f"\n{'='*50}")
+    print(f" Total evaluation time: {readable_time(eval_end - train_end)}")
+    print(f" Total experiment time: {readable_time(eval_end - start_time)}")
+    print(f"{'='*50}\n")
+
     # model_path = f"/root/data/models/{dataset_name}_{model_name}_epochs:{epochs}_f-lr:{features_lr}_c-lr:{classifier_lr}_batch-size:{batch_size}_aug:{mixer}_{the_time}.pt"
     # os.makedirs(os.path.dirname(model_path), exist_ok=True)
     # print("\nSaving final model to disk...")
@@ -304,29 +338,9 @@ def main(grid: Grid, context: Context) -> None:
     # data_df = parse_raw_metrics(train_replies)
     # data_df.to_csv(csv_data_path, index=False)
 
-    print("\n\nSaving Server Evaluation Metrics Data...\n")
+    # print("\n\nSaving Server Evaluation Metrics Data...\n")
     # raw_eval_data_path = f"/root/data/metrics/{dataset_name}/{data_name}_eval.pkl"
     # csv_eval_data_path = f"/root/data/metrics/{dataset_name}/{data_name}_eval.csv"
-
-    # == ignore these, they're just for testing=================================
-
-    global_model_size = get_model_size(global_model)
-    print(f"\n{global_model_size = }\n")
-
-    print(result.evaluate_metrics_serverapp)
-    eval_data = parse_server_eval_metrics(result.evaluate_metrics_serverapp)
-    print(eval_data)
-
-    print(result.train_metrics_clientapp)
-    print(f"\n{'-'*10} Training replies {'-'*20}\n")
-    print(f"{train_replies = }")
-
-    train_data = parse_raw_metrics(train_replies)
-    train_data, _ = split_df_by_type(train_data)
-    print(train_data)
-
-    # ============================================================================
-
     # save_pkl(raw_eval_data_path, result.evaluate_metrics_serverapp)
     # eval_data_df = parse_server_eval_metrics(result.evaluate_metrics_serverapp)
     # eval_data_df.to_csv(csv_eval_data_path, index=False)

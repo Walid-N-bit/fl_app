@@ -381,10 +381,10 @@ def display_metrics(metrics: dict, class_names: list[str]):
     """Pretty prints the metrics dictionary."""
 
     print("\n--- Global Metrics ---")
-    print(f"Overall Accuracy:  {metrics['global_accuracy']:.4f}")
-    print(f"Macro Precision:   {metrics['global_precision']:.4f}")
-    print(f"Macro Recall:      {metrics['global_recall']:.4f}")
-    print(f"Macro F1-Score:    {metrics['global_f1']:.4f}")
+    print(f"Overall Accuracy:  {metrics['accuracy']:.4f}")
+    print(f"Macro Precision:   {metrics['precision']:.4f}")
+    print(f"Macro Recall:      {metrics['recall']:.4f}")
+    print(f"Macro F1-Score:    {metrics['f1']:.4f}")
 
     print("\n--- Per-Class Accuracy ---")
     per_class_acc = metrics["per-class-accuracy"]
