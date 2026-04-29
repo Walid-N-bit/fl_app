@@ -382,7 +382,7 @@ def train(msg: Message, context: Context):
             "classifier-lr": c_lrs,  # currently used for the whole model
             "features-lr": f_lrs,  # currently useless
             "per-class-accuracy": local_metrics["per-class-accuracy"],
-            "confusion-matrix": local_metrics["confusion-matrix"],
+            # "confusion-matrix": local_metrics["confusion-matrix"],
         }
     )
 
