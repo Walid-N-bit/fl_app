@@ -114,6 +114,9 @@ class CustomStrat(FedProx):
 
             ################################################
             ################################################
+            # START: Round Time Measurement
+            round_start_time = time.time()
+
             # adding current-round to train_config for logging
             train_config.update({"current-round": current_round})
             ################################################
@@ -226,6 +229,17 @@ class CustomStrat(FedProx):
 
             #################################################################
             #################################################################
+            # END: Round Time Measurement
+            round_duration = time.time() - round_start_time
+
+            # Include in the aggregated metrics (safe check)
+            if agg_train_metrics is not None:
+                agg_train_metrics["round-time"] = round_duration
+            else:
+                # If no metrics returned, create a minimal record to store time
+                agg_train_metrics = MetricRecord({"round-time": round_duration})
+            #################################################################
+            #################################################################
 
         log(INFO, "")
         log(INFO, "Strategy execution finished in %.2fs", time.time() - t_start)
@@ -259,28 +273,56 @@ class CustomStrat(FedProx):
 
         return prep_replies
 
+    # def compile_clients_metrics(self, replies: Iterable[Message]) -> list:
+    #     """
+    #     parse replies data and return a dict for metrics and the client that produced them
+
+    #     :param replies: message replies from clients
+    #     :type replies: Iterable[Message]
+    #     :return: data to be returned to server
+    #     :rtype: dict
+    #     """
+    #     round_metrics = []
+    #     for msg in replies:
+    #         if not msg.has_content():
+    #             continue
+    #         configs = msg.content["configs"]
+    #         metrics = msg.content["metrics"]
+    #         keys = metrics.keys()
+    #         item = {
+    #             "client-name": configs.get("client-name"),
+    #             "local-classes": configs.get("local-classes"),
+    #         }
+    #         for k in keys:
+    #             item[k] = metrics.get(k)
+    #         round_metrics.append(item)
+
+    #     return round_metrics
     def compile_clients_metrics(self, replies: Iterable[Message]) -> list:
         """
-        parse replies data and return a dict for metrics and the client that produced them
-
-        :param replies: message replies from clients
-        :type replies: Iterable[Message]
-        :return: data to be returned to server
-        :rtype: dict
+        Extracts history lists from ConfigRecord and scalar metrics from MetricRecord.
         """
         round_metrics = []
+
         for msg in replies:
             if not msg.has_content():
                 continue
-            configs = msg.content["configs"]
-            metrics = msg.content["metrics"]
-            keys = metrics.keys()
-            item = {
-                "client-name": configs.get("client-name"),
-                "local-classes": configs.get("local-classes"),
-            }
-            for k in keys:
-                item[k] = metrics.get(k)
+
+            # 1. Get the History Data (Lists) from ConfigRecord
+            configs = msg.content.get("configs", ConfigRecord())
+
+            # 2. Get the Scalar Data (Final epoch values) from MetricRecord
+            metrics = msg.content.get("metrics", MetricRecord())
+
+            # 3. Merge them into one dictionary for your parser
+            # Note: We convert Record types to standard dicts for easier handling
+            item = dict(configs)  # Start with history data
+
+            # Add scalars with a prefix or distinct name to avoid key collisions
+            # e.g. "final-train-acc"
+            for k, v in metrics.items():
+                item[f"final-{k}"] = v
+
             round_metrics.append(item)
 
         return round_metrics

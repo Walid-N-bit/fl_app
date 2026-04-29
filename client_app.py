@@ -19,7 +19,6 @@ from model_functions import (
 
 from wheat_data_utils import WheatImgDataset
 
-
 client = ClientApp()
 
 DEV = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -358,14 +357,10 @@ def train(msg: Message, context: Context):
     # Construct and return reply Message
     model_record = ArrayRecord(model.state_dict())
     metrics = {
-        "classifier-lr": c_lrs,
-        "features-lr": f_lrs,
-        "train-acc": train_acc_data,
-        "train-loss": train_loss_data,
-        "val-acc": val_acc_data,
-        "val-loss": val_loss_data,
-        "train-time": train_times,
-        "epoch": passed_epochs,
+        "train-acc": train_acc_data[-1] if train_acc_data else 0.0,
+        "train-loss": train_loss_data[-1] if train_loss_data else 0.0,
+        "val-acc": val_acc_data[-1] if val_acc_data else 0.0,
+        "val-loss": val_loss_data[-1] if val_loss_data else 0.0,
         "num-examples": len(trainloader.dataset),
     }
     metric_record = MetricRecord(metrics)
@@ -374,6 +369,10 @@ def train(msg: Message, context: Context):
             "client-name": node_name,
             "local-classes": local_classes,
             "local-labels": labels,
+            "train-time": train_times,
+            "epoch": passed_epochs,
+            "classifier-lr": c_lrs,  # currently used for the whole model
+            "features-lr": f_lrs,  # currently useless
         }
     )
 

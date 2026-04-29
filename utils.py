@@ -1,6 +1,7 @@
 import os, csv, json
 import torch
 import pandas as pd
+from typing import Any, Dict, List
 from torch.utils.data import Dataset
 
 from flwr.common import Message
@@ -12,16 +13,16 @@ fds = None  # Cache FederatedDataset
 
 pytorch_transforms = Compose([ToTensor(), Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))])
 
-DATA_COLUMNS = [
-    "epoch",
-    "features-lr",
-    "classifier-lr",
-    "train-acc",
-    "val-acc",
-    "train-loss",
-    "val-loss",
-    "train-time",
-]
+# DATA_COLUMNS = [
+#     "epoch",
+#     "features-lr",
+#     "classifier-lr",
+#     "train-acc",
+#     "val-acc",
+#     "train-loss",
+#     "val-loss",
+#     "train-time",
+# ]
 
 
 def cmd(input: str | list, passwd: bool = False, shell: bool = False) -> str:
@@ -133,68 +134,150 @@ def extend_dict(dicts: list[dict[str, list]]) -> dict:
     return data
 
 
-def client_metrics(epochs: int, client_metrics: dict) -> dict:
+# def client_metrics(epochs: int, client_metrics: dict) -> dict:
 
-    name = client_metrics.get("client-name")
-    client_name = [name for _ in range(epochs)]
-    data = {"client-name": client_name}
-    for key in DATA_COLUMNS:
-        data.update({key: client_metrics.get(key)})
-    return data
-
-
-def round_metrics(epochs: int, round: int, round_metrics: list[dict]) -> dict:
-
-    data = []
-    rounds = [round for _ in range(epochs)]
-    for client in round_metrics:
-        # print("\nclient to be processed: ", client)
-        client_data = client_metrics(epochs, client)
-        client_data.update({"round": rounds})
-        data.append(client_data)
-        # print("\npre-extended data: ", data)
-    data = extend_dict(data)
-    return data
+#     name = client_metrics.get("client-name")
+#     client_name = [name for _ in range(epochs)]
+#     data = {"client-name": client_name}
+#     for key in DATA_COLUMNS:
+#         data.update({key: client_metrics.get(key)})
+#     return data
 
 
-def parse_raw_metrics(raw_metrics: dict[list[dict[str, list]]]) -> pd.DataFrame:
+# def round_metrics(epochs: int, round: int, round_metrics: list[dict]) -> dict:
+
+#     data = []
+#     rounds = [round for _ in range(epochs)]
+#     for client in round_metrics:
+#         # print("\nclient to be processed: ", client)
+#         client_data = client_metrics(epochs, client)
+#         client_data.update({"round": rounds})
+#         data.append(client_data)
+#         # print("\npre-extended data: ", data)
+#     data = extend_dict(data)
+#     return data
+
+
+# def parse_raw_metrics(raw_metrics: dict[list[dict[str, list]]]) -> pd.DataFrame:
+#     """
+#     transform metrics into a dataframe
+
+#     :param raw_metrics: metrics from clients
+#     :type raw_metrics: list[dict]
+#     :return: Description
+#     :rtype: dict
+#     """
+
+#     data = []
+#     epochs = len(raw_metrics.get(1)[0].get("epoch"))
+#     # print(f"{epochs = }")
+#     for round in raw_metrics:
+#         round_data = round_metrics(epochs, round, raw_metrics[round])
+#         data.append(round_data)
+#     # print(f"\n{data = }")
+
+#     data = extend_dict(data)
+#     return pd.DataFrame(data)
+
+
+# def parse_server_eval_metrics(metrics: dict[int, dict]) -> pd.DataFrame:
+#     """
+#     transform evaluation metrics from the server to pandas dataframe
+
+#     :param metrics: raw metrics data
+#     :type metrics: dict[int, dict]
+#     :return: metrics dataframe
+#     :rtype: DataFrame
+#     """
+#     keys = metrics.get(0).keys()
+#     data = {k: [] for k in keys}
+#     for i in metrics:
+#         round_metrics = metrics.get(i)
+#         for k in keys:
+#             data[k].append(round_metrics.get(k))
+#     return pd.DataFrame(data)
+
+
+def parse_raw_metrics(raw_metrics: dict[int, list[dict[str, Any]]]) -> pd.DataFrame:
     """
-    transform metrics into a dataframe
+    Transforms nested raw metrics into a Pandas DataFrame dynamically.
+    Handles both list-based metrics (epochs) and scalar values (metadata) automatically.
 
-    :param raw_metrics: metrics from clients
-    :type raw_metrics: list[dict]
-    :return: Description
-    :rtype: dict
+    Args:
+        raw_metrics: Dictionary mapping round numbers to lists of client metric dicts.
+                     Client dicts contain both scalar values (e.g., 'client-name')
+                     and list values (e.g., 'train-loss' per epoch).
+
+    Returns:
+        A flat Pandas DataFrame where each row corresponds to one epoch of one client.
     """
+    rows = []
 
-    data = []
-    epochs = len(raw_metrics.get(1)[0].get("epoch"))
-    # print(f"{epochs = }")
-    for round in raw_metrics:
-        round_data = round_metrics(epochs, round, raw_metrics[round])
-        data.append(round_data)
-    # print(f"\n{data = }")
+    for round_id, client_list in raw_metrics.items():
+        for client_data in client_list:
+            if not client_data:
+                continue
 
-    data = extend_dict(data)
-    return pd.DataFrame(data)
+            # 1. Separate scalars (metadata) from lists (time-series metrics)
+            # We assume metrics that vary per epoch are lists, and constants are scalars.
+            scalars = {k: v for k, v in client_data.items() if not isinstance(v, list)}
+            series_data = {k: v for k, v in client_data.items() if isinstance(v, list)}
+
+            # 2. Determine the number of epochs (steps) from the first available list
+            # If no lists exist (e.g., only scalars returned), we create 1 row.
+            num_steps = 0
+            for v in series_data.values():
+                if len(v) > 0:
+                    num_steps = len(v)
+                    break
+
+            if num_steps == 0 and scalars:
+                # Handle case where client only returned scalars
+                row = {"round": round_id, **scalars}
+                rows.append(row)
+                continue
+
+            # 3. Flatten the lists into individual rows
+            for i in range(num_steps):
+                row = {"round": round_id}
+
+                # Add metadata (repeated for each epoch row)
+                row.update(scalars)
+
+                # Add the specific value for this epoch index 'i'
+                for key, values in series_data.items():
+                    # Check bounds to prevent errors if lists are uneven
+                    row[key] = values[i] if i < len(values) else None
+
+                rows.append(row)
+
+    # 4. Create DataFrame
+    df = pd.DataFrame(rows)
+
+    # Optional: Reorder columns to put important identifiers first
+    # This is dynamic but puts 'round', 'client-name' at the front if they exist
+    priority_cols = ["round", "client-name"]
+    existing_priority = [c for c in priority_cols if c in df.columns]
+    other_cols = [c for c in df.columns if c not in existing_priority]
+
+    return df[existing_priority + other_cols]
 
 
-def parse_server_eval_metrics(metrics: dict[int, dict]) -> pd.DataFrame:
+def parse_server_eval_metrics(metrics: dict[int, dict[str, Any]]) -> pd.DataFrame:
     """
-    transform evaluation metrics from the server to pandas dataframe
+    Transforms server evaluation metrics into a DataFrame.
 
-    :param metrics: raw metrics data
-    :type metrics: dict[int, dict]
-    :return: metrics dataframe
-    :rtype: DataFrame
+    Args:
+        metrics: Dictionary mapping round numbers to metric dictionaries.
+
+    Returns:
+        A Pandas DataFrame with one row per round.
     """
-    keys = metrics.get(0).keys()
-    data = {k: [] for k in keys}
-    for i in metrics:
-        round_metrics = metrics.get(i)
-        for k in keys:
-            data[k].append(round_metrics.get(k))
-    return pd.DataFrame(data)
+    # The simplest way to handle dynamic dict->DataFrame conversion
+    # We add the round key to the dictionary for each row
+    rows = [{"round": r, **data} for r, data in metrics.items()]
+
+    return pd.DataFrame(rows)
 
 
 def save_csv(fields: list, data: list, path: str):

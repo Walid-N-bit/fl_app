@@ -286,10 +286,6 @@ def acc_per_class(
     return correct_pred
 
 
-# def eval_per_class(testloader, model, out_features: int, labels_map: dict):
-#     true_values, pred_values = get_true_and_pred_values(testloader, model)
-#     eval_results = acc_per_class(true_values, pred_values, out_features, labels_map)
-#     display_acc_logs(eval_results)
 def eval_per_class(testloader, model, out_features: int, labels_map: dict):
     # 1. Get Tensors
     pred_tensor, true_tensor = get_true_and_pred_values(testloader, model)
@@ -304,6 +300,7 @@ def eval_per_class(testloader, model, out_features: int, labels_map: dict):
 
     # 3. Display
     display_metrics(metrics, class_names)
+    return metrics
 
 
 def get_metrics(

@@ -289,51 +289,51 @@ def main(grid: Grid, context: Context) -> None:
     print(f"{'='*50}\n")
 
     the_time = datetime.strftime(datetime.now(), "%d.%m.26-%H:%M:%S")
-    model_path = f"/root/data/models/{dataset_name}_{model_name}_epochs:{epochs}_f-lr:{features_lr}_c-lr:{classifier_lr}_batch-size:{batch_size}_aug:{mixer}_{the_time}.pt"
-    os.makedirs(os.path.dirname(model_path), exist_ok=True)
-    print("\nSaving final model to disk...")
-    torch.save(state_dict, model_path)
+    # model_path = f"/root/data/models/{dataset_name}_{model_name}_epochs:{epochs}_f-lr:{features_lr}_c-lr:{classifier_lr}_batch-size:{batch_size}_aug:{mixer}_{the_time}.pt"
+    # os.makedirs(os.path.dirname(model_path), exist_ok=True)
+    # print("\nSaving final model to disk...")
+    # torch.save(state_dict, model_path)
 
-    print("\n\nSaving Clients Metrics Data...\n")
-    data_name = f"{model_name}_epochs:{epochs}_f-lr:{features_lr}_c-lr:{classifier_lr}_batch-size:{batch_size}_aug:{mixer}_{the_time}"
-    raw_data_path = f"/root/data/metrics/{dataset_name}/{data_name}.pkl"
-    csv_data_path = f"/root/data/metrics/{dataset_name}/{data_name}.csv"
-    save_pkl(raw_data_path, train_replies)
-    data_df = parse_raw_metrics(train_replies)
-    data_df.to_csv(csv_data_path, index=False)
+    # print("\n\nSaving Clients Metrics Data...\n")
+    # data_name = f"{model_name}_epochs:{epochs}_f-lr:{features_lr}_c-lr:{classifier_lr}_batch-size:{batch_size}_aug:{mixer}_{the_time}"
+    # raw_data_path = f"/root/data/metrics/{dataset_name}/{data_name}.pkl"
+    # csv_data_path = f"/root/data/metrics/{dataset_name}/{data_name}.csv"
+    # save_pkl(raw_data_path, train_replies)
+    # data_df = parse_raw_metrics(train_replies)
+    # data_df.to_csv(csv_data_path, index=False)
 
     print("\n\nSaving Server Evaluation Metrics Data...\n")
-    raw_eval_data_path = f"/root/data/metrics/{dataset_name}/{data_name}_eval.pkl"
-    csv_eval_data_path = f"/root/data/metrics/{dataset_name}/{data_name}_eval.csv"
+    # raw_eval_data_path = f"/root/data/metrics/{dataset_name}/{data_name}_eval.pkl"
+    # csv_eval_data_path = f"/root/data/metrics/{dataset_name}/{data_name}_eval.csv"
     print(result.evaluate_metrics_serverapp)
-    save_pkl(raw_eval_data_path, result.evaluate_metrics_serverapp)
-    eval_data_df = parse_server_eval_metrics(result.evaluate_metrics_serverapp)
-    eval_data_df.to_csv(csv_eval_data_path, index=False)
+    # save_pkl(raw_eval_data_path, result.evaluate_metrics_serverapp)
+    # eval_data_df = parse_server_eval_metrics(result.evaluate_metrics_serverapp)
+    # eval_data_df.to_csv(csv_eval_data_path, index=False)
 
-    # save experiment data (configs + final results)
-    client_name = cmd("hostname").strip()
-    json_path = f"/root/data/experiments/{dataset_name}_{the_time}.json"
-    os.makedirs(os.path.dirname(json_path), exist_ok=True)
-    save_arbitrary_json(
-        path=json_path,
-        client_name=client_name,
-        dataset_name=dataset_name,
-        model_name=model_name,
-        epochs=epochs,
-        num_rounds=num_rounds,
-        freeze=True if freeze else False,
-        batch_size=batch_size,
-        use_sampler=True if use_sampler else False,
-        num_workers=num_workers,
-        features_lr=features_lr,
-        classifier_lr=classifier_lr,
-        weight_decay=weight_decay,
-        sch_patience=sch_patience,
-        use_weights=True if use_weights else False,
-        mixer=mixer,
-        proximal_mu=proximal_mu,
-        use_custom_agg=True if use_custom_agg else False,
-        use_global_weights=True if use_global_weights else False,
-        use_loss_masking=True if use_loss_masking else False,
-        agg_metrics={i: dict(m) for i, m in result.evaluate_metrics_serverapp.items()},
-    )
+    # # save experiment data (configs + final results)
+    # client_name = cmd("hostname").strip()
+    # json_path = f"/root/data/experiments/{dataset_name}_{the_time}.json"
+    # os.makedirs(os.path.dirname(json_path), exist_ok=True)
+    # save_arbitrary_json(
+    #     path=json_path,
+    #     client_name=client_name,
+    #     dataset_name=dataset_name,
+    #     model_name=model_name,
+    #     epochs=epochs,
+    #     num_rounds=num_rounds,
+    #     freeze=True if freeze else False,
+    #     batch_size=batch_size,
+    #     use_sampler=True if use_sampler else False,
+    #     num_workers=num_workers,
+    #     features_lr=features_lr,
+    #     classifier_lr=classifier_lr,
+    #     weight_decay=weight_decay,
+    #     sch_patience=sch_patience,
+    #     use_weights=True if use_weights else False,
+    #     mixer=mixer,
+    #     proximal_mu=proximal_mu,
+    #     use_custom_agg=True if use_custom_agg else False,
+    #     use_global_weights=True if use_global_weights else False,
+    #     use_loss_masking=True if use_loss_masking else False,
+    #     agg_metrics={i: dict(m) for i, m in result.evaluate_metrics_serverapp.items()},
+    # )
