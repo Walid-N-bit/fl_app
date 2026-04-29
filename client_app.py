@@ -8,7 +8,7 @@ import time
 import numpy as np
 import json
 import os
-from utils import end_of_training_msg, pick_mixer, cmd
+from utils import end_of_training_msg, pick_mixer, cmd, get_model_size
 from model_functions import (
     train as train_fn,
     test as test_fn,
@@ -352,7 +352,10 @@ def train(msg: Message, context: Context):
     )
 
     print("\nPer-class local evaluation:\n")
-    eval_per_class(testloader, model, out_features, local_labels_map)
+    metrics = eval_per_class(testloader, model, out_features, local_labels_map)
+
+    model_size = get_model_size(model)
+    print(f"\n{model_size = }\n")
 
     # Construct and return reply Message
     model_record = ArrayRecord(model.state_dict())

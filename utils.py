@@ -378,3 +378,22 @@ def save_arbitrary_json(path: str, **kwargs):
 
     with open(path, "w") as f:
         json.dump(kwargs, f, indent=4)
+
+
+def get_model_size(model):
+    """
+    calculate the size of a model in MB
+
+    :param model: model
+    :return: size in MB
+    :rtype: float
+    """
+    param_size = 0
+    for param in model.parameters():
+        param_size += param.nelement() * param.element_size()
+    buffer_size = 0
+    for buffer in model.buffers():
+        buffer_size += buffer.nelement() * buffer.element_size()
+
+    size_all_mb = (param_size + buffer_size) / 1024**2
+    return size_all_mb
