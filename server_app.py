@@ -278,7 +278,11 @@ def main(grid: Grid, context: Context) -> None:
     #     true_values, pred_values, out_features, global_labels_map
     # )
     # display_acc_logs(eval_results)
-    eval_per_class(test_dataloader, global_model, out_features, global_labels_map)
+    global_metrics = eval_per_class(
+        test_dataloader, global_model, out_features, global_labels_map
+    )
+
+    print(f"\n{global_metrics = }\n")
 
     # end time messages
     eval_end = time.perf_counter()
