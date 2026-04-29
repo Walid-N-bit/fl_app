@@ -259,9 +259,6 @@ def main(grid: Grid, context: Context) -> None:
         use_custom_agg=use_custom_agg,
     )
 
-    # final_metrics = global_evaluate(global_model, num_rounds, result.arrays)
-    # aggregated_metrics = result.evaluate_metrics_serverapp
-    # print(f"\nAggregated metrics:\n{aggregated_metrics}\n")
 
     train_end = time.perf_counter()
     print(f"\n{'='*50}")

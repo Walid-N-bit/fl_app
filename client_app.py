@@ -14,6 +14,7 @@ from model_functions import (
     test as test_fn,
     choose_model,
     eval_per_class,
+    display_metrics,
     EarlyStop,
 )
 
@@ -352,7 +353,7 @@ def train(msg: Message, context: Context):
     )
 
     print("\nPer-class local evaluation:\n")
-    metrics = eval_per_class(testloader, model, out_features, local_labels_map)
+    local_metrics = eval_per_class(testloader, model, out_features, local_labels_map)
 
     model_size = get_model_size(model)
     print(f"\n{model_size = }\n")
@@ -364,8 +365,12 @@ def train(msg: Message, context: Context):
         "train-loss": train_loss_data[-1] if train_loss_data else 0.0,
         "val-acc": val_acc_data[-1] if val_acc_data else 0.0,
         "val-loss": val_loss_data[-1] if val_loss_data else 0.0,
+        "precision": local_metrics["precision"],
+        "recall": local_metrics["recall"],
+        "f1": local_metrics["f1"],
         "num-examples": len(trainloader.dataset),
     }
+
     metric_record = MetricRecord(metrics)
     config_record = ConfigRecord(
         {
@@ -376,6 +381,8 @@ def train(msg: Message, context: Context):
             "epoch": passed_epochs,
             "classifier-lr": c_lrs,  # currently used for the whole model
             "features-lr": f_lrs,  # currently useless
+            "per-class-accuracy": local_metrics["per-class-accuracy"],
+            "confusion-matrix": local_metrics["confusion-matrix"],
         }
     )
 

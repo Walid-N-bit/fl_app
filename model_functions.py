@@ -11,7 +11,7 @@ from torchvision.models import (
 import torchmetrics
 
 from wheat_data_utils import get_class_weights
-from typing import Literal
+from typing import Literal, Any
 
 from CustomClasses import ConvolutionalNeuralNetwork as CNN
 
@@ -300,6 +300,7 @@ def eval_per_class(testloader, model, out_features: int, labels_map: dict):
 
     # 3. Display
     display_metrics(metrics, class_names)
+
     return metrics
 
 
@@ -308,67 +309,66 @@ def get_metrics(
     true_labels: torch.Tensor,
     num_classes: int,
     class_names: list[str] = None,
-) -> dict[str, torch.Tensor]:
+) -> dict[str, Any]:
     """
-    Calculates Accuracy, Precision, Recall, and F1.
-    Returns a dictionary containing both 'global' (average) and 'per_class' metrics.
+    Calculates metrics and returns Python built-in types (floats, lists)
+    suitable for Flower Records and JSON serialization.
     """
 
-    # 1. Global Metrics (Single number representing overall performance)
-    # 'macro' averages the metric for each class independently (good for imbalanced data)
-    # 'micro' calculates globally (equivalent to standard accuracy for multiclass)
+    # 1. Global Metrics (Convert 0-dim tensors to Python floats)
     acc = torchmetrics.functional.accuracy(
         pred_labels,
         true_labels,
         task="multiclass",
         num_classes=num_classes,
         average="micro",
-    )
-    precision_macro = torchmetrics.functional.precision(
+    ).item()
+    precision = torchmetrics.functional.precision(
         pred_labels,
         true_labels,
         task="multiclass",
         num_classes=num_classes,
         average="macro",
-    )
-    recall_macro = torchmetrics.functional.recall(
+    ).item()
+    recall = torchmetrics.functional.recall(
         pred_labels,
         true_labels,
         task="multiclass",
         num_classes=num_classes,
         average="macro",
-    )
-    f1_macro = torchmetrics.functional.f1_score(
+    ).item()
+    f1 = torchmetrics.functional.f1_score(
         pred_labels,
         true_labels,
         task="multiclass",
         num_classes=num_classes,
         average="macro",
-    )
+    ).item()
 
-    # 2. Per-Class Metrics (Replaces your manual acc_per_class function)
-    # average=None returns a tensor of shape (num_classes,) with score for each class
+    # 2. Per-Class & Matrix (Convert tensors to Python lists)
+    # average=None returns tensor of shape (C,) -> .tolist() creates a flat list
     acc_per_class = torchmetrics.functional.accuracy(
         pred_labels,
         true_labels,
         task="multiclass",
         num_classes=num_classes,
         average=None,
-    )
+    ).tolist()
 
-    # 3. Confusion Matrix (Great for seeing which classes get mixed up)
-    # Shape: (num_classes, num_classes)
+    # Confusion Matrix -> .tolist() creates a nested list [[...], [...]]
     conf_matrix = torchmetrics.functional.confusion_matrix(
         pred_labels, true_labels, task="multiclass", num_classes=num_classes
-    )
+    ).tolist()
 
     metrics = {
-        "global_accuracy": acc,
-        "global_precision": precision_macro,
-        "global_recall": recall_macro,
-        "global_f1": f1_macro,
-        "per_class_accuracy": acc_per_class,  # Tensor of shape (C,)
-        "confusion_matrix": conf_matrix,  # Tensor of shape (C, C)
+        # Scalars for aggregation
+        "accuracy": acc,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1,
+        # Lists for detailed logs (JSON/DataFrame)
+        "per-class-accuracy": acc_per_class,
+        "confusion-matrix": conf_matrix,
     }
 
     return metrics
@@ -387,7 +387,7 @@ def display_metrics(metrics: dict, class_names: list[str]):
     print(f"Macro F1-Score:    {metrics['global_f1']:.4f}")
 
     print("\n--- Per-Class Accuracy ---")
-    per_class_acc = metrics["per_class_accuracy"]
+    per_class_acc = metrics["per-class-accuracy"]
     for i, name in enumerate(class_names):
         print(
             f"Accuracy for class: {name:10s} is {per_class_acc[i]:.1%}"
