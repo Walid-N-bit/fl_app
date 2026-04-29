@@ -315,7 +315,8 @@ def main(grid: Grid, context: Context) -> None:
     print(f"{train_replies = }")
 
     data = parse_raw_metrics(train_replies)
-    print(data)
+    for col in data.columns:
+        print(f"{col}:{data[col]}")
 
     # save_pkl(raw_eval_data_path, result.evaluate_metrics_serverapp)
     # eval_data_df = parse_server_eval_metrics(result.evaluate_metrics_serverapp)
