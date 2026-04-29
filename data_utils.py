@@ -45,63 +45,58 @@ def load_pkl(path: str):
 
 
 def parse_raw_metrics(raw_metrics: dict[int, list[dict[str, Any]]]) -> pd.DataFrame:
-    """
-    Transforms nested raw metrics into a Pandas DataFrame dynamically.
-    Handles both list-based metrics (epochs) and scalar values (metadata) automatically.
-
-    Args:
-        raw_metrics: Dictionary mapping round numbers to lists of client metric dicts.
-                     Client dicts contain both scalar values (e.g., 'client-name')
-                     and list values (e.g., 'train-loss' per epoch).
-
-    Returns:
-        A flat Pandas DataFrame where each row corresponds to one epoch of one client.
-    """
     rows = []
+
+    # Keys that should NOT be exploded (they are metadata lists, not time-series)
+    # Add any other keys here that are lists but describe the client config, not history.
+    METADATA_LIST_KEYS = {"local-classes", "local-labels", "per-class-accuracy"}
 
     for round_id, client_list in raw_metrics.items():
         for client_data in client_list:
             if not client_data:
                 continue
 
-            # 1. Separate scalars (metadata) from lists (time-series metrics)
-            # We assume metrics that vary per epoch are lists, and constants are scalars.
-            scalars = {k: v for k, v in client_data.items() if not isinstance(v, list)}
-            series_data = {k: v for k, v in client_data.items() if isinstance(v, list)}
+            # 1. Separate scalars, metadata lists, and time-series lists
+            scalars = {}
+            metadata_lists = {}  # Keep these as lists in the final row
+            series_data = {}  # These will be exploded into rows
 
-            # 2. Determine the number of epochs (steps) from the first available list
-            # If no lists exist (e.g., only scalars returned), we create 1 row.
+            for k, v in client_data.items():
+                if not isinstance(v, list):
+                    scalars[k] = v
+                elif k in METADATA_LIST_KEYS:
+                    metadata_lists[k] = v
+                else:
+                    # It's a list and not metadata -> treat as time-series
+                    series_data[k] = v
+
+            # 2. Determine number of steps (epochs) from series_data only
             num_steps = 0
             for v in series_data.values():
                 if len(v) > 0:
                     num_steps = len(v)
                     break
 
-            if num_steps == 0 and scalars:
-                # Handle case where client only returned scalars
-                row = {"round": round_id, **scalars}
+            # Handle case where there are no time-series metrics (just summaries)
+            if num_steps == 0:
+                row = {"round": round_id, **scalars, **metadata_lists}
                 rows.append(row)
                 continue
 
-            # 3. Flatten the lists into individual rows
+            # 3. Flatten ONLY the time-series lists
             for i in range(num_steps):
                 row = {"round": round_id}
-
-                # Add metadata (repeated for each epoch row)
                 row.update(scalars)
+                row.update(metadata_lists)  # Add the full list to every row
 
-                # Add the specific value for this epoch index 'i'
                 for key, values in series_data.items():
-                    # Check bounds to prevent errors if lists are uneven
                     row[key] = values[i] if i < len(values) else None
 
                 rows.append(row)
 
-    # 4. Create DataFrame
     df = pd.DataFrame(rows)
 
-    # Optional: Reorder columns to put important identifiers first
-    # This is dynamic but puts 'round', 'client-name' at the front if they exist
+    # Reorder columns logic...
     priority_cols = ["round", "client-name"]
     existing_priority = [c for c in priority_cols if c in df.columns]
     other_cols = [c for c in df.columns if c not in existing_priority]
@@ -151,6 +146,15 @@ def split_df_by_type(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     return df[scalar_cols], df[list_cols]
 
 
+def json_serializer(obj):
+    if isinstance(obj, torch.Tensor):
+        return obj.item() if obj.ndim == 0 else obj.tolist()
+    # FIX: Just check for Path, it covers both PosixPath and WindowsPath
+    if isinstance(obj, Path):
+        return str(obj)
+    raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
+
+
 def save_experiment_data(
     save_dir: str,
     dataset_name: str,
@@ -184,14 +188,6 @@ def save_experiment_data(
     print(f"\n{'='*50}")
     print(f"Saving experiment data to: {exp_path}")
     print(f"{'='*50}")
-
-    # Helper to sanitize tensors for JSON
-    def json_serializer(obj):
-        if isinstance(obj, torch.Tensor):
-            return obj.item() if obj.ndim == 0 else obj.tolist()
-        if isinstance(obj, (Path, PosixPath)):
-            return str(obj)
-        raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
 
     # 2. Save Model State Dict
     model_path = exp_path / "model.pt"
