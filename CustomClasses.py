@@ -37,7 +37,7 @@ class CustomStrat(FedProx):
         evaluate_config: ConfigRecord | None = None,
         evaluate_fn: Callable[[int, ArrayRecord], MetricRecord | None] | None = None,
         use_custom_agg: int = 0,
-    ) -> tuple[list[Iterable[Message]], list[Iterable[Message]], Result]:
+    ) -> tuple[dict[int, Iterable[Message]], dict[int, Iterable[Message]], Result]:
         """
         Override start() method to return both replies and the result
         """

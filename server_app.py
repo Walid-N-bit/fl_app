@@ -311,6 +311,16 @@ def main(grid: Grid, context: Context) -> None:
     # csv_eval_data_path = f"/root/data/metrics/{dataset_name}/{data_name}_eval.csv"
     print(result.evaluate_metrics_serverapp)
     print(result.train_metrics_clientapp)
+    print(f"\n{'-'*10} Training replies {'-'*20}\n")
+    for round in train_replies:
+        print(f"{round = }")
+        item = train_replies[round]
+        for msg in item:
+            print(f"{msg.content = }")
+    
+    data = parse_raw_metrics(train_replies)
+    print(data)
+
     # save_pkl(raw_eval_data_path, result.evaluate_metrics_serverapp)
     # eval_data_df = parse_server_eval_metrics(result.evaluate_metrics_serverapp)
     # eval_data_df.to_csv(csv_eval_data_path, index=False)
