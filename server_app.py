@@ -312,12 +312,8 @@ def main(grid: Grid, context: Context) -> None:
     print(result.evaluate_metrics_serverapp)
     print(result.train_metrics_clientapp)
     print(f"\n{'-'*10} Training replies {'-'*20}\n")
-    for round in train_replies:
-        print(f"{round = }")
-        item = train_replies[round]
-        for msg in item:
-            print(f"{msg.content = }")
-    
+    print(f"{train_replies = }")
+
     data = parse_raw_metrics(train_replies)
     print(data)
 
