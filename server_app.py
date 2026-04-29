@@ -12,6 +12,7 @@ from utils import (
     readable_time,
     save_arbitrary_json,
     split_df_by_type,
+    get_model_size,
 )
 
 from datetime import datetime
@@ -259,7 +260,6 @@ def main(grid: Grid, context: Context) -> None:
         use_custom_agg=use_custom_agg,
     )
 
-
     train_end = time.perf_counter()
     print(f"\n{'='*50}")
     print(f" Total training time: {readable_time(train_end - start_time)}")
@@ -309,6 +309,10 @@ def main(grid: Grid, context: Context) -> None:
     # csv_eval_data_path = f"/root/data/metrics/{dataset_name}/{data_name}_eval.csv"
 
     # == ignore these, they're just for testing=================================
+
+    global_model_size = get_model_size(global_model)
+    print(f"\n{global_model_size = }\n")
+
     print(result.evaluate_metrics_serverapp)
     eval_data = parse_server_eval_metrics(result.evaluate_metrics_serverapp)
     print(eval_data)
