@@ -397,3 +397,28 @@ def get_model_size(model):
 
     size_all_mb = (param_size + buffer_size) / 1024**2
     return size_all_mb
+
+
+def split_df_by_type(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Splits a DataFrame into two based on column content types.
+
+    Returns:
+        df_scalars: Columns containing single numbers/strings (good for plots/stats).
+        df_lists:   Columns containing lists/objects (good for inspection/exploding).
+    """
+    scalar_cols = []
+    list_cols = []
+
+    # Iterate over the first row to determine types
+    # We assume the first row is representative of the whole column
+    if not df.empty:
+        first_row = df.iloc[0]
+        for col in df.columns:
+            # Check if the value is a list
+            if isinstance(first_row[col], list):
+                list_cols.append(col)
+            else:
+                scalar_cols.append(col)
+
+    return df[scalar_cols], df[list_cols]

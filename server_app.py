@@ -11,6 +11,7 @@ from utils import (
     generate_labels_map,
     readable_time,
     save_arbitrary_json,
+    split_df_by_type,
 )
 
 from datetime import datetime
@@ -309,15 +310,21 @@ def main(grid: Grid, context: Context) -> None:
     print("\n\nSaving Server Evaluation Metrics Data...\n")
     # raw_eval_data_path = f"/root/data/metrics/{dataset_name}/{data_name}_eval.pkl"
     # csv_eval_data_path = f"/root/data/metrics/{dataset_name}/{data_name}_eval.csv"
+
+    # == ignore these, they're just for testing=================================
     print(result.evaluate_metrics_serverapp)
+    eval_data = parse_server_eval_metrics(result.evaluate_metrics_serverapp)
+    print(eval_data)
+
     print(result.train_metrics_clientapp)
     print(f"\n{'-'*10} Training replies {'-'*20}\n")
     print(f"{train_replies = }")
 
-    data = parse_raw_metrics(train_replies)
-    for col in data.columns:
-        if col not in ["features-lr", "classifier-lr", "local-classes", "local-labels"]:
-            print(f"{col}:\n{data[col]}")
+    train_data = parse_raw_metrics(train_replies)
+    train_data, _ = split_df_by_type(train_data)
+    print(train_data)
+
+    # ============================================================================
 
     # save_pkl(raw_eval_data_path, result.evaluate_metrics_serverapp)
     # eval_data_df = parse_server_eval_metrics(result.evaluate_metrics_serverapp)
