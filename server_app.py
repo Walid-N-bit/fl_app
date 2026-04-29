@@ -310,6 +310,7 @@ def main(grid: Grid, context: Context) -> None:
     # raw_eval_data_path = f"/root/data/metrics/{dataset_name}/{data_name}_eval.pkl"
     # csv_eval_data_path = f"/root/data/metrics/{dataset_name}/{data_name}_eval.csv"
     print(result.evaluate_metrics_serverapp)
+    print(result.train_metrics_clientapp)
     # save_pkl(raw_eval_data_path, result.evaluate_metrics_serverapp)
     # eval_data_df = parse_server_eval_metrics(result.evaluate_metrics_serverapp)
     # eval_data_df.to_csv(csv_eval_data_path, index=False)
