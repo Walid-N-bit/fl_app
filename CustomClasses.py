@@ -247,6 +247,7 @@ class CustomStrat(FedProx):
                     # Get the specific training time for this client (from MetricRecord)
                     # Note: Ensure your compile_clients_metrics merges the MetricRecord keys
                     client_train_time = client_data.get("train-time", 0)
+                    print(f"{client_data = }\n")
                     print(f"{round_duration = }\n")
                     print(f"{client_train_time = }\n")
 
