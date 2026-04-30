@@ -8,7 +8,7 @@ import time
 import numpy as np
 import json
 import os
-from utils import end_of_training_msg, pick_mixer, cmd, get_model_size
+from utils import end_of_training_msg, pick_mixer, cmd, get_model_size, bordered_print
 from model_functions import (
     train as train_fn,
     test as test_fn,
@@ -341,18 +341,17 @@ def train(msg: Message, context: Context):
 
     end_of_training_msg(sum(train_times))
     local_model_path = f"/root/data/models/{node_name}_{dataset_name}_last_model.pt"
-    print(f"\nSaving local model...")
+    bordered_print("Saving local model...")
     os.makedirs(os.path.dirname(local_model_path), exist_ok=True)
     torch.save(model.state_dict(), local_model_path)
 
-    print(f"\n{'-'*50}")
-    print("\nGeneral evaluation:\n")
-    test_acc, test_loss = test_fn(model, testloader, loss_fn)
-    print(
-        f"Testing metrics:\n Accuracy: {(100*test_acc):>0.1f}%, Avg loss: {test_loss:>8f} \n"
-    )
+    # print("\nGeneral evaluation:\n")
+    # test_acc, test_loss = test_fn(model, testloader, loss_fn)
+    # print(
+    #     f"Testing metrics:\n Accuracy: {(100*test_acc):>0.1f}%, Avg loss: {test_loss:>8f} \n"
+    # )
 
-    print("\nPer-class local evaluation:\n")
+    print("\nLocal Evaluation:\n")
     local_metrics = eval_per_class(testloader, model, out_features, local_labels_map)
 
     model_size = get_model_size(model)

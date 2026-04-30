@@ -123,6 +123,11 @@ def extend_dict(dicts: list[dict[str, list]]) -> dict:
     return data
 
 
+def bordered_print(text: str):
+    print(f"\n{'='*len(text)}=")
+    print(f" {text}")
+    print(f"{'='*len(text)}=\n")
+
 
 def readable_time(seconds: float):
     return time.strftime("%H:%M:%S", time.gmtime(seconds))
