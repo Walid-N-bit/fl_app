@@ -395,7 +395,7 @@ def train(msg: Message, context: Context):
     content = RecordDict(
         {"arrays": model_record, "metrics": metric_record, "configs": config_record}
     )
-    print(f"\ndata packaging time = {time-time() - t0}s\n")
+    print(f"\ndata packaging time = {time.time() - t0}s\n")
 
     return Message(content=content, reply_to=msg)
 

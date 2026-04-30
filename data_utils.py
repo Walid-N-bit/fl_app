@@ -411,6 +411,7 @@ def save_experiment_data(
     #     print(f"Saved metadata -> {json_path.name}")
     # except Exception as e:
     #     print(f"Failed to save metadata: {e}")
+    
     # 7. Save Metadata (JSON with Client Specifics)
     try:
         # Dictionary to hold data for each client
