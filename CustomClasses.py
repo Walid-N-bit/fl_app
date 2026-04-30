@@ -358,7 +358,8 @@ class CustomStrat(FedProx):
             # Add scalars with a prefix or distinct name to avoid key collisions
             # e.g. "final-train-acc"
             for k, v in metrics.items():
-                item[f"final-{k}"] = v
+                # item[f"final-{k}"] = v
+                item[f"{k}"] = v
 
             round_metrics.append(item)
 
