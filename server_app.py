@@ -12,7 +12,6 @@ from utils import (
 
 from data_utils import (
     save_experiment_data,
-    
 )
 
 from datetime import datetime
@@ -293,11 +292,14 @@ def main(grid: Grid, context: Context) -> None:
     print(f"\n{'='*50}")
     print("\nSaving Experiment Data...\n")
 
+    exp_duration = eval_end - start_time
     experiment_config = {
         "dataset-name": dataset_name,
         "model-name": model_name,
         "num-rounds": num_rounds,
         "epochs": epochs,
+        "experiment-duration": exp_duration,
+        "readable-duration": readable_time(exp_duration),
         "batch-size": batch_size,
         "features-lr": features_lr,
         "classifier-lr": classifier_lr,
@@ -322,7 +324,7 @@ def main(grid: Grid, context: Context) -> None:
     eval_end = time.perf_counter()
     print(f"\n{'='*50}")
     print(f" Total evaluation time: {readable_time(eval_end - train_end)}")
-    print(f" Total experiment time: {readable_time(eval_end - start_time)}")
+    print(f" Total experiment time: {readable_time(exp_duration)}")
     print(f"{'='*50}\n")
 
     # model_path = f"/root/data/models/{dataset_name}_{model_name}_epochs:{epochs}_f-lr:{features_lr}_c-lr:{classifier_lr}_batch-size:{batch_size}_aug:{mixer}_{the_time}.pt"
