@@ -362,8 +362,8 @@ def train(msg: Message, context: Context):
     model_record = ArrayRecord(model.state_dict())
 
     total_train_time = time.time() - train_start_time
-    print(f"\n{total_train_time = }MB\n")
-
+    print(f"\n{total_train_time = }s\n")
+    t0 = time.time()
     metrics = {
         "accuracy": local_metrics["accuracy"],
         "precision": local_metrics["precision"],
@@ -395,6 +395,7 @@ def train(msg: Message, context: Context):
     content = RecordDict(
         {"arrays": model_record, "metrics": metric_record, "configs": config_record}
     )
+    print(f"\ndata packaging time = {time-time() - t0}s\n")
 
     return Message(content=content, reply_to=msg)
 

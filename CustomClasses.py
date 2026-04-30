@@ -114,8 +114,6 @@ class CustomStrat(FedProx):
 
             ################################################
             ################################################
-            # START: Round Time Measurement
-            round_start_time = time.time()
 
             # adding current-round to train_config for logging
             train_config.update({"current-round": current_round})
@@ -132,6 +130,11 @@ class CustomStrat(FedProx):
             # Call strategy to configure training round
             # Send messages and wait for replies
 
+            # START: Round Time Measurement
+            print(f"\n------- SENDING -------\n")
+
+            round_start_time = time.time()
+
             train_replies = grid.send_and_receive(
                 messages=self.configure_train(
                     current_round,
@@ -141,7 +144,7 @@ class CustomStrat(FedProx):
                 ),
                 timeout=timeout,
             )
-
+            print(f"\n------- RECEIVED -------\n")
             round_end_time = time.time()
             round_duration = round_end_time - round_start_time
 
