@@ -327,69 +327,6 @@ def parse_server_metrics_combined(
     return pd.DataFrame(rows)
 
 
-# def parse_raw_metrics(raw_metrics: dict[int, list[dict[str, Any]]]) -> pd.DataFrame:
-#     # This function is now superseded by the specific parsers above,
-#     # but kept here as it was in your provided code.
-#     rows = []
-#     METADATA_LIST_KEYS = {"local-classes", "local-labels", "per-class-accuracy"}
-
-#     for round_id, client_list in raw_metrics.items():
-#         for client_data in client_list:
-#             if not client_data:
-#                 continue
-#             scalars = {}
-#             metadata_lists = {}
-#             series_data = {}
-
-#             for k, v in client_data.items():
-#                 if not isinstance(v, list):
-#                     scalars[k] = v
-#                 elif k in METADATA_LIST_KEYS:
-#                     metadata_lists[k] = v
-#                 else:
-#                     series_data[k] = v
-
-#             num_steps = 0
-#             for v in series_data.values():
-#                 if len(v) > 0:
-#                     num_steps = len(v)
-#                     break
-
-#             if num_steps == 0:
-#                 row = {"round": round_id, **scalars, **metadata_lists}
-#                 rows.append(row)
-#                 continue
-
-#             for i in range(num_steps):
-#                 row = {"round": round_id}
-#                 row.update(scalars)
-#                 row.update(metadata_lists)
-#                 for key, values in series_data.items():
-#                     row[key] = values[i] if i < len(values) else None
-#                 rows.append(row)
-
-#     df = pd.DataFrame(rows)
-#     if df.empty:
-#         return df
-#     priority_cols = ["round", "client-name"]
-#     existing_priority = [c for c in priority_cols if c in df.columns]
-#     other_cols = [c for c in df.columns if c not in existing_priority]
-#     return df[existing_priority + other_cols]
-
-
-# def split_df_by_type(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
-#     scalar_cols = []
-#     list_cols = []
-#     if not df.empty:
-#         first_row = df.iloc[0]
-#         for col in df.columns:
-#             if isinstance(first_row[col], list):
-#                 list_cols.append(col)
-#             else:
-#                 scalar_cols.append(col)
-#     return df[scalar_cols], df[list_cols]
-
-
 def json_serializer(obj):
     if isinstance(obj, torch.Tensor):
         return obj.item() if obj.ndim == 0 else obj.tolist()
@@ -463,15 +400,43 @@ def save_experiment_data(
     except Exception as e:
         print(f"Failed to save server metrics: {e}")
 
-    # 7. Save Metadata (JSON)
+    # # 7. Save Metadata (JSON)
+    # try:
+    #     metadata = config_dict.copy()
+    #     metadata["final_global_metrics"] = global_metrics
+
+    #     json_path = exp_path / "metadata.json"
+    #     with open(json_path, "w") as f:
+    #         json.dump(metadata, f, indent=4, default=json_serializer)
+    #     print(f"Saved metadata -> {json_path.name}")
+    # except Exception as e:
+    #     print(f"Failed to save metadata: {e}")
+    # 7. Save Metadata (JSON with Client Specifics)
     try:
+        # Dictionary to hold data for each client
+        # We iterate through all rounds. If a client appears in multiple rounds,
+        # the data from the latest round will overwrite previous data (which is usually desired for 'final' state).
+        client_configs = {}
+
+        # Sort rounds to ensure we process in order (latest overwrites oldest)
+        for round_id in sorted(train_replies.keys()):
+            for client_data in train_replies[round_id]:
+                name = client_data.get("client-name")
+                if name:
+                    client_configs[name] = {
+                        "local-classes": client_data.get("local-classes"),
+                        "local-labels": client_data.get("local-labels"),
+                        "per-class-accuracy": client_data.get("per-class-accuracy"),
+                    }
+
         metadata = config_dict.copy()
         metadata["final_global_metrics"] = global_metrics
+        metadata["client_configs"] = client_configs
 
         json_path = exp_path / "metadata.json"
         with open(json_path, "w") as f:
             json.dump(metadata, f, indent=4, default=json_serializer)
-        print(f"Saved metadata -> {json_path.name}")
+        print(f"Saved metadata -> metadata.json")
     except Exception as e:
         print(f"Failed to save metadata: {e}")
 
