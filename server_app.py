@@ -275,7 +275,7 @@ def main(grid: Grid, context: Context) -> None:
     )
     global_model_size = get_model_size(global_model)
 
-    print(f"\n{global_metrics = }\n")
+    # print(f"\n{global_metrics = }\n")
     print(f"\n{global_model_size = }MB\n")
 
     # end time messages

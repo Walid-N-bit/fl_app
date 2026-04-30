@@ -265,7 +265,7 @@ class CustomStrat(FedProx):
 
             # Save to the main history dictionary
             clients_train_metrics[current_round] = current_round_client_metrics
-            print(f"{clients_train_metrics = }\n")
+            # print(f"{clients_train_metrics = }\n")
 
             # 4. Add to Aggregated Metrics for Server CSV
             if agg_train_metrics is not None:
@@ -276,7 +276,7 @@ class CustomStrat(FedProx):
             # print(f"{agg_train_metrics = }\n")
 
             result.train_metrics_clientapp[current_round] = agg_train_metrics
-            print(f"\n{'-'*50}\n")
+            # print(f"\n{'-'*50}\n")
 
             #################################################################
             #################################################################
