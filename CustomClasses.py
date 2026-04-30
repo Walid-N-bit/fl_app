@@ -105,7 +105,7 @@ class CustomStrat(FedProx):
         ########################################
         # added this to capture client metrics #
         clients_train_metrics = {}
-        clients_eval_metrics = {}   # currently useless (eval happens in train())
+        clients_eval_metrics = {}  # currently useless (eval happens in train())
         ########################################
         ########################################
 
@@ -239,7 +239,7 @@ class CustomStrat(FedProx):
             ###################################
             if current_round_client_metrics:
                 print(f"\n{'-'*50}\n")
-                print(f"\n{current_round_client_metrics = }")
+                print(f"\n{current_round_client_metrics = }\n")
 
                 for client_data in current_round_client_metrics:
                     # client_data is a dict containing merged MetricRecord and ConfigRecord
@@ -247,12 +247,13 @@ class CustomStrat(FedProx):
                     # Get the specific training time for this client (from MetricRecord)
                     # Note: Ensure your compile_clients_metrics merges the MetricRecord keys
                     client_train_time = client_data.get("train-time", 0)
-                    print(f"{current_round_client_metrics = }")
+                    print(f"{round_duration = }\n")
+                    print(f"{client_train_time = }\n")
 
                     # Calculate transmission time
                     # (Wall Clock Time) - (Time client actually spent working)
                     trans_time = round_duration - client_train_time
-                    print(f"{trans_time = }")
+                    print(f"{trans_time = }\n")
 
                     # Add new columns to the client data
                     client_data["round-time"] = round_duration
@@ -260,7 +261,7 @@ class CustomStrat(FedProx):
 
             # Save to the main history dictionary
             clients_train_metrics[current_round] = current_round_client_metrics
-            print(f"{clients_train_metrics = }")
+            print(f"{clients_train_metrics = }\n")
 
             # 4. Add to Aggregated Metrics for Server CSV
             if agg_train_metrics is not None:
