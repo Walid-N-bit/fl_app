@@ -241,8 +241,8 @@ class CustomStrat(FedProx):
             # 3. Inject Timing Data per Client
             ###################################
             if current_round_client_metrics:
-                print(f"\n{'-'*50}\n")
-                print(f"\n{current_round_client_metrics = }\n")
+                # print(f"\n{'-'*50}\n")
+                # print(f"\n{current_round_client_metrics = }\n")
 
                 for client_data in current_round_client_metrics:
                     # client_data is a dict containing merged MetricRecord and ConfigRecord
@@ -250,14 +250,14 @@ class CustomStrat(FedProx):
                     # Get the specific training time for this client (from MetricRecord)
                     # Note: Ensure your compile_clients_metrics merges the MetricRecord keys
                     client_train_time = client_data.get("train-time", 0)
-                    print(f"{client_data = }\n")
-                    print(f"{round_duration = }\n")
-                    print(f"{client_train_time = }\n")
+                    # print(f"{client_data = }\n")
+                    # print(f"{round_duration = }\n")
+                    # print(f"{client_train_time = }\n")
 
                     # Calculate transmission time
                     # (Wall Clock Time) - (Time client actually spent working)
                     trans_time = round_duration - client_train_time
-                    print(f"{trans_time = }\n")
+                    # print(f"{trans_time = }\n")
 
                     # Add new columns to the client data
                     client_data["round-time"] = round_duration
@@ -273,7 +273,7 @@ class CustomStrat(FedProx):
             else:
                 agg_train_metrics = MetricRecord({"round-time": round_duration})
 
-            print(f"{agg_train_metrics = }\n")
+            # print(f"{agg_train_metrics = }\n")
 
             result.train_metrics_clientapp[current_round] = agg_train_metrics
             print(f"\n{'-'*50}\n")
@@ -338,6 +338,7 @@ class CustomStrat(FedProx):
     #         round_metrics.append(item)
 
     #     return round_metrics
+
     def compile_clients_metrics(self, replies: Iterable[Message]) -> list:
         """
         Extracts history lists from ConfigRecord and scalar metrics from MetricRecord.
