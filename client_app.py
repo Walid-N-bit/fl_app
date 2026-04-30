@@ -362,6 +362,8 @@ def train(msg: Message, context: Context):
     model_record = ArrayRecord(model.state_dict())
 
     total_train_time = time.time() - train_start_time
+    print(f"\n{total_train_time = }MB\n")
+
     metrics = {
         "accuracy": local_metrics["accuracy"],
         "precision": local_metrics["precision"],

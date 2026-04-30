@@ -45,64 +45,215 @@ def load_pkl(path: str):
 # ----------------------------------------------------------------------
 
 
+# def parse_client_history_csv(train_replies: dict) -> pd.DataFrame:
+#     """
+#     Creates the History CSV.
+#     Cols: round, client-name, round-time, transmission-time, and epoch lists.
+#     Lists are preserved inside the cells.
+#     """
+#     rows = []
+
+#     # Keys that contain lists (History)
+#     history_keys = [
+#         "train-acc",
+#         "train-loss",
+#         "val-acc",
+#         "val-loss",
+#         "local-classes",
+#         "local-labels",
+#         "epoch",
+#         "classifier-lr",
+#         "features-lr",
+#     ]
+
+#     # Keys that are scalars but relevant for history context
+#     scalar_context_keys = ["client-name", "round-time", "transmission-time"]
+
+#     for round_id, client_list in train_replies.items():
+#         if not client_list:
+#             continue
+#         for client_data in client_list:
+#             row = {"round": round_id}
+
+#             # Add scalars
+#             for k in scalar_context_keys:
+#                 row[k] = client_data.get(k)
+
+#             # Add Lists
+#             for k in history_keys:
+#                 row[k] = client_data.get(k)
+
+#             rows.append(row)
+
+#     df = pd.DataFrame(rows)
+#     if df.empty:
+#         return df
+#     # Reorder for readability
+#     priority = ["round", "client-name", "round-time", "transmission-time"]
+#     cols = priority + [c for c in df.columns if c not in priority]
+#     return df[cols]
+
+
+# def parse_client_evaluation_csv(train_replies: dict) -> pd.DataFrame:
+#     """
+#     Creates the Evaluation CSV.
+#     Cols: round, client-name, accuracy, precision, recall, f1, train-time,
+#           transmission-time, per-class-accuracy.
+#     """
+#     rows = []
+
+#     eval_keys = [
+#         "client-name",
+#         "accuracy",
+#         "precision",
+#         "recall",
+#         "f1",
+#         "train-time",
+#         "transmission-time",
+#         "round-time",
+#         "per-class-accuracy",
+#         "num-examples",
+#     ]
+
+#     for round_id, client_list in train_replies.items():
+#         if not client_list:
+#             continue
+#         for client_data in client_list:
+#             row = {"round": round_id}
+
+#             for k in eval_keys:
+#                 row[k] = client_data.get(k)
+
+#             rows.append(row)
+
+#     df = pd.DataFrame(rows)
+#     if df.empty:
+#         return df
+#     priority = [
+#         "round",
+#         "client-name",
+#         "accuracy",
+#         "f1",
+#         "train-time",
+#         "transmission-time",
+#     ]
+#     cols = priority + [c for c in df.columns if c not in priority]
+#     return df[cols]
+
+
+# def parse_server_metrics_combined(
+#     train_metrics: dict[int, Any], eval_metrics: dict[int, Any]
+# ) -> pd.DataFrame:
+#     """
+#     Merges server-side timing (train_metrics_clientapp)
+#     and global performance (evaluate_metrics_serverapp).
+#     """
+#     rows = []
+
+#     # Get all unique round numbers from both sources
+#     all_rounds = set(train_metrics.keys()) | set(eval_metrics.keys())
+
+#     for r in sorted(list(all_rounds)):
+#         row = {"round": r}
+
+#         # 1. Add training metrics (contains round-time, transmission-time if aggregated)
+#         if r in train_metrics:
+#             data = train_metrics[r]
+#             # Handle dict or MetricRecord-like objects
+#             if isinstance(data, dict):
+#                 row.update(data)
+#             elif hasattr(data, "items"):
+#                 row.update(dict(data.items()))
+#             elif hasattr(data, "__dict__"):
+#                 row.update(
+#                     {k: getattr(data, k) for k in dir(data) if not k.startswith("_")}
+#                 )
+
+#         # 2. Add evaluation metrics (contains global loss/acc)
+#         if r in eval_metrics:
+#             data = eval_metrics[r]
+#             if isinstance(data, dict):
+#                 row.update(data)
+#             elif hasattr(data, "items"):
+#                 row.update(dict(data.items()))
+#             elif hasattr(data, "__dict__"):
+#                 row.update(
+#                     {k: getattr(data, k) for k in dir(data) if not k.startswith("_")}
+#                 )
+
+#         rows.append(row)
+
+
+#     return pd.DataFrame(rows)
 def parse_client_history_csv(train_replies: dict) -> pd.DataFrame:
     """
-    Creates the History CSV.
-    Cols: round, client-name, round-time, transmission-time, and epoch lists.
-    Lists are preserved inside the cells.
+    Explodes time-series lists into rows (one row per epoch).
+    Excludes 'local-classes' and 'local-labels'.
     """
     rows = []
 
-    # Keys that contain lists (History)
-    history_keys = [
+    # Keys that contain the time-series data to be exploded
+    series_keys = [
+        "epoch",
         "train-acc",
         "train-loss",
         "val-acc",
         "val-loss",
-        "local-classes",
-        "local-labels",
-        "epoch",
         "classifier-lr",
         "features-lr",
     ]
 
-    # Keys that are scalars but relevant for history context
-    scalar_context_keys = ["client-name", "round-time", "transmission-time"]
+    # Scalar keys to repeat for every epoch row
+    scalar_keys = ["client-name", "round-time", "transmission-time"]
 
     for round_id, client_list in train_replies.items():
         if not client_list:
             continue
         for client_data in client_list:
-            row = {"round": round_id}
+            # 1. Get the base scalars
+            base_row = {"round": round_id}
+            for k in scalar_keys:
+                base_row[k] = client_data.get(k)
 
-            # Add scalars
-            for k in scalar_context_keys:
-                row[k] = client_data.get(k)
+            # 2. Find the length of the lists (number of epochs)
+            # Check 'epoch' or 'train-loss' to determine length
+            num_epochs = 0
+            for k in series_keys:
+                val = client_data.get(k, [])
+                if isinstance(val, list) and len(val) > num_epochs:
+                    num_epochs = len(val)
 
-            # Add Lists
-            for k in history_keys:
-                row[k] = client_data.get(k)
-
-            rows.append(row)
+            # 3. Create a row for each epoch
+            if num_epochs == 0:
+                # If no history data, just append the base row once
+                rows.append(base_row)
+            else:
+                for i in range(num_epochs):
+                    row = base_row.copy()
+                    for k in series_keys:
+                        val = client_data.get(k)
+                        if isinstance(val, list) and i < len(val):
+                            row[k] = val[i]
+                        else:
+                            row[k] = None  # Handle uneven lists
+                    rows.append(row)
 
     df = pd.DataFrame(rows)
-    if df.empty:
-        return df
-    # Reorder for readability
-    priority = ["round", "client-name", "round-time", "transmission-time"]
+    # Reorder
+    priority = ["round", "client-name", "epoch", "round-time", "transmission-time"]
     cols = priority + [c for c in df.columns if c not in priority]
     return df[cols]
 
 
 def parse_client_evaluation_csv(train_replies: dict) -> pd.DataFrame:
     """
-    Creates the Evaluation CSV.
-    Cols: round, client-name, accuracy, precision, recall, f1, train-time,
-          transmission-time, per-class-accuracy.
+    Extracts only scalar evaluation metrics.
+    Excludes 'per-class-accuracy' and other lists.
     """
     rows = []
 
-    eval_keys = [
+    # Strict list of keys we want in this CSV (Scalars only)
+    eval_scalar_keys = [
         "client-name",
         "accuracy",
         "precision",
@@ -111,7 +262,6 @@ def parse_client_evaluation_csv(train_replies: dict) -> pd.DataFrame:
         "train-time",
         "transmission-time",
         "round-time",
-        "per-class-accuracy",
         "num-examples",
     ]
 
@@ -121,14 +271,17 @@ def parse_client_evaluation_csv(train_replies: dict) -> pd.DataFrame:
         for client_data in client_list:
             row = {"round": round_id}
 
-            for k in eval_keys:
-                row[k] = client_data.get(k)
+            for k in eval_scalar_keys:
+                # Only add if it exists and is not a list (sanity check)
+                val = client_data.get(k)
+                if not isinstance(val, list):
+                    row[k] = val
+                else:
+                    row[k] = None  # Explicitly ignore lists
 
             rows.append(row)
 
     df = pd.DataFrame(rows)
-    if df.empty:
-        return df
     priority = [
         "round",
         "client-name",
@@ -142,44 +295,32 @@ def parse_client_evaluation_csv(train_replies: dict) -> pd.DataFrame:
 
 
 def parse_server_metrics_combined(
-    train_metrics: dict[int, Any], eval_metrics: dict[int, Any]
+    train_metrics: dict, eval_metrics: dict
 ) -> pd.DataFrame:
     """
-    Merges server-side timing (train_metrics_clientapp)
-    and global performance (evaluate_metrics_serverapp).
+    Merges server-side timing and global performance.
     """
     rows = []
+    all_rounds = sorted(list(set(train_metrics.keys()) | set(eval_metrics.keys())))
 
-    # Get all unique round numbers from both sources
-    all_rounds = set(train_metrics.keys()) | set(eval_metrics.keys())
-
-    for r in sorted(list(all_rounds)):
+    for r in all_rounds:
         row = {"round": r}
 
-        # 1. Add training metrics (contains round-time, transmission-time if aggregated)
+        # From train_metrics_clientapp (Round Time)
         if r in train_metrics:
             data = train_metrics[r]
-            # Handle dict or MetricRecord-like objects
             if isinstance(data, dict):
                 row.update(data)
             elif hasattr(data, "items"):
                 row.update(dict(data.items()))
-            elif hasattr(data, "__dict__"):
-                row.update(
-                    {k: getattr(data, k) for k in dir(data) if not k.startswith("_")}
-                )
 
-        # 2. Add evaluation metrics (contains global loss/acc)
+        # From evaluate_metrics_serverapp (Global Acc)
         if r in eval_metrics:
             data = eval_metrics[r]
             if isinstance(data, dict):
                 row.update(data)
             elif hasattr(data, "items"):
                 row.update(dict(data.items()))
-            elif hasattr(data, "__dict__"):
-                row.update(
-                    {k: getattr(data, k) for k in dir(data) if not k.startswith("_")}
-                )
 
         rows.append(row)
 

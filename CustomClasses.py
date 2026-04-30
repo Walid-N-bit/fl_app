@@ -238,16 +238,21 @@ class CustomStrat(FedProx):
             # 3. Inject Timing Data per Client
             ###################################
             if current_round_client_metrics:
+                print(f"\n{'-'*50}\n")
+                print(f"\n{current_round_client_metrics = }")
+
                 for client_data in current_round_client_metrics:
                     # client_data is a dict containing merged MetricRecord and ConfigRecord
 
                     # Get the specific training time for this client (from MetricRecord)
                     # Note: Ensure your compile_clients_metrics merges the MetricRecord keys
                     client_train_time = client_data.get("train-time", 0)
+                    print(f"{current_round_client_metrics = }")
 
                     # Calculate transmission time
                     # (Wall Clock Time) - (Time client actually spent working)
                     trans_time = round_duration - client_train_time
+                    print(f"{trans_time = }")
 
                     # Add new columns to the client data
                     client_data["round-time"] = round_duration
@@ -255,6 +260,7 @@ class CustomStrat(FedProx):
 
             # Save to the main history dictionary
             clients_train_metrics[current_round] = current_round_client_metrics
+            print(f"{clients_train_metrics = }")
 
             # 4. Add to Aggregated Metrics for Server CSV
             if agg_train_metrics is not None:
@@ -262,7 +268,10 @@ class CustomStrat(FedProx):
             else:
                 agg_train_metrics = MetricRecord({"round-time": round_duration})
 
+            print(f"{agg_train_metrics = }\n")
+
             result.train_metrics_clientapp[current_round] = agg_train_metrics
+            print(f"\n{'-'*50}\n")
 
             #################################################################
             #################################################################
