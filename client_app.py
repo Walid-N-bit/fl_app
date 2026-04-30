@@ -276,6 +276,7 @@ def train(msg: Message, context: Context):
 
     print(f"\nUsed weights: {weights = }\n")
 
+    train_start_time = time.time()
     try:
         for e in range(epochs):
             print(f"\nEpoch {e+1}/{epochs} | Round {current_round}\n{'-'*50}")
@@ -287,7 +288,6 @@ def train(msg: Message, context: Context):
             print(f"learning rate: {c_lr}\n")
             # print(f"Classifier learning rate: {c_lr}\n")
 
-            t0 = time.perf_counter()
             print("Training commencing...")
             train_acc, train_loss = train_fn(
                 model=model,
@@ -318,8 +318,8 @@ def train(msg: Message, context: Context):
             train_loss_data.append(train_loss)
             val_acc_data.append(val_acc)
             val_loss_data.append(val_loss)
-            t1 = time.perf_counter() - t0
-            train_times.append(t1)
+
+            # train_times.append(t1)
             passed_epochs.append(e + 1)
             # f_lrs.append(f_lr)
             # c_lrs.append(c_lr)
@@ -356,18 +356,18 @@ def train(msg: Message, context: Context):
     local_metrics = eval_per_class(testloader, model, out_features, local_labels_map)
 
     model_size = get_model_size(model)
-    print(f"\n{model_size = }\n")
+    print(f"\n{model_size = }MB\n")
 
     # Construct and return reply Message
     model_record = ArrayRecord(model.state_dict())
+
+    total_train_time = time.time() - train_start_time
     metrics = {
-        "train-acc": train_acc_data[-1] if train_acc_data else 0.0,
-        "train-loss": train_loss_data[-1] if train_loss_data else 0.0,
-        "val-acc": val_acc_data[-1] if val_acc_data else 0.0,
-        "val-loss": val_loss_data[-1] if val_loss_data else 0.0,
+        "accuracy": local_metrics["accuracy"],
         "precision": local_metrics["precision"],
         "recall": local_metrics["recall"],
         "f1": local_metrics["f1"],
+        "train-time": total_train_time,
         "num-examples": len(trainloader.dataset),
     }
 
@@ -375,9 +375,13 @@ def train(msg: Message, context: Context):
     config_record = ConfigRecord(
         {
             "client-name": node_name,
+            "train-acc": train_acc_data,
+            "train-loss": train_loss_data,
+            "val-acc": val_acc_data,
+            "val-loss": val_loss_data,
             "local-classes": local_classes,
             "local-labels": labels,
-            "train-time": train_times,
+            # "train-time": train_times,
             "epoch": passed_epochs,
             "classifier-lr": c_lrs,  # currently used for the whole model
             "features-lr": f_lrs,  # currently useless

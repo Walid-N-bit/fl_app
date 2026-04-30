@@ -105,7 +105,7 @@ class CustomStrat(FedProx):
         ########################################
         # added this to capture client metrics #
         clients_train_metrics = {}
-        clients_eval_metrics = {}
+        clients_eval_metrics = {}   # currently useless (eval happens in train())
         ########################################
         ########################################
 
@@ -131,6 +131,7 @@ class CustomStrat(FedProx):
 
             # Call strategy to configure training round
             # Send messages and wait for replies
+
             train_replies = grid.send_and_receive(
                 messages=self.configure_train(
                     current_round,
@@ -140,6 +141,9 @@ class CustomStrat(FedProx):
                 ),
                 timeout=timeout,
             )
+
+            round_end_time = time.time()
+            round_duration = round_end_time - round_start_time
 
             # Aggregate train
             agg_arrays, agg_train_metrics = self.aggregate_train(
@@ -182,9 +186,10 @@ class CustomStrat(FedProx):
             ###################################
             ###################################
             # saving client-side train metrics
-            clients_train_metrics[current_round] = self.compile_clients_metrics(
-                train_replies
-            )
+            # clients_train_metrics[current_round] = self.compile_clients_metrics(
+            #     train_replies
+            # )
+            current_round_client_metrics = self.compile_clients_metrics(train_replies)
             # same way you can add client-side eval metrics
 
             ##################################
@@ -229,15 +234,36 @@ class CustomStrat(FedProx):
 
             #################################################################
             #################################################################
-            # END: Round Time Measurement
-            round_duration = time.time() - round_start_time
+            ###################################
+            # 3. Inject Timing Data per Client
+            ###################################
+            if current_round_client_metrics:
+                for client_data in current_round_client_metrics:
+                    # client_data is a dict containing merged MetricRecord and ConfigRecord
 
-            # Include in the aggregated metrics (safe check)
+                    # Get the specific training time for this client (from MetricRecord)
+                    # Note: Ensure your compile_clients_metrics merges the MetricRecord keys
+                    client_train_time = client_data.get("train-time", 0)
+
+                    # Calculate transmission time
+                    # (Wall Clock Time) - (Time client actually spent working)
+                    trans_time = round_duration - client_train_time
+
+                    # Add new columns to the client data
+                    client_data["round-time"] = round_duration
+                    client_data["transmission-time"] = trans_time
+
+            # Save to the main history dictionary
+            clients_train_metrics[current_round] = current_round_client_metrics
+
+            # 4. Add to Aggregated Metrics for Server CSV
             if agg_train_metrics is not None:
                 agg_train_metrics["round-time"] = round_duration
             else:
-                # If no metrics returned, create a minimal record to store time
                 agg_train_metrics = MetricRecord({"round-time": round_duration})
+
+            result.train_metrics_clientapp[current_round] = agg_train_metrics
+
             #################################################################
             #################################################################
 

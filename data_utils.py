@@ -1,8 +1,12 @@
-import os, time, json, pickle, csv
+import os
+import time
+import json
+import pickle
+import csv
 from typing import Literal, Any
 import torch
 import pandas as pd
-from pathlib import Path, PosixPath
+from pathlib import Path
 from datetime import datetime
 
 
@@ -17,14 +21,12 @@ def save_arbitrary_json(path: str, data: dict):
 def save_pkl(path: str, data):
     """
     save raw data into .pkl files.
-
-    :param path: file path
-    :type path: str
-    :param data: data to be saved
     """
-    import pickle
-
-    os.makedirs(os.path.dirname(path), exist_ok=True)
+    # Convert Path object to string for compatibility with older os.path usage if needed
+    path = str(path)
+    dir_path = os.path.dirname(path)
+    if dir_path:
+        os.makedirs(dir_path, exist_ok=True)
     with open(path, "wb") as f:
         pickle.dump(data, f)
 
@@ -32,124 +34,224 @@ def save_pkl(path: str, data):
 def load_pkl(path: str):
     """
     load data from a .pkl file.
-
-    :param path: file path
-    :type path: str
-    :return: raw data
-    :rtype: Any
     """
-
     with open(path, "rb") as f:
         data = pickle.load(f)
     return data
 
 
-def parse_raw_metrics(raw_metrics: dict[int, list[dict[str, Any]]]) -> pd.DataFrame:
+# ----------------------------------------------------------------------
+# PARSING FUNCTIONS
+# ----------------------------------------------------------------------
+
+
+def parse_client_history_csv(train_replies: dict) -> pd.DataFrame:
+    """
+    Creates the History CSV.
+    Cols: round, client-name, round-time, transmission-time, and epoch lists.
+    Lists are preserved inside the cells.
+    """
     rows = []
 
-    # Keys that should NOT be exploded (they are metadata lists, not time-series)
-    # Add any other keys here that are lists but describe the client config, not history.
-    METADATA_LIST_KEYS = {"local-classes", "local-labels", "per-class-accuracy"}
+    # Keys that contain lists (History)
+    history_keys = [
+        "train-acc",
+        "train-loss",
+        "val-acc",
+        "val-loss",
+        "local-classes",
+        "local-labels",
+        "epoch",
+        "classifier-lr",
+        "features-lr",
+    ]
 
-    for round_id, client_list in raw_metrics.items():
+    # Keys that are scalars but relevant for history context
+    scalar_context_keys = ["client-name", "round-time", "transmission-time"]
+
+    for round_id, client_list in train_replies.items():
+        if not client_list:
+            continue
         for client_data in client_list:
-            if not client_data:
-                continue
+            row = {"round": round_id}
 
-            # 1. Separate scalars, metadata lists, and time-series lists
-            scalars = {}
-            metadata_lists = {}  # Keep these as lists in the final row
-            series_data = {}  # These will be exploded into rows
+            # Add scalars
+            for k in scalar_context_keys:
+                row[k] = client_data.get(k)
 
-            for k, v in client_data.items():
-                if not isinstance(v, list):
-                    scalars[k] = v
-                elif k in METADATA_LIST_KEYS:
-                    metadata_lists[k] = v
-                else:
-                    # It's a list and not metadata -> treat as time-series
-                    series_data[k] = v
+            # Add Lists
+            for k in history_keys:
+                row[k] = client_data.get(k)
 
-            # 2. Determine number of steps (epochs) from series_data only
-            num_steps = 0
-            for v in series_data.values():
-                if len(v) > 0:
-                    num_steps = len(v)
-                    break
-
-            # Handle case where there are no time-series metrics (just summaries)
-            if num_steps == 0:
-                row = {"round": round_id, **scalars, **metadata_lists}
-                rows.append(row)
-                continue
-
-            # 3. Flatten ONLY the time-series lists
-            for i in range(num_steps):
-                row = {"round": round_id}
-                row.update(scalars)
-                row.update(metadata_lists)  # Add the full list to every row
-
-                for key, values in series_data.items():
-                    row[key] = values[i] if i < len(values) else None
-
-                rows.append(row)
+            rows.append(row)
 
     df = pd.DataFrame(rows)
+    if df.empty:
+        return df
+    # Reorder for readability
+    priority = ["round", "client-name", "round-time", "transmission-time"]
+    cols = priority + [c for c in df.columns if c not in priority]
+    return df[cols]
 
-    # Reorder columns logic...
-    priority_cols = ["round", "client-name"]
-    existing_priority = [c for c in priority_cols if c in df.columns]
-    other_cols = [c for c in df.columns if c not in existing_priority]
 
-    return df[existing_priority + other_cols]
-
-
-def parse_server_eval_metrics(metrics: dict[int, dict[str, Any]]) -> pd.DataFrame:
+def parse_client_evaluation_csv(train_replies: dict) -> pd.DataFrame:
     """
-    Transforms server evaluation metrics into a DataFrame.
-
-    Args:
-        metrics: Dictionary mapping round numbers to metric dictionaries.
-
-    Returns:
-        A Pandas DataFrame with one row per round.
+    Creates the Evaluation CSV.
+    Cols: round, client-name, accuracy, precision, recall, f1, train-time,
+          transmission-time, per-class-accuracy.
     """
-    # The simplest way to handle dynamic dict->DataFrame conversion
-    # We add the round key to the dictionary for each row
-    rows = [{"round": r, **data} for r, data in metrics.items()]
+    rows = []
+
+    eval_keys = [
+        "client-name",
+        "accuracy",
+        "precision",
+        "recall",
+        "f1",
+        "train-time",
+        "transmission-time",
+        "round-time",
+        "per-class-accuracy",
+        "num-examples",
+    ]
+
+    for round_id, client_list in train_replies.items():
+        if not client_list:
+            continue
+        for client_data in client_list:
+            row = {"round": round_id}
+
+            for k in eval_keys:
+                row[k] = client_data.get(k)
+
+            rows.append(row)
+
+    df = pd.DataFrame(rows)
+    if df.empty:
+        return df
+    priority = [
+        "round",
+        "client-name",
+        "accuracy",
+        "f1",
+        "train-time",
+        "transmission-time",
+    ]
+    cols = priority + [c for c in df.columns if c not in priority]
+    return df[cols]
+
+
+def parse_server_metrics_combined(
+    train_metrics: dict[int, Any], eval_metrics: dict[int, Any]
+) -> pd.DataFrame:
+    """
+    Merges server-side timing (train_metrics_clientapp)
+    and global performance (evaluate_metrics_serverapp).
+    """
+    rows = []
+
+    # Get all unique round numbers from both sources
+    all_rounds = set(train_metrics.keys()) | set(eval_metrics.keys())
+
+    for r in sorted(list(all_rounds)):
+        row = {"round": r}
+
+        # 1. Add training metrics (contains round-time, transmission-time if aggregated)
+        if r in train_metrics:
+            data = train_metrics[r]
+            # Handle dict or MetricRecord-like objects
+            if isinstance(data, dict):
+                row.update(data)
+            elif hasattr(data, "items"):
+                row.update(dict(data.items()))
+            elif hasattr(data, "__dict__"):
+                row.update(
+                    {k: getattr(data, k) for k in dir(data) if not k.startswith("_")}
+                )
+
+        # 2. Add evaluation metrics (contains global loss/acc)
+        if r in eval_metrics:
+            data = eval_metrics[r]
+            if isinstance(data, dict):
+                row.update(data)
+            elif hasattr(data, "items"):
+                row.update(dict(data.items()))
+            elif hasattr(data, "__dict__"):
+                row.update(
+                    {k: getattr(data, k) for k in dir(data) if not k.startswith("_")}
+                )
+
+        rows.append(row)
 
     return pd.DataFrame(rows)
 
 
-def split_df_by_type(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """
-    Splits a DataFrame into two based on column content types.
+# def parse_raw_metrics(raw_metrics: dict[int, list[dict[str, Any]]]) -> pd.DataFrame:
+#     # This function is now superseded by the specific parsers above,
+#     # but kept here as it was in your provided code.
+#     rows = []
+#     METADATA_LIST_KEYS = {"local-classes", "local-labels", "per-class-accuracy"}
 
-    Returns:
-        df_scalars: Columns containing single numbers/strings (good for plots/stats).
-        df_lists:   Columns containing lists/objects (good for inspection/exploding).
-    """
-    scalar_cols = []
-    list_cols = []
+#     for round_id, client_list in raw_metrics.items():
+#         for client_data in client_list:
+#             if not client_data:
+#                 continue
+#             scalars = {}
+#             metadata_lists = {}
+#             series_data = {}
 
-    # Iterate over the first row to determine types
-    # We assume the first row is representative of the whole column
-    if not df.empty:
-        first_row = df.iloc[0]
-        for col in df.columns:
-            # Check if the value is a list
-            if isinstance(first_row[col], list):
-                list_cols.append(col)
-            else:
-                scalar_cols.append(col)
+#             for k, v in client_data.items():
+#                 if not isinstance(v, list):
+#                     scalars[k] = v
+#                 elif k in METADATA_LIST_KEYS:
+#                     metadata_lists[k] = v
+#                 else:
+#                     series_data[k] = v
 
-    return df[scalar_cols], df[list_cols]
+#             num_steps = 0
+#             for v in series_data.values():
+#                 if len(v) > 0:
+#                     num_steps = len(v)
+#                     break
+
+#             if num_steps == 0:
+#                 row = {"round": round_id, **scalars, **metadata_lists}
+#                 rows.append(row)
+#                 continue
+
+#             for i in range(num_steps):
+#                 row = {"round": round_id}
+#                 row.update(scalars)
+#                 row.update(metadata_lists)
+#                 for key, values in series_data.items():
+#                     row[key] = values[i] if i < len(values) else None
+#                 rows.append(row)
+
+#     df = pd.DataFrame(rows)
+#     if df.empty:
+#         return df
+#     priority_cols = ["round", "client-name"]
+#     existing_priority = [c for c in priority_cols if c in df.columns]
+#     other_cols = [c for c in df.columns if c not in existing_priority]
+#     return df[existing_priority + other_cols]
+
+
+# def split_df_by_type(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
+#     scalar_cols = []
+#     list_cols = []
+#     if not df.empty:
+#         first_row = df.iloc[0]
+#         for col in df.columns:
+#             if isinstance(first_row[col], list):
+#                 list_cols.append(col)
+#             else:
+#                 scalar_cols.append(col)
+#     return df[scalar_cols], df[list_cols]
 
 
 def json_serializer(obj):
     if isinstance(obj, torch.Tensor):
         return obj.item() if obj.ndim == 0 else obj.tolist()
-    # FIX: Just check for Path, it covers both PosixPath and WindowsPath
     if isinstance(obj, Path):
         return str(obj)
     raise TypeError(f"Object of type {type(obj)} is not JSON serializable")
@@ -167,16 +269,6 @@ def save_experiment_data(
 ):
     """
     Saves all experiment data into a single timestamped folder.
-
-    Args:
-        save_dir: Root directory where experiment folders will be created.
-        dataset_name: Name of the dataset (used for folder naming).
-        model_name: Name of the model (used for folder naming).
-        train_replies: The raw dictionary of client training logs.
-        result: The result object from strategy.start (contains server metrics).
-        state_dict: The model state dictionary.
-        config_dict: Dictionary of hyperparameters (epochs, lr, etc.).
-        global_metrics: Dictionary containing final global metrics (tensors allowed).
     """
 
     # 1. Create Unique Experiment Folder
@@ -199,35 +291,40 @@ def save_experiment_data(
     save_pkl(raw_path, train_replies)
     print(f"Saved raw data -> {raw_path.name}")
 
-    # 4. Save Client Metrics (CSV)
+    # 4. Save Client History (CSV) - Lists preserved
     try:
-        client_df = parse_raw_metrics(train_replies)
-        # Remove list columns for cleaner CSV analysis
-        client_df_clean, _ = split_df_by_type(client_df)
-        client_csv_path = exp_path / "client_metrics.csv"
-        client_df_clean.to_csv(client_csv_path, index=False)
-        print(f"Saved client metrics -> {client_csv_path.name}")
+        df_history = parse_client_history_csv(train_replies)
+        if not df_history.empty:
+            df_history.to_csv(exp_path / "client_history.csv", index=False)
+            print(f"Saved client history -> client_history.csv")
     except Exception as e:
-        print(f"Failed to save client metrics: {e}")
+        print(f"Failed to save client history: {e}")
 
-    # 5. Save Server Evaluation Metrics (CSV)
+    # 5. Save Client Evaluation (CSV) - Scalars + Per-Class
     try:
-        # Assuming result.evaluate_metrics_serverapp exists
-        if (
-            hasattr(result, "evaluate_metrics_serverapp")
-            and result.evaluate_metrics_serverapp
-        ):
-            server_df = parse_server_eval_metrics(result.evaluate_metrics_serverapp)
-            server_csv_path = exp_path / "server_eval_metrics.csv"
-            server_df.to_csv(server_csv_path, index=False)
-            print(f"Saved server metrics -> {server_csv_path.name}")
+        df_eval = parse_client_evaluation_csv(train_replies)
+        if not df_eval.empty:
+            df_eval.to_csv(exp_path / "client_evaluation.csv", index=False)
+            print(f"Saved client evaluation -> client_evaluation.csv")
+    except Exception as e:
+        print(f"Failed to save client evaluation: {e}")
+
+    # 6. Save Server Metrics (CSV) - Combined Time + Global Metrics
+    try:
+        server_train = getattr(result, "train_metrics_clientapp", {})
+        server_eval = getattr(result, "evaluate_metrics_serverapp", {})
+
+        if server_train or server_eval:
+            df_server = parse_server_metrics_combined(server_train, server_eval)
+            df_server.to_csv(exp_path / "server_metrics.csv", index=False)
+            print(f"Saved server metrics -> server_metrics.csv")
+
     except Exception as e:
         print(f"Failed to save server metrics: {e}")
 
-    # 6. Save Metadata (JSON)
+    # 7. Save Metadata (JSON)
     try:
         metadata = config_dict.copy()
-        # Add final global metrics to metadata
         metadata["final_global_metrics"] = global_metrics
 
         json_path = exp_path / "metadata.json"
@@ -236,10 +333,5 @@ def save_experiment_data(
         print(f"Saved metadata -> {json_path.name}")
     except Exception as e:
         print(f"Failed to save metadata: {e}")
-
-    # 7. Confusion Matrices
-    # conf_matrix_path = exp_path / "confusion_matrices.json"
-    # with open(conf_matrix_path, "w") as f:
-    #     json.dump(confusion_data, f, default=json_serializer)
 
     return exp_path

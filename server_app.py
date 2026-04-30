@@ -12,9 +12,7 @@ from utils import (
 
 from data_utils import (
     save_experiment_data,
-    parse_raw_metrics,
-    parse_server_eval_metrics,
-    split_df_by_type,
+    
 )
 
 from datetime import datetime
@@ -276,8 +274,10 @@ def main(grid: Grid, context: Context) -> None:
     global_metrics = eval_per_class(
         test_dataloader, global_model, out_features, global_labels_map
     )
+    global_model_size = get_model_size(global_model)
 
     print(f"\n{global_metrics = }\n")
+    print(f"\n{global_model_size = }MB\n")
 
     # end time messages
     eval_end = time.perf_counter()
@@ -287,7 +287,7 @@ def main(grid: Grid, context: Context) -> None:
     print(f" Total experiment time: {readable_time(eval_end - start_time)}")
     print(f"{'='*50}\n")
 
-    the_time = datetime.strftime(datetime.now(), "%d.%m.26-%H:%M:%S")
+    # the_time = datetime.strftime(datetime.now(), "%d.%m.26-%H:%M:%S")
 
     # saving data
     print(f"\n{'='*50}")
