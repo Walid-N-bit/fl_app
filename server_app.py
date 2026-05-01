@@ -301,6 +301,7 @@ def main(grid: Grid, context: Context) -> None:
         "experiment-duration": exp_duration,
         "readable-duration": readable_time(exp_duration),
         "batch-size": batch_size,
+        "freeze": freeze,
         "features-lr": features_lr,
         "classifier-lr": classifier_lr,
         "weight-decay": weight_decay,

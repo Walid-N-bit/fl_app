@@ -206,7 +206,7 @@ def save_experiment_data(
     """
 
     # 1. Create Unique Experiment Folder
-    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H:%M:%S")
     folder_name = f"{dataset_name}_{model_name}_{timestamp}"
     exp_path = Path(save_dir) / folder_name
     exp_path.mkdir(parents=True, exist_ok=True)
