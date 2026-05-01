@@ -131,4 +131,4 @@ def get_cifar10_dataset_splits(
 test_ds = load_dataset("cifar10", split="test")
 test_ds = test_ds.with_transform(apply_transforms)
 CIFAR10_TEST = DSWrapper(test_ds)
-CIFAR10_CLASSES = classes_list(CIFAR10_TEST)
+CIFAR10_CLASSES = classes_list(test_ds)
