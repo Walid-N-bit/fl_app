@@ -120,6 +120,8 @@ def train(msg: Message, context: Context):
     proximal_mu = server_config.get("proximal-mu")
     global_weights = server_config.get("global-weights")
     use_loss_masking = server_config.get("use-loss-masking")
+    num_clients = server_config.get("num-clients")
+    num_shards = server_config.get("num-shards")
 
     if dataset_name == "wheat":
         from wheat_data_utils import get_class_weights
@@ -141,19 +143,16 @@ def train(msg: Message, context: Context):
 
     elif dataset_name == "cifar10":
         from cifar10_data_prep import (
-            CIFAR10_CLASSES,
-            CIFAR10_LABELS_MAP,
-            CIFAR10_TRAIN,
-            CIFAR10_VAL,
-            CIFAR10_TEST,
+            get_cifar10_dataset_splits,
             loader as cifar_loader,
         )
 
-        local_classes = CIFAR10_CLASSES
-        local_labels_map = CIFAR10_LABELS_MAP
-        trainloader = cifar_loader(CIFAR10_TRAIN, batch_size)
-        valloader = cifar_loader(CIFAR10_VAL, batch_size)
-        testloader = cifar_loader(CIFAR10_TEST, 128)
+        train_ds, val_ds, test_ds, local_labels_map, local_classes = (
+            get_cifar10_dataset_splits(num_clients, num_shards)
+        )
+        trainloader = cifar_loader(train_ds, batch_size)
+        valloader = cifar_loader(val_ds, batch_size)
+        testloader = cifar_loader(test_ds, 128)
 
         local_data_info = []
         mixer = ""

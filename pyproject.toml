@@ -54,6 +54,10 @@ use-loss-masking = 0
 dataset-name = "wheat"
 #dataset-name = "cifar10"
 
+# CIFAR10 partition configs
+num-clients = 2
+num-shards = 5
+
 
 [tool.flwr.federations]
 default = "local-simulation"

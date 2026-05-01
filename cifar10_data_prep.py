@@ -15,39 +15,6 @@ if "cont" in CLIENT_NAME:
 else:
     ID = None
 
-
-# partition = fds.load_partition(0, "train")
-
-
-def cifar10_partitioner(num_clients, num_classes):
-    return ShardPartitioner(
-        num_partitions=num_clients,
-        partition_by="label",
-        num_shards_per_partition=num_classes,
-    )
-
-
-NUM_CLIENTS = 2
-NUM_SHARDS_PER_CLIENT = 5
-
-partitioner = cifar10_partitioner(NUM_CLIENTS, NUM_SHARDS_PER_CLIENT)
-
-
-def cifar10_fds(partitioner):
-    fds = FederatedDataset(dataset="cifar10", partitioners={"train": partitioner})
-    return fds
-
-
-fds = cifar10_fds(partitioner)
-if ID is not None and ID > 0:
-    local_dataset = fds.load_partition(ID - 1, "train")
-else:
-
-    local_dataset = load_dataset("cifar10", split="train")
-
-# local_dataset = load_dataset("cifar10", split="train")
-
-# transforms = ToTensor()
 TRANSFORM = transforms.Compose(
     [
         transforms.RandomHorizontalFlip(0.5),
@@ -59,25 +26,15 @@ TRANSFORM = transforms.Compose(
     ]
 )
 
-
-def classes_list(partition):
-    unique_labels = sorted(set(partition["label"]))
-    all_names = partition.features["label"].names
-    return [all_names[i] for i in unique_labels]
+# partition = fds.load_partition(0, "train")
 
 
-CIFAR10_CLASSES = classes_list(local_dataset)
-unique_labels = sorted(set(local_dataset["label"]))
-all_names = local_dataset.features["label"].names
-CIFAR10_LABELS_MAP = {i: all_names[i] for i in unique_labels}
-
-
-def apply_transforms(batch):
-    batch["img"] = [TRANSFORM(img) for img in batch["img"]]
-    return batch
-
-
-local_dataset = local_dataset.with_transform(apply_transforms)
+def cifar10_partitioner(num_clients=2, num_shards=5):
+    return ShardPartitioner(
+        num_partitions=num_clients,
+        partition_by="label",
+        num_shards_per_partition=num_shards,
+    )
 
 
 class DSWrapper(Dataset):
@@ -92,13 +49,80 @@ class DSWrapper(Dataset):
         return (item["img"], item["label"])
 
 
-train, valid, test = divide_dataset(local_dataset, [0.6, 0.2, 0.2])
-CIFAR10_TRAIN = DSWrapper(train)
-CIFAR10_VAL = DSWrapper(valid)
-CIFAR10_TEST = DSWrapper(test)
+def cifar10_fds(partitioner):
+    fds = FederatedDataset(dataset="cifar10", partitioners={"train": partitioner})
+    return fds
+
+
+def classes_list(partition):
+    unique_labels = sorted(set(partition["label"]))
+    all_names = partition.features["label"].names
+    return [all_names[i] for i in unique_labels]
+
+
+def apply_transforms(batch):
+    batch["img"] = [TRANSFORM(img) for img in batch["img"]]
+    return batch
 
 
 def loader(dataset, batch_size: int):
     dev = "cuda:0" if torch.cuda.is_available() else "cpu"
     pin_mem = False if dev == "cpu" else True
     return DataLoader(dataset, pin_memory=pin_mem, batch_size=batch_size)
+
+
+def get_local_dataset(partitioner, client_id: int = ID):
+    fds = cifar10_fds(partitioner)
+    if client_id is not None and client_id > 0:
+        local_dataset = fds.load_partition(client_id - 1, "train")
+    else:
+
+        local_dataset = load_dataset("cifar10", split="train")
+    local_dataset = local_dataset.with_transform(apply_transforms)
+    return local_dataset
+
+
+def get_cifar10_labels_map(local_dataset):
+    unique_labels = sorted(set(local_dataset["label"]))
+    all_names = local_dataset.features["label"].names
+    labels_map = {i: all_names[i] for i in unique_labels}
+    return labels_map
+
+
+def get_cifar10_dataset_splits(
+    num_clients=2, num_shards=5, division: list = [0.6, 0.2, 0.2]
+):
+    partitioner = cifar10_partitioner(num_clients, num_shards)
+    local_dataset = get_local_dataset(partitioner)
+    train, valid, test = divide_dataset(local_dataset, division)
+    labels_map = get_cifar10_labels_map(local_dataset)
+    classes_names = classes_list(local_dataset)
+
+    return (
+        DSWrapper(train),
+        DSWrapper(valid),
+        DSWrapper(test),
+        labels_map,
+        classes_names,
+    )
+
+
+# partitioner = cifar10_partitioner()
+
+
+# if ID is not None and ID > 0:
+#     local_dataset = fds.load_partition(ID - 1, "train")
+# else:
+
+#     local_dataset = load_dataset("cifar10", split="train")
+
+
+# CIFAR10_CLASSES = classes_list(local_dataset)
+# unique_labels = sorted(set(local_dataset["label"]))
+# all_names = local_dataset.features["label"].names
+# CIFAR10_LABELS_MAP = {i: all_names[i] for i in unique_labels}
+
+# train, valid, test = divide_dataset(local_dataset, [0.6, 0.2, 0.2])
+# CIFAR10_TRAIN = DSWrapper(train)
+# CIFAR10_VAL = DSWrapper(valid)
+# CIFAR10_TEST = DSWrapper(test)
