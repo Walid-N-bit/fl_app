@@ -78,7 +78,6 @@ def get_local_dataset(partitioner, client_id: int = ID):
     else:
 
         local_dataset = load_dataset("cifar10", split="train")
-    local_dataset = local_dataset.with_transform(apply_transforms)
     return local_dataset
 
 
@@ -94,9 +93,10 @@ def get_cifar10_dataset_splits(
 ):
     partitioner = cifar10_partitioner(num_clients, num_shards)
     local_dataset = get_local_dataset(partitioner)
-    train, valid, test = divide_dataset(local_dataset, division)
     labels_map = get_cifar10_labels_map(local_dataset)
     classes_names = classes_list(local_dataset)
+    local_dataset = local_dataset.with_transform(apply_transforms)
+    train, valid, test = divide_dataset(local_dataset, division)
 
     return (
         DSWrapper(train),
