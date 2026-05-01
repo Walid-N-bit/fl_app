@@ -131,6 +131,7 @@ def pick_test_dataloader(dataset_name: Literal["cifar10", "wheat"]):
     if dataset_name == "wheat":
         test_dataloader = wheat_loader(TESTING_DATA, DEV, 128)
     elif dataset_name == "cifar10":
+
         test_dataloader = cifar_loader(CIFAR10_TEST, 128)
 
     return test_dataloader
