@@ -246,15 +246,6 @@ def train(msg: Message, context: Context):
 
     model.load_state_dict(msg.content["arrays"].to_torch_state_dict())
 
-    # ------ disable Batch Normalization layers -------------------
-    for module in model.modules():
-        if isinstance(module, (nn.BatchNorm2d, nn.BatchNorm1d)):
-            module.eval()  # Freezes running stats
-            # Ensure trainable parameters (weight/bias) remain in train mode if not frozen
-            if not freeze:
-                module.track_running_stats = False
-    # --------------------------------------------------------------
-
     # necessary for FedProx
     global_params = [p.clone().detach().to(DEVICE) for p in model.parameters()]
 
