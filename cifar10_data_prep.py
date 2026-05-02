@@ -104,6 +104,8 @@ def get_cifar10_dataset_splits(
 ):
     if num_clients == 5 and num_shards == 2:
         part_id = HOSTNAME_TO_ID.get(CLIENT_NAME, None)
+    else:
+        part_id = ID
     partitioner = cifar10_partitioner(num_clients, num_shards)
     local_dataset = get_local_dataset(partitioner, part_id)
     labels_map = get_cifar10_labels_map(local_dataset)
