@@ -43,7 +43,7 @@ batch-size = 32
 use-sampler = 0  # 1 for true, 0 for false
 num-workers = 0
 sch-patience = 3
-mixer = "cutmix"
+mixer = ""
 use-weights = 0  # 1 for true, 0 for false
 use-global-weights = 0
 proximal-mu = 0 # setting this to 0 will make FedProx behave like FedAvg
@@ -51,8 +51,8 @@ use-custom-agg = 0  # 1 or 0 for using custom aggregation method
 use-loss-masking = 0
 
 # currently usable datasets: "wheat", "cifar10"
-dataset-name = "wheat"
-#dataset-name = "cifar10"
+#dataset-name = "wheat"
+dataset-name = "cifar10"
 
 # CIFAR10 partition configs
 num-clients = 2

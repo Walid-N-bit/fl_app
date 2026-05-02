@@ -162,6 +162,8 @@ def main(grid: Grid, context: Context) -> None:
     num_clients = context.run_config["num-clients"]
     num_shards = context.run_config["num-shards"]
 
+    print(f"\n{num_clients = }\n{num_shards = }\n")
+
     start_time = time.perf_counter()
 
     # Read run config
