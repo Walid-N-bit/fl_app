@@ -397,6 +397,26 @@ def train(msg: Message, context: Context):
     )
     print(f"\ndata packaging time = {time.time() - t0}s\n")
 
+    # --- DEBUGGING CODE START ---
+    # Check incoming message for arrays
+    incoming_has_arrays = "arrays" in msg.content
+    # Check outgoing message for arrays
+    outgoing_has_arrays = "arrays" in content
+
+    print(f"DEBUG: Incoming has arrays: {incoming_has_arrays}")
+    print(f"DEBUG: Outgoing has arrays: {outgoing_has_arrays}")
+
+    if not incoming_has_arrays and not outgoing_has_arrays:
+        print("=" * 60)
+        print("ERROR TRIGGER DETECTED!")
+        print("Both incoming and outgoing messages lack 'arrays' (model weights).")
+        print("This will cause the 'bytes_sent and bytes_recv cannot be zero' error.")
+        print(
+            f"Current execution path: {'PREP_PHASE' if prep_phase else 'LABELS_CHECK' if labels else 'STANDARD_TRAINING'}"
+        )
+        print("=" * 60)
+    # --- DEBUGGING CODE END ---
+
     return Message(content=content, reply_to=msg)
 
 
