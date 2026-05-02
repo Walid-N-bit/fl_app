@@ -43,7 +43,6 @@ def cifar10_partitioner(num_clients=2, num_shards=5):
         num_partitions=num_clients,
         partition_by="label",
         num_shards_per_partition=num_shards,
-        shuffle=False,
     )
 
 
