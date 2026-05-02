@@ -34,7 +34,12 @@ DEVICE = torch.device(DEV)
 
 
 def prep_phase(
-    strategy: CustomStrat, grid: Grid, arrays: ArrayRecord, use_global_weights
+    strategy: CustomStrat,
+    grid: Grid,
+    arrays: ArrayRecord,
+    use_global_weights,
+    num_clients,
+    num_shards,
 ) -> tuple:
     """
     send flag to clients to signify preparation phase of the training.
@@ -67,7 +72,12 @@ def prep_phase(
             return None
 
     prep_conf = ConfigRecord(
-        {"prep-phase": 1, "use-global-weights": use_global_weights}
+        {
+            "prep-phase": 1,
+            "use-global-weights": use_global_weights,
+            "num-clients": num_clients,
+            "num-shards": num_shards,
+        }
     )
     prep_replies = strategy.prepare(grid, arrays, prep_config=prep_conf)
     global_classes = set()
