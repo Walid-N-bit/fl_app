@@ -323,26 +323,26 @@ def get_metrics(
         num_classes=num_classes,
         average="micro",
     ).item()
-    precision = torchmetrics.functional.precision(
+    precision_per_class = torchmetrics.functional.precision(
         pred_labels,
         true_labels,
         task="multiclass",
         num_classes=num_classes,
-        average="macro",
+        average=None,
     ).item()
-    recall = torchmetrics.functional.recall(
+    recall_per_class = torchmetrics.functional.recall(
         pred_labels,
         true_labels,
         task="multiclass",
         num_classes=num_classes,
-        average="macro",
+        average=None,
     ).item()
-    f1 = torchmetrics.functional.f1_score(
+    f1_per_class = torchmetrics.functional.f1_score(
         pred_labels,
         true_labels,
         task="multiclass",
         num_classes=num_classes,
-        average="macro",
+        average=None,
     ).item()
 
     # 2. Per-Class & Matrix (Convert tensors to Python lists)
@@ -359,6 +359,17 @@ def get_metrics(
     conf_matrix = torchmetrics.functional.confusion_matrix(
         pred_labels, true_labels, task="multiclass", num_classes=num_classes
     ).tolist()
+
+    def safe_mean(tensor):
+        # Filter NaNs
+        valid_entries = tensor[~torch.isnan(tensor)]
+        if len(valid_entries) == 0:
+            return 0.0
+        return valid_entries.mean().item()
+
+    precision = safe_mean(precision_per_class)
+    recall = safe_mean(recall_per_class)
+    f1 = safe_mean(f1_per_class)
 
     metrics = {
         # Scalars for aggregation
