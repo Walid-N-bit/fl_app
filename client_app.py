@@ -150,7 +150,7 @@ def train(msg: Message, context: Context):
         )
 
         train_ds, val_ds, test_ds, local_labels_map, local_classes = (
-            get_cifar10_dataset_splits(num_clients, num_shards)
+            get_cifar10_dataset_splits(num_clients or 2, num_shards or 5)
         )
         trainloader = cifar_loader(train_ds, batch_size)
         valloader = cifar_loader(val_ds, batch_size)
