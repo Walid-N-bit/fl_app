@@ -157,8 +157,10 @@ def main(grid: Grid, context: Context) -> None:
     mixer = context.run_config["mixer"]
     proximal_mu = context.run_config["proximal-mu"]
     use_custom_agg = context.run_config["use-custom-agg"]
-    use_global_weights = context.run_config["use-global-weights"]
     use_loss_masking = context.run_config["use-loss-masking"]
+    use_global_weights = context.run_config["use-global-weights"]
+    num_clients = context.run_config["num-clients"]
+    num_shards = context.run_config["num-shards"]
 
     start_time = time.perf_counter()
 
@@ -247,6 +249,8 @@ def main(grid: Grid, context: Context) -> None:
         "out-features": out_features,
         "global-weights": global_weights if global_weights else [],
         "use-loss-masking": use_loss_masking,
+        "num-clients": num_clients,
+        "num-shards": num_shards,
     }
     # Start strategy, run FedAvg for `num_rounds`
     test_dataloader = pick_test_dataloader(dataset_name)
