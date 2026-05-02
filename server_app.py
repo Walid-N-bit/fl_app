@@ -233,9 +233,10 @@ def main(grid: Grid, context: Context) -> None:
 
     # print replies for sent labels
     for item in labels_msg_replies:
-        print(
-            f"\n--> {item.content.get("config").get("node-name")} have received assigned labels successfully."
-        )
+        if item.has_content():
+            print(
+                f"\n--> {item.content.get("config").get("node-name")} have received assigned labels successfully."
+            )
     print("")
 
     # ====================================================================
