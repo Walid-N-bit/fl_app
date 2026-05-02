@@ -131,17 +131,4 @@ def get_cifar10_dataset_splits(
 test_ds = load_dataset("cifar10", split="test")
 test_ds = test_ds.with_transform(apply_transforms)
 CIFAR10_TEST = DSWrapper(test_ds)
-# _, _, _, _, CIFAR10_CLASSES = get_cifar10_dataset_splits()
-CIFAR10_CLASSES = [
-    "airplane",
-    "automobile",
-    "bird",
-    "cat",
-    "deer",
-    "dog",
-    "frog",
-    "horse",
-    "ship",
-    "truck",
-]
-CIFAR10_LABELS_MAP = {i: name for i, name in enumerate(CIFAR10_CLASSES)}
+_, _, _, _, CIFAR10_CLASSES = get_cifar10_dataset_splits()
