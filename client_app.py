@@ -123,7 +123,7 @@ def train(msg: Message, context: Context):
     num_clients = server_config.get("num-clients")
     num_shards = server_config.get("num-shards")
 
-    bordered_print(f"{num_clients = }\n{num_shards = }")
+    bordered_print(f"{num_clients = }\n {num_shards = }")
 
     if dataset_name == "wheat":
         from wheat_data_utils import get_class_weights
