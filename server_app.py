@@ -220,7 +220,12 @@ def main(grid: Grid, context: Context) -> None:
     # ====================================================================
 
     global_classes, all_metrics, global_weights = prep_phase(
-        strategy, grid, temp_arrays, use_global_weights
+        strategy,
+        grid,
+        temp_arrays,
+        use_global_weights,
+        num_clients,
+        num_shards,
     )
     labels_maps = labels_map_per_client(global_classes, all_metrics)
     messages_to_clients = construct_messages_per_node(labels_maps)
