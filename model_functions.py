@@ -329,21 +329,21 @@ def get_metrics(
         task="multiclass",
         num_classes=num_classes,
         average=None,
-    ).item()
+    )
     recall_per_class = torchmetrics.functional.recall(
         pred_labels,
         true_labels,
         task="multiclass",
         num_classes=num_classes,
         average=None,
-    ).item()
+    )
     f1_per_class = torchmetrics.functional.f1_score(
         pred_labels,
         true_labels,
         task="multiclass",
         num_classes=num_classes,
         average=None,
-    ).item()
+    )
 
     # 2. Per-Class & Matrix (Convert tensors to Python lists)
     # average=None returns tensor of shape (C,) -> .tolist() creates a flat list
