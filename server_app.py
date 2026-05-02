@@ -114,6 +114,7 @@ def prep_phase(
         global_weights = None
 
     # print(f"\n{global_weights = }\n")
+    print(f"\nprep-phase {global_classes = }\n")
 
     return sorted(list(global_classes)), clients_configs, global_weights
 

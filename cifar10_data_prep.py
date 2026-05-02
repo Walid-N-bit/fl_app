@@ -15,6 +15,15 @@ if "cont" in CLIENT_NAME:
 else:
     ID = None
 
+# for the case of 5 client partitioning
+HOSTNAME_TO_ID = {
+    "cont-201": 1,
+    "cont-202": 2,
+    "cont-141": 3,
+    "cont-142": 4,
+    "cont-143": 5,
+}
+
 TRANSFORM = transforms.Compose(
     [
         transforms.RandomHorizontalFlip(0.5),
@@ -73,6 +82,7 @@ def loader(dataset, batch_size: int):
 
 
 def get_local_dataset(partitioner, client_id: int = ID):
+
     fds = cifar10_fds(partitioner)
     if client_id is not None and client_id > 0:
         local_dataset = fds.load_partition(client_id - 1, "train")
@@ -92,8 +102,10 @@ def get_cifar10_labels_map(local_dataset):
 def get_cifar10_dataset_splits(
     num_clients=2, num_shards=5, division: list = [0.6, 0.2, 0.2]
 ):
+    if num_clients == 5 and num_shards == 2:
+        part_id = HOSTNAME_TO_ID.get(CLIENT_NAME, None)
     partitioner = cifar10_partitioner(num_clients, num_shards)
-    local_dataset = get_local_dataset(partitioner)
+    local_dataset = get_local_dataset(partitioner, part_id)
     labels_map = get_cifar10_labels_map(local_dataset)
     classes_names = classes_list(local_dataset)
     local_dataset = local_dataset.with_transform(apply_transforms)

@@ -143,7 +143,7 @@ def train(msg: Message, context: Context):
         local_data_info = data_info(DATA_SUMMARY, local_classes)
         print(f"\n{local_data_info = }\n")
 
-    elif dataset_name == "cifar10" and num_clients:
+    elif dataset_name == "cifar10":
         from cifar10_data_prep import (
             get_cifar10_dataset_splits,
             loader as cifar_loader,
