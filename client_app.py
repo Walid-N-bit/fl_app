@@ -398,23 +398,42 @@ def train(msg: Message, context: Context):
     print(f"\ndata packaging time = {time.time() - t0}s\n")
 
     # --- DEBUGGING CODE START ---
-    # Check incoming message for arrays
-    incoming_has_arrays = "arrays" in msg.content
-    # Check outgoing message for arrays
-    outgoing_has_arrays = "arrays" in content
+    # 1. Check Incoming Data (What we received from Server)
+    incoming_arrays = msg.content.get("arrays")
+    in_count = 0
+    in_bytes = 0
+    if incoming_arrays:
+        # Count number of tensors and estimate bytes
+        # Note: ArrayRecord allows iteration over buffers
+        for key, buffer in incoming_arrays.items():
+            in_count += 1
+            in_bytes += buffer.nbytes if hasattr(buffer, "nbytes") else 0
 
-    print(f"DEBUG: Incoming has arrays: {incoming_has_arrays}")
-    print(f"DEBUG: Outgoing has arrays: {outgoing_has_arrays}")
+    print(f"DEBUG: Incoming Arrays Count: {in_count}")
+    print(f"DEBUG: Incoming Arrays Bytes (estimated): {in_bytes}")
 
-    if not incoming_has_arrays and not outgoing_has_arrays:
+    # 2. Check Outgoing Data (What we are sending back)
+    outgoing_arrays = content.get("arrays")
+    out_count = 0
+    out_bytes = 0
+    if outgoing_arrays:
+        for key, buffer in outgoing_arrays.items():
+            out_count += 1
+            out_bytes += buffer.nbytes if hasattr(buffer, "nbytes") else 0
+
+    print(f"DEBUG: Outgoing Arrays Count: {out_count}")
+    print(f"DEBUG: Outgoing Arrays Bytes (estimated): {out_bytes}")
+
+    # 3. Trap the specific condition
+    if in_bytes == 0 and out_bytes == 0:
         print("=" * 60)
-        print("ERROR TRIGGER DETECTED!")
-        print("Both incoming and outgoing messages lack 'arrays' (model weights).")
-        print("This will cause the 'bytes_sent and bytes_recv cannot be zero' error.")
-        print(
-            f"Current execution path: {'PREP_PHASE' if prep_phase else 'LABELS_CHECK' if labels else 'STANDARD_TRAINING'}"
-        )
+        print("CRITICAL WARNING: Detected Empty Transaction!")
+        print("The message has the 'arrays' key, but total size is 0 bytes.")
+        print("This triggers the Server Error.")
         print("=" * 60)
+        # Optional: You might want to raise an error here to stop gracefully
+        raise ValueError("Attempted to return empty arrays.")
+
     # --- DEBUGGING CODE END ---
 
     return Message(content=content, reply_to=msg)
