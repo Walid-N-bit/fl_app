@@ -398,41 +398,30 @@ def train(msg: Message, context: Context):
     print(f"\ndata packaging time = {time.time() - t0}s\n")
 
     # --- DEBUGGING CODE START ---
-    # 1. Check Incoming Data (What we received from Server)
     incoming_arrays = msg.content.get("arrays")
-    in_count = 0
-    in_bytes = 0
-    if incoming_arrays:
-        # Count number of tensors and estimate bytes
-        # Note: ArrayRecord allows iteration over buffers
-        for key, buffer in incoming_arrays.items():
-            in_count += 1
-            in_bytes += buffer.nbytes if hasattr(buffer, "nbytes") else 0
+    out_arrays = content.get("arrays")
 
-    print(f"DEBUG: Incoming Arrays Count: {in_count}")
-    print(f"DEBUG: Incoming Arrays Bytes (estimated): {in_bytes}")
+    # Helper to calculate actual bytes
+    def get_bytes_size(arr_record):
+        total = 0
+        if not arr_record:
+            return 0
+        # Flower ArrayRecord items are (key, Array) pairs
+        for key, arr in arr_record.items():
+            if hasattr(arr, 'data') and arr.data is not None:
+                total += len(arr.data) # Use len() on the data bytes
+        return total
 
-    # 2. Check Outgoing Data (What we are sending back)
-    outgoing_arrays = content.get("arrays")
-    out_count = 0
-    out_bytes = 0
-    if outgoing_arrays:
-        for key, buffer in outgoing_arrays.items():
-            out_count += 1
-            out_bytes += buffer.nbytes if hasattr(buffer, "nbytes") else 0
+    in_size = get_bytes_size(incoming_arrays)
+    out_size = get_bytes_size(out_arrays)
 
-    print(f"DEBUG: Outgoing Arrays Count: {out_count}")
-    print(f"DEBUG: Outgoing Arrays Bytes (estimated): {out_bytes}")
+    print(f"DEBUG: Incoming Arrays Count: {len(incoming_arrays) if incoming_arrays else 0}")
+    print(f"DEBUG: Incoming Actual Bytes: {in_size}")
+    print(f"DEBUG: Outgoing Arrays Count: {len(out_arrays) if out_arrays else 0}")
+    print(f"DEBUG: Outgoing Actual Bytes: {out_size}")
 
-    # 3. Trap the specific condition
-    if in_bytes == 0 and out_bytes == 0:
-        print("=" * 60)
-        print("CRITICAL WARNING: Detected Empty Transaction!")
-        print("The message has the 'arrays' key, but total size is 0 bytes.")
-        print("This triggers the Server Error.")
-        print("=" * 60)
-        # Optional: You might want to raise an error here to stop gracefully
-        raise ValueError("Attempted to return empty arrays.")
+    if in_size == 0 and out_size == 0:
+        raise ValueError("CRITICAL: Data exists but contains 0 bytes! Check serialization.")
 
     # --- DEBUGGING CODE END ---
 
