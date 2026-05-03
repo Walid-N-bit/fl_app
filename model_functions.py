@@ -304,18 +304,19 @@ def eval_per_class(testloader, model, out_features: int, labels_map: dict):
     return metrics
 
 
+import torch
+import torchmetrics
+from typing import Any
+
+
 def get_metrics(
     pred_labels: torch.Tensor,
     true_labels: torch.Tensor,
     num_classes: int,
     class_names: list[str] = None,
 ) -> dict[str, Any]:
-    """
-    Calculates metrics and returns Python built-in types (floats, lists)
-    suitable for Flower Records and JSON serialization.
-    """
 
-    # 1. Global Metrics (Convert 0-dim tensors to Python floats)
+    # 1. Global Accuracy (Micro - unaffected by missing classes)
     acc = torchmetrics.functional.accuracy(
         pred_labels,
         true_labels,
@@ -323,21 +324,30 @@ def get_metrics(
         num_classes=num_classes,
         average="micro",
     ).item()
-    precision_per_class = torchmetrics.functional.precision(
+
+    # 2. Per-Class Metrics (Vectors)
+    per_class_prec = torchmetrics.functional.precision(
         pred_labels,
         true_labels,
         task="multiclass",
         num_classes=num_classes,
         average=None,
     )
-    recall_per_class = torchmetrics.functional.recall(
+    per_class_rec = torchmetrics.functional.recall(
         pred_labels,
         true_labels,
         task="multiclass",
         num_classes=num_classes,
         average=None,
     )
-    f1_per_class = torchmetrics.functional.f1_score(
+    per_class_f1 = torchmetrics.functional.f1_score(
+        pred_labels,
+        true_labels,
+        task="multiclass",
+        num_classes=num_classes,
+        average=None,
+    )
+    per_class_acc = torchmetrics.functional.accuracy(
         pred_labels,
         true_labels,
         task="multiclass",
@@ -345,40 +355,40 @@ def get_metrics(
         average=None,
     )
 
-    # 2. Per-Class & Matrix (Convert tensors to Python lists)
-    # average=None returns tensor of shape (C,) -> .tolist() creates a flat list
-    acc_per_class = torchmetrics.functional.accuracy(
-        pred_labels,
-        true_labels,
-        task="multiclass",
-        num_classes=num_classes,
-        average=None,
-    ).tolist()
+    # 3. Calculate "Active Class" Macro Averages
+    # We only want to average classes that actually appear in the true_labels
+    present_classes = torch.unique(true_labels)
 
-    # Confusion Matrix -> .tolist() creates a nested list [[...], [...]]
+    # Function to average only the classes present in true_labels
+    def active_class_mean(metric_tensor):
+        # Check if we have any classes to evaluate
+        if len(present_classes) == 0:
+            return 0.0
+
+        # Select only the metrics for classes present in this client's data
+        # Note: We must handle NaNs here too, just in case a specific class calculation fails
+        valid_metrics = metric_tensor[present_classes]
+        valid_metrics = valid_metrics[~torch.isnan(valid_metrics)]
+
+        if len(valid_metrics) == 0:
+            return 0.0
+        return valid_metrics.mean().item()
+
+    precision = active_class_mean(per_class_prec)
+    recall = active_class_mean(per_class_rec)
+    f1 = active_class_mean(per_class_f1)
+
+    # 4. Confusion Matrix
     conf_matrix = torchmetrics.functional.confusion_matrix(
         pred_labels, true_labels, task="multiclass", num_classes=num_classes
     ).tolist()
 
-    def safe_mean(tensor):
-        # Filter NaNs
-        valid_entries = tensor[~torch.isnan(tensor)]
-        if len(valid_entries) == 0:
-            return 0.0
-        return valid_entries.mean().item()
-
-    precision = safe_mean(precision_per_class)
-    recall = safe_mean(recall_per_class)
-    f1 = safe_mean(f1_per_class)
-
     metrics = {
-        # Scalars for aggregation
         "accuracy": acc,
         "precision": precision,
         "recall": recall,
         "f1": f1,
-        # Lists for detailed logs (JSON/DataFrame)
-        "per-class-accuracy": acc_per_class,
+        "per-class-accuracy": per_class_acc.tolist(),
         "confusion-matrix": conf_matrix,
     }
 
@@ -391,11 +401,11 @@ def get_metrics(
 def display_metrics(metrics: dict, class_names: list[str]):
     """Pretty prints the metrics dictionary."""
 
-    print("\n--- Global Metrics ---")
-    print(f"Overall Accuracy:  {metrics['accuracy']:.4f}")
-    print(f"Macro Precision:   {metrics['precision']:.4f}")
-    print(f"Macro Recall:      {metrics['recall']:.4f}")
-    print(f"Macro F1-Score:    {metrics['f1']:.4f}")
+    print("\n--- Metrics ---")
+    print(f" Accuracy:  {metrics['accuracy']:.4f}")
+    print(f" Precision:   {metrics['precision']:.4f}")
+    print(f" Recall:      {metrics['recall']:.4f}")
+    print(f" F1-Score:    {metrics['f1']:.4f}")
 
     print("\n--- Per-Class Accuracy ---")
     per_class_acc = metrics["per-class-accuracy"]
