@@ -31,6 +31,15 @@ HOSTNAME_TO_ID_4 = {
     "cont-202": 4,
 }
 
+HOSTNAME_TO_ID_2 = {
+    "cont-121": 1,
+    "cont-141": 1,
+    "cont-201": 1,
+    "cont-122": 2,
+    "cont-142": 2,
+    "cont-202": 2,
+}
+
 TRANSFORM = transforms.Compose(
     [
         transforms.RandomHorizontalFlip(0.5),
@@ -112,6 +121,8 @@ def get_cifar10_dataset_splits(
         part_id = HOSTNAME_TO_ID_5.get(CLIENT_NAME, None)
     elif num_clients == 4 and CLIENT_NAME in HOSTNAME_TO_ID_4:
         part_id = HOSTNAME_TO_ID_4.get(CLIENT_NAME, None)
+    elif num_clients == 2 and CLIENT_NAME in HOSTNAME_TO_ID_2:
+        part_id = HOSTNAME_TO_ID_2.get(CLIENT_NAME, None)
     else:
         part_id = ID
     partitioner = cifar10_partitioner(num_clients, num_shards)
