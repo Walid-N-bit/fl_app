@@ -146,7 +146,7 @@ class CustomStrat(FedProx):
                 )
             )
 
-            sent_node_ids = {msg.dst_node_id for msg in train_msg_list}
+            sent_node_ids = {msg.metadata.dst_node_id for msg in train_msg_list}
             log(INFO, "DEBUG: Sending to Node IDs: %s", sent_node_ids)
             # --------------------------------
             # --------------------------------
@@ -165,7 +165,7 @@ class CustomStrat(FedProx):
             round_duration = round_end_time - round_start_time
 
             # DETECT THE ERROR: Check for missing nodes
-            recv_node_ids = {msg.src_node_id for msg in train_replies}
+            recv_node_ids = {msg.metadata.src_node_id for msg in train_replies}
             missing_nodes = sent_node_ids - recv_node_ids
 
             log(INFO, "DEBUG: Round Duration: %.2fs", round_duration)
