@@ -16,12 +16,19 @@ else:
     ID = None
 
 # for the case of 5 client partitioning
-HOSTNAME_TO_ID = {
+HOSTNAME_TO_ID_5 = {
     "cont-201": 1,
     "cont-202": 2,
     "cont-141": 3,
     "cont-142": 4,
     "cont-143": 5,
+}
+
+HOSTNAME_TO_ID_4 = {
+    "cont-141": 1,
+    "cont-142": 2,
+    "cont-201": 3,
+    "cont-202": 4,
 }
 
 TRANSFORM = transforms.Compose(
@@ -101,8 +108,10 @@ def get_cifar10_labels_map(local_dataset):
 def get_cifar10_dataset_splits(
     num_clients=2, num_shards=5, division: list = [0.6, 0.2, 0.2]
 ):
-    if num_clients == 5 and num_shards == 2:
-        part_id = HOSTNAME_TO_ID.get(CLIENT_NAME, None)
+    if num_clients == 5 and CLIENT_NAME in HOSTNAME_TO_ID_5:
+        part_id = HOSTNAME_TO_ID_5.get(CLIENT_NAME, None)
+    elif num_clients == 4 and CLIENT_NAME in HOSTNAME_TO_ID_4:
+        part_id = HOSTNAME_TO_ID_4.get(CLIENT_NAME, None)
     else:
         part_id = ID
     partitioner = cifar10_partitioner(num_clients, num_shards)
