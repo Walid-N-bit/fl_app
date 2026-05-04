@@ -13,7 +13,7 @@ import time, io
 from collections.abc import Callable
 from typing import Literal
 
-from logging import INFO
+from logging import INFO, WARN
 
 from flwr.common import ArrayRecord, ConfigRecord, MetricRecord, log, MessageType
 from flwr.server import Grid
@@ -135,6 +135,22 @@ class CustomStrat(FedProx):
 
             round_start_time = time.time()
 
+            # ---------- DEBUG --------------
+            # Convert generator to list so we can inspect destination IDs
+            train_msg_list = list(
+                self.configure_train(
+                    current_round,
+                    arrays,
+                    train_config,
+                    grid,
+                )
+            )
+
+            sent_node_ids = {msg.dst_node_id for msg in train_msg_list}
+            log(INFO, "DEBUG: Sending to Node IDs: %s", sent_node_ids)
+            # --------------------------------
+            # --------------------------------
+
             train_replies = grid.send_and_receive(
                 messages=self.configure_train(
                     current_round,
@@ -147,6 +163,27 @@ class CustomStrat(FedProx):
             print(f"\n------- RECEIVED -------\n")
             round_end_time = time.time()
             round_duration = round_end_time - round_start_time
+
+            # DETECT THE ERROR: Check for missing nodes
+            recv_node_ids = {msg.src_node_id for msg in train_replies}
+            missing_nodes = sent_node_ids - recv_node_ids
+
+            log(INFO, "DEBUG: Round Duration: %.2fs", round_duration)
+            log(INFO, "DEBUG: Replies received from: %s", recv_node_ids)
+
+            if missing_nodes:
+                log(WARN, "!" * 60)
+                log(WARN, "DEBUG: MISSING REPLIES FROM NODES: %s", missing_nodes)
+                log(WARN, "DEBUG: This usually means the Server timed them out.")
+                log(
+                    WARN,
+                    "DEBUG: Your Server node_timeout is likely < %.2fs",
+                    round_duration,
+                )
+                log(WARN, "!" * 60)
+            else:
+                log(INFO, "DEBUG: All clients replied successfully.")
+            # ------------- END OF DEBUG -----------------------
 
             # Aggregate train
             agg_arrays, agg_train_metrics = self.aggregate_train(
@@ -312,32 +349,6 @@ class CustomStrat(FedProx):
         )
 
         return prep_replies
-
-    # def compile_clients_metrics(self, replies: Iterable[Message]) -> list:
-    #     """
-    #     parse replies data and return a dict for metrics and the client that produced them
-
-    #     :param replies: message replies from clients
-    #     :type replies: Iterable[Message]
-    #     :return: data to be returned to server
-    #     :rtype: dict
-    #     """
-    #     round_metrics = []
-    #     for msg in replies:
-    #         if not msg.has_content():
-    #             continue
-    #         configs = msg.content["configs"]
-    #         metrics = msg.content["metrics"]
-    #         keys = metrics.keys()
-    #         item = {
-    #             "client-name": configs.get("client-name"),
-    #             "local-classes": configs.get("local-classes"),
-    #         }
-    #         for k in keys:
-    #             item[k] = metrics.get(k)
-    #         round_metrics.append(item)
-
-    #     return round_metrics
 
     def compile_clients_metrics(self, replies: Iterable[Message]) -> list:
         """
