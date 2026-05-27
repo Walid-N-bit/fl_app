@@ -294,7 +294,7 @@ def eval_per_class(
     avg: Literal["micro", "macro", "weighted"] | None = None,
 ):
     # 1. Get Tensors
-    pred_tensor, true_tensor = get_true_and_pred_values(testloader, model)
+    true_tensor, pred_tensor = get_true_and_pred_values(testloader, model)
 
     # Prepare class names list from dict
     # Assuming labels_map is {0: 'Cat', 1: 'Dog', ...}
@@ -359,7 +359,7 @@ def get_metrics(
         true_labels,
         task="multiclass",
         num_classes=num_classes,
-        average=average,
+        average=None,
     )
 
     # 3. Calculate "Active Class" Macro Averages
@@ -398,6 +398,8 @@ def get_metrics(
         "per-class-accuracy": per_class_acc.tolist(),
         "confusion-matrix": conf_matrix,
     }
+
+    print(f"\n{metrics['per-class-accuracy'] = }\n")
 
     return metrics
 
