@@ -141,8 +141,8 @@ def pick_test_dataloader(dataset_name: Literal["cifar10", "wheat"]):
 
     if dataset_name == "wheat":
         test_dataloader = wheat_loader(TESTING_DATA, DEV, 128)
-    elif dataset_name == "cifar10":
 
+    elif dataset_name == "cifar10":
         test_dataloader = cifar_loader(CIFAR10_TEST, 128)
 
     return test_dataloader
@@ -295,7 +295,7 @@ def main(grid: Grid, context: Context) -> None:
     global_model.load_state_dict(state_dict)
     global_labels_map = generate_labels_map(global_classes)
     global_metrics = eval_per_class(
-        test_dataloader, global_model, out_features, global_labels_map
+        test_dataloader, global_model, out_features, global_labels_map, "macro"
     )
     global_model_size = get_model_size(global_model)
 

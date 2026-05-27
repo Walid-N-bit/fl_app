@@ -286,7 +286,13 @@ def acc_per_class(
     return correct_pred
 
 
-def eval_per_class(testloader, model, out_features: int, labels_map: dict):
+def eval_per_class(
+    testloader,
+    model,
+    out_features: int,
+    labels_map: dict,
+    avg: Literal["micro", "macro", "weighted"] | None,
+):
     # 1. Get Tensors
     pred_tensor, true_tensor = get_true_and_pred_values(testloader, model)
 
@@ -296,7 +302,7 @@ def eval_per_class(testloader, model, out_features: int, labels_map: dict):
     class_names = [labels_map.get(i, "Unknown-Class") for i in range(out_features)]
 
     # 2. Calculate Metrics
-    metrics = get_metrics(pred_tensor, true_tensor, out_features, class_names)
+    metrics = get_metrics(pred_tensor, true_tensor, out_features, avg, class_names)
 
     # 3. Display
     display_metrics(metrics, class_names)
@@ -313,6 +319,7 @@ def get_metrics(
     pred_labels: torch.Tensor,
     true_labels: torch.Tensor,
     num_classes: int,
+    average: Literal["micro", "macro", "weighted"] | None,
     class_names: list[str] = None,
 ) -> dict[str, Any]:
 
@@ -331,28 +338,28 @@ def get_metrics(
         true_labels,
         task="multiclass",
         num_classes=num_classes,
-        average=None,
+        average=average,
     )
     per_class_rec = torchmetrics.functional.recall(
         pred_labels,
         true_labels,
         task="multiclass",
         num_classes=num_classes,
-        average=None,
+        average=average,
     )
     per_class_f1 = torchmetrics.functional.f1_score(
         pred_labels,
         true_labels,
         task="multiclass",
         num_classes=num_classes,
-        average=None,
+        average=average,
     )
     per_class_acc = torchmetrics.functional.accuracy(
         pred_labels,
         true_labels,
         task="multiclass",
         num_classes=num_classes,
-        average=None,
+        average=average,
     )
 
     # 3. Calculate "Active Class" Macro Averages
@@ -374,9 +381,9 @@ def get_metrics(
             return 0.0
         return valid_metrics.mean().item()
 
-    precision = active_class_mean(per_class_prec)
-    recall = active_class_mean(per_class_rec)
-    f1 = active_class_mean(per_class_f1)
+    precision = active_class_mean(per_class_prec) if average == None else per_class_prec
+    recall = active_class_mean(per_class_rec) if average == None else per_class_rec
+    f1 = active_class_mean(per_class_f1) if average == None else per_class_f1
 
     # 4. Confusion Matrix
     conf_matrix = torchmetrics.functional.confusion_matrix(
