@@ -291,7 +291,7 @@ def eval_per_class(
     model,
     out_features: int,
     labels_map: dict,
-    avg: Literal["micro", "macro", "weighted"] | None,
+    avg: Literal["micro", "macro", "weighted"] | None = None,
 ):
     # 1. Get Tensors
     pred_tensor, true_tensor = get_true_and_pred_values(testloader, model)
